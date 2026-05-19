@@ -6,215 +6,365 @@ Scope: Civic Affordances Diagnostics
 
 ## Purpose
 
-This template gives a county root a compact way to declare a county-state surface and the cooperation interfaces it offers.
+This template gives a county root a consistent way to declare a cooperation
+interface.
 
-The template is intentionally declarative. It does not prescribe internal architecture.
+It is not a registration form, license request, or permission request. It is a
+structured record other roots may inspect when deciding whether and how to
+cooperate.
 
 ## Minimal Declaration
 
 ```yaml
 surface:
-  county: ""
-  state: ""
-  county_state_label: ""
-  surface_domain: ""
-  parent_domain: ""
+  county:
+  state:
+  county_state_label:
+  parent_domain:
+  public_ingress:
 
 root:
-  root_name: ""
-  root_type: "" # individual | business | charity | technical_group | local_project | other
-  operator_contact: ""
-  attribution_name: ""
-  attribution_public: true
+  operator_identity:
+  local_standing_basis:
+  administrative_contact:
+  attribution_requested:
 
-local_standing:
-  type: "" # current_resident | local_business | local_professional | local_charity | parcel_linked_actor | technical_operator | other
-  description: ""
+interface:
+  family:
+  endpoint:
+  offered: false
+  cooperation_requested: []
+  interface_specific_notes:
 
-interfaces:
-  public_ingress:
-    status: "" # offered | not_offered | planned | declined
-    endpoint: ""
-    notes: ""
-
-  dns:
-    status: "" # offered | not_offered | planned | declined
-    zone_or_name: ""
-    nameservers: []
-    notes: ""
-
-  fediverse:
-    status: "" # offered | not_offered | planned | declined
-    node: ""
-    software_family: ""
-    federation_scope: "" # public | compatible_roots | local_only | not_applicable
-    notes: ""
-
-  directory:
-    status: "" # offered | not_offered | planned | declined
-    protocol: "" # ldap | api | static | other
-    endpoint: ""
-    access_scope: "" # public | root_to_root | authenticated | local_only | not_applicable
-    record_classes: []
-    notes: ""
-
-  email_ceas:
-    status: "" # offered | not_offered | planned | declined
-    mail_domain: ""
-    mx_records: []
-    validation_endpoint: ""
-    notes: ""
-
-  wireguard:
-    status: "" # offered | not_offered | planned | declined
-    peering_contact: ""
-    allowed_purposes: []
-    notes: ""
-
-  dane:
-    status: "" # offered | not_offered | planned | declined
-    covered_services: []
-    notes: ""
-
-  attestation:
-    status: "" # offered | not_offered | planned | declined
-    method: "" # ipfs | git | signed_manifest | hash_publication | other
-    publication_surface: ""
-    notes: ""
-
-affordances:
-  surfaced: []
-  planned: []
-  not_surfaced: []
-
-local_attribution:
-  display_name: ""
-  relationship: ""
-  county_connection: ""
-  visibility_requested: true
-
-cooperation:
-  recognized_by: []
-  declined_by: []
-  interface_specific_notes: []
+policy:
+  interface_specific_consent: true
+  recognition_is_not_endorsement: true
+  local_commerce_disclosed:
+  anti_capture_notes:
 
 diagnostics:
-  observed_signals: []
-  forks_from: []
-  known_incompatibilities: []
-  known_obstructions: []
-  known_capture_attempts: []
+  status: draft
+  recognized_by: []
+  declined_by: []
+  partial_recognition: []
+  forked_from:
+  related_surfaces: []
+  open_questions: []
 ```
 
-## Filled Example
+## Interface Families
+
+Use one of the following values unless the model later defines another:
+
+```yaml
+interface_families:
+  - public_ingress
+  - dns
+  - fediverse
+  - directory_ldap
+  - email_ceas
+  - wireguard
+  - dane
+  - attestation
+```
+
+## DNS Declaration
 
 ```yaml
 surface:
-  county: "Kane County"
-  state: "Illinois"
-  county_state_label: "kane-il"
-  surface_domain: "kane-il.us"
-  parent_domain: "kane-il.us"
+  county: Kane County
+  state: Illinois
+  county_state_label: kane-il
+  parent_domain: kane-il.us
+  public_ingress: https://current-resident.kane-il.us
 
 root:
-  root_name: "Kane County CURRENT RESIDENT root"
-  root_type: "individual"
-  operator_contact: "hostmaster@kane-il.us"
-  attribution_name: "Kane County CURRENT RESIDENT root"
-  attribution_public: true
+  operator_identity:
+  local_standing_basis:
+  administrative_contact:
+  attribution_requested:
 
-local_standing:
-  type: "current_resident"
-  description: "County-rooted operator for a Kane County, Illinois reference implementation."
+interface:
+  family: dns
+  endpoint: kane-il.us
+  offered: true
+  cooperation_requested:
+    - discovery
+    - service_records
+    - mail_records
+    - dane_records_where_published
+    - interface_declaration_publication
+  interface_specific_notes:
+    dnssec: planned_or_current
+    zone_publication:
+    nameserver_policy:
 
-interfaces:
-  public_ingress:
-    status: "offered"
-    endpoint: "current-resident.kane-il.us"
-    notes: "One logical public ingress for the reference implementation."
-
-  dns:
-    status: "offered"
-    zone_or_name: "kane-il.us"
-    nameservers: []
-    notes: "DNS cooperation surface for the Kane County implementation."
-
-  fediverse:
-    status: "planned"
-    node: "diagnostics.current-resident.kane-il.us"
-    software_family: "Hubzilla or compatible family"
-    federation_scope: "compatible_roots"
-    notes: "Diagnostic federation surface."
-
-  directory:
-    status: "planned"
-    protocol: "ldap"
-    endpoint: ""
-    access_scope: "root_to_root"
-    record_classes:
-      - "service_principal"
-      - "affordance_metadata"
-      - "validation_metadata"
-    notes: "Directory cooperation surface, not a general identity dump."
-
-  email_ceas:
-    status: "planned"
-    mail_domain: "current-resident.kane-il.us"
-    mx_records: []
-    validation_endpoint: "validate@current-resident.kane-il.us"
-    notes: "CEAS and service-principal mail surface."
-
-  wireguard:
-    status: "not_offered"
-    peering_contact: ""
-    allowed_purposes: []
-    notes: "No WireGuard cooperation implied by DNS."
-
-  dane:
-    status: "planned"
-    covered_services:
-      - "https"
-      - "mail"
-    notes: "DANE posture to be declared separately."
-
-  attestation:
-    status: "planned"
-    method: "ipfs"
-    publication_surface: ""
-    notes: "Durable diagnostic publication and record attestation."
-
-affordances:
-  surfaced:
-    - CURRENT_RESIDENT
-  planned:
-    - COUNTY_RESIDENT
-    - PROPERTY_TAXPAYER
-    - PARCEL_LINKED_OCCUPANT
-  not_surfaced: []
-
-local_attribution:
-  display_name: "Kane County CURRENT RESIDENT root"
-  relationship: "county-rooted operator"
-  county_connection: "Kane County, Illinois"
-  visibility_requested: true
-
-cooperation:
-  recognized_by: []
-  declined_by: []
-  interface_specific_notes: []
+policy:
+  interface_specific_consent: true
+  recognition_is_not_endorsement: true
+  local_commerce_disclosed:
+  anti_capture_notes:
 
 diagnostics:
-  observed_signals: []
-  forks_from: []
-  known_incompatibilities: []
-  known_obstructions: []
-  known_capture_attempts: []
+  status: draft
+  recognized_by: []
+  declined_by: []
+  partial_recognition: []
+  forked_from:
+  related_surfaces: []
+  open_questions: []
+```
+
+## Fediverse Declaration
+
+```yaml
+surface:
+  county:
+  state:
+  county_state_label:
+  parent_domain:
+  public_ingress:
+
+root:
+  operator_identity:
+  local_standing_basis:
+  administrative_contact:
+  attribution_requested:
+
+interface:
+  family: fediverse
+  endpoint:
+  offered: true
+  cooperation_requested:
+    - county_to_county_federation
+    - expert_pool_federation
+    - authenticated_contribution
+    - public_reading_where_allowed
+  interface_specific_notes:
+    protocol:
+    software:
+    moderation_posture:
+    channel_policy:
+    privileged_operator_handles:
+
+policy:
+  interface_specific_consent: true
+  recognition_is_not_endorsement: true
+  local_commerce_disclosed:
+  anti_capture_notes:
+
+diagnostics:
+  status: draft
+  recognized_by: []
+  declined_by: []
+  partial_recognition: []
+  forked_from:
+  related_surfaces: []
+  open_questions: []
+```
+
+## Directory / LDAP Declaration
+
+```yaml
+surface:
+  county:
+  state:
+  county_state_label:
+  parent_domain:
+  public_ingress:
+
+root:
+  operator_identity:
+  local_standing_basis:
+  administrative_contact:
+  attribution_requested:
+
+interface:
+  family: directory_ldap
+  endpoint:
+  offered: true
+  cooperation_requested:
+    - selected_directory_lookup
+    - service_principal_lookup
+    - county_surface_records
+    - alias_or_role_lookup_where_allowed
+  interface_specific_notes:
+    implementation: ldap_or_other
+    public_access: none_or_scoped
+    private_exchange:
+    published_schema:
+    sensitive_records_excluded:
+
+policy:
+  interface_specific_consent: true
+  recognition_is_not_endorsement: true
+  local_commerce_disclosed:
+  anti_capture_notes:
+
+diagnostics:
+  status: draft
+  recognized_by: []
+  declined_by: []
+  partial_recognition: []
+  forked_from:
+  related_surfaces: []
+  open_questions: []
+```
+
+## Email / CEAS Declaration
+
+```yaml
+surface:
+  county:
+  state:
+  county_state_label:
+  parent_domain:
+  public_ingress:
+
+root:
+  operator_identity:
+  local_standing_basis:
+  administrative_contact:
+  attribution_requested:
+
+interface:
+  family: email_ceas
+  endpoint:
+  offered: true
+  cooperation_requested:
+    - mail_reachability
+    - sender_authorization_policy_publication
+    - active_alias_validation_where_offered
+    - selected_attestation_publication
+  interface_specific_notes:
+    ceas_offered: false
+    ceas_definition: Civic Email Alias System
+    sase_used: false
+    alias_validation_endpoint:
+    alias_lifecycle:
+    mailbox_scope:
+    spf:
+    dkim:
+    dmarc:
+    dane:
+    attachment_policy:
+
+policy:
+  interface_specific_consent: true
+  recognition_is_not_endorsement: true
+  local_commerce_disclosed:
+  anti_capture_notes:
+
+diagnostics:
+  status: draft
+  recognized_by: []
+  declined_by: []
+  partial_recognition: []
+  forked_from:
+  related_surfaces: []
+  open_questions: []
+```
+
+## WireGuard Declaration
+
+```yaml
+surface:
+  county:
+  state:
+  county_state_label:
+  parent_domain:
+  public_ingress:
+
+root:
+  operator_identity:
+  local_standing_basis:
+  administrative_contact:
+  attribution_requested:
+
+interface:
+  family: wireguard
+  endpoint:
+  offered: true
+  cooperation_requested:
+    - private_root_to_root_peering
+    - monitored_service_exchange
+    - restricted_directory_exchange_where_allowed
+  interface_specific_notes:
+    public_key:
+    allowed_ips_policy:
+    routing_policy:
+    logging_policy:
+    revocation_policy:
+
+policy:
+  interface_specific_consent: true
+  recognition_is_not_endorsement: true
+  local_commerce_disclosed:
+  anti_capture_notes:
+
+diagnostics:
+  status: draft
+  recognized_by: []
+  declined_by: []
+  partial_recognition: []
+  forked_from:
+  related_surfaces: []
+  open_questions: []
+```
+
+## Attestation Declaration
+
+```yaml
+surface:
+  county:
+  state:
+  county_state_label:
+  parent_domain:
+  public_ingress:
+
+root:
+  operator_identity:
+  local_standing_basis:
+  administrative_contact:
+  attribution_requested:
+
+interface:
+  family: attestation
+  endpoint:
+  offered: true
+  cooperation_requested:
+    - durable_publication
+    - content_addressed_artifacts
+    - selected_mirroring
+  interface_specific_notes:
+    implementation: ipfs_or_other
+    signing_policy:
+    pinning_policy:
+    artifact_scope:
+    excluded_material:
+
+policy:
+  interface_specific_consent: true
+  recognition_is_not_endorsement: true
+  local_commerce_disclosed:
+  anti_capture_notes:
+
+diagnostics:
+  status: draft
+  recognized_by: []
+  declined_by: []
+  partial_recognition: []
+  forked_from:
+  related_surfaces: []
+  open_questions: []
 ```
 
 ## Notes on Use
 
-The template is not a mandatory application form.
+A declaration should be inspectable before it is accepted by another root.
 
-It is a diagnostic structure. A county root may use it to make its cooperation posture legible.
+A root may publish declarations in Git, DNS-linked web documents, signed
+artifacts, Fediverse posts, or another durable medium.
 
-Other roots may use it to decide whether to recognize, partially recognize, decline, fork, compare, or isolate a declared surface.
+The declaration format is intentionally simple. It should remain easy to read,
+fork, compare, and archive.
