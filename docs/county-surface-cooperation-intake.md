@@ -6,284 +6,311 @@ Scope: Civic Affordances Diagnostics
 
 ## Purpose
 
-This document defines a draft intake model for recognizing county-state civic infrastructure surfaces.
+This document defines how one root may describe a county-state surface for
+possible cooperation with other roots.
 
-The intake model does not grant permission to build. It records whether a declared surface is coherent enough for one or more roots to recognize, resolve, route, federate, peer, query, compare, or otherwise cooperate with it.
+Intake is not central licensing. It is a structured way to make cooperation
+claims inspectable.
 
 ## Core Principle
 
-Cooperation intake evaluates the declared county-state surface, not the prestige of the parent domain.
+A contributor may build without permission.
 
-A contributor may declare a county-state surface under any domain the contributor controls.
+Cooperation begins only when another root elects to recognize, resolve, route,
+federate, peer, query, exchange, mirror, or otherwise cooperate with the
+contributor's declared interface.
+
+## Intake Is Not Central Licensing
+
+Civic Affordance Diagnostics does not require a central authority to approve a
+county root before the root exists.
+
+A root exists when a local owner-operator declares and operates a county-state
+surface.
+
+Intake helps other roots decide whether, how, and to what extent they will
+cooperate.
+
+## Intake Dimensions
+
+### 1. County-State Claim
+
+What county-state surface is being declared?
 
 Examples:
 
 ```text
 kane-il.us
 orange-ca.ankerpoint-sawmill.com
-orange-ca.other-local-operator.example
-dupage-il.example.org
+maricopa-az.operator.example
 ```
 
-The parent domain identifies the contributor's naming root. The county-state label identifies the civic surface being offered.
+Record:
 
-## Intake Is Not Central Licensing
-
-The cooperative network does not issue a central license, franchise, credential, or monopoly.
-
-A county root may cooperate with a declared surface. Another root may decline. A third root may cooperate only for DNS and decline Fediverse, WireGuard, LDAP, mail, DANE, or attestation interfaces.
-
-The result is a visible cooperation map, not central permission.
-
-## Intake Dimensions
-
-### 1. County-State Claim
-
-The declaration should identify the county and state being surfaced.
-
-Minimum fields:
-
-```yaml
-county: "Orange County"
-state: "California"
-county_state_label: "orange-ca"
-surface_domain: "orange-ca.example.com"
-```
-
-The county-state claim should be legible enough for other roots to understand what civic geography is being declared.
+- county name;
+- state name;
+- county-state label;
+- parent domain;
+- public ingress;
+- DNS cooperation point.
 
 ### 2. Contributor / Root Identity
 
-The declaration should identify the local root or contributor.
+Who is operating or sponsoring the surface?
 
-Minimum fields:
+Record:
 
-```yaml
-root_name: "Example Local Operator"
-root_type: "individual | business | charity | technical group | other"
-operator_contact: "hostmaster@example.com"
-attribution_name: "Example Local Operator"
-```
+- operator name or organization;
+- contributor identity to display, if any;
+- local business, charity, professional, technical group, or resident status;
+- administrative contact method;
+- operational continuity contact, if different.
 
-The attribution name may be public if the contributor wants visible credit.
+A contributor may be an individual, business, charity, project, professional
+practice, technical operator, or group. The important question is not prestige.
+The important question is whether the contributor is actually responsible for
+the declared surface and can be inspected by other roots.
 
 ### 3. Local Standing or Operational Connection
 
-The declaration should state why the contributor is locally connected to the county-state surface.
+Why does the contributor belong on this county surface?
 
-Examples:
+Possible bases:
 
-- current resident;
-- local business;
-- local professional;
-- local charity;
-- local technical operator;
-- local parcel-linked actor;
-- local service provider;
-- local institution;
-- other locally grounded affected-status relationship.
+- residency;
+- local business operation;
+- local professional practice;
+- local property or parcel connection;
+- local infrastructure operation;
+- local charitable or civic work;
+- technical operation directly serving the county surface;
+- other inspectable local connection.
 
-This is not a demand for a centralized identity regime. It is a diagnostic field. Roots may decide whether the asserted connection is sufficient for cooperation.
+Local standing is not required to be uniform across every root. It must be
+claimed clearly enough for other roots to evaluate.
 
 ### 4. Interface Families Offered
 
-The declaration should identify which cooperation interfaces are being offered.
+Which cooperation interfaces are being offered?
 
-Example:
+Possible interfaces:
 
-```yaml
-interfaces:
-  dns: offered
-  public_ingress: offered
-  fediverse: not_offered
-  directory_ldap: offered_root_to_root
-  email_ceas: not_offered
-  wireguard: not_offered
-  dane: offered_for_https
-  attestation: planned
-```
+- public ingress;
+- DNS;
+- Fediverse;
+- directory / LDAP;
+- Email / CEAS;
+- WireGuard;
+- DANE;
+- attestation / durable publication.
 
-No interface implies consent to all other interfaces.
+Each interface stands alone. Offering DNS does not imply offering Fediverse,
+WireGuard, LDAP, DANE, Email, CEAS, or attestation cooperation.
 
 ### 5. Affordance Families Surfaced
 
-The declaration should identify the civic affordances being surfaced or planned.
+Which diagnostic families does the surface emphasize?
 
-Examples:
+Possible families:
 
-```yaml
-affordances:
-  - CURRENT_RESIDENT
-  - LICENSED_PROFESSIONAL
-  - FLOODPLAIN_AFFECTED_RESIDENT
-  - PROPERTY_TAXPAYER
-```
+- Residency;
+- Parcel / Dwelling;
+- Private Governance;
+- Public Governance;
+- Procedural / Evidentiary;
+- Expert.
 
-A contributor may specialize. Two surfaces for the same county may expose different affordance priorities.
+Possible examples:
+
+- `CURRENT_RESIDENT`
+- `LICENSED_PROFESSIONAL`
+- `FLOODPLAIN_AFFECTED_RESIDENT`
+- `HOA_MEMBER`
+- `PUBLIC_RECORDS_REQUESTER`
+
+A surface may specialize. One local contributor may focus on professional
+competence. Another may focus on floodplain affectedness. Both may be useful.
 
 ### 6. Local Economic Attribution
 
-The declaration may identify local economic attribution.
+What local attribution is requested?
 
-Example:
+Record:
 
-```yaml
-local_attribution:
-  display_name: "Ankerpoint Sawmill"
-  relationship: "local business contributor"
-  county_connection: "operates in Orange County, California"
-  visibility_requested: true
-```
+- attribution name;
+- local standing basis;
+- contribution type;
+- whether attribution is for operation, funding, hosting, maintenance,
+  expertise, or another contribution;
+- whether any paid implementation or support relationship exists.
 
-Local attribution is not a purchased entitlement to network recognition.
+Attribution recognizes contribution. It is not a purchased right to network
+cooperation.
 
 ### 7. Anti-Capture Review
 
-The declaration should expose whether the contribution appears locally grounded or externally captured.
+What capture signals should other roots inspect?
 
-Diagnostic questions:
+Signals may include:
 
-- Is the contributor local to the county-state surface?
-- Is the contribution operated locally, funded locally, or accountable locally?
-- Is a remote corporation trying to occupy a county civic surface without local standing?
-- Is the domain being used to simulate local legitimacy?
-- Is the contribution a useful local implementation, a fork, a test, an experiment, or an astroturf surface?
+- remote corporate control;
+- identical surfaces repeated across counties;
+- hidden sponsor or controlling party;
+- paid visibility not tied to local standing;
+- astroturfed local identity;
+- false county-state claim;
+- attempt to convert cooperation into a franchise, ad network, vendor channel,
+  or centralized service.
 
-This review is diagnostic, not adjudicatory. Roots may disagree.
+These signals do not automatically prove misconduct. They are diagnostic.
 
 ### 8. Interface-Specific Cooperation
 
-The intake should record cooperation by interface.
-
-Example:
-
-```yaml
-cooperation:
-  root: "kane-il.us"
-  dns: recognized
-  fediverse: declined
-  wireguard: declined
-  directory_ldap: not_evaluated
-  email_ceas: not_offered
-  notes: "DNS surface is coherent; no Fediverse node offered."
-```
-
-The cooperation map is more useful than a binary accepted/rejected status.
-
-### 9. Diagnostic Signals
-
-The intake should preserve signals.
+What is being requested from other roots?
 
 Examples:
 
-- accepted by one root;
-- declined by another root;
-- forked from an earlier implementation;
-- blocked by a registrar, host, institution, HOA, government office, corporate actor, or network provider;
-- attacked, spammed, scraped, misrepresented, or threatened;
-- abandoned;
-- isolated for astroturfing;
-- restored after correction;
-- technically incompatible;
-- deliberately DNS-only.
+- resolve DNS;
+- list the surface as a known county-state surface;
+- federate with the Fediverse node;
+- peer over WireGuard;
+- query selected directory records;
+- exchange or validate mail;
+- rely on DANE-published trust material;
+- mirror or cite attestation artifacts.
 
-The purpose is to expose conditions, not to solve them.
+A root may accept one request and decline another.
+
+### 9. Diagnostic Signals
+
+What should be recorded about the intake itself?
+
+Examples:
+
+- accepted;
+- partially accepted;
+- declined;
+- isolated;
+- forked;
+- challenged;
+- obstructed;
+- captured;
+- suspected astroturf;
+- technically incompatible;
+- pending evidence;
+- pending local standing review.
+
+The intake process is itself diagnostic.
 
 ## Intake Outcomes
 
 ### Recognized
 
-One or more roots elect to cooperate with the declared surface for one or more interfaces.
+One or more roots elect to cooperate with one or more declared interfaces.
 
 ### Partially Recognized
 
-One or more roots cooperate for some interfaces and decline others.
+A root cooperates with some interfaces and declines others.
 
-Example: DNS recognized, Fediverse declined, WireGuard not offered.
+Example: DNS recognized; Fediverse and WireGuard declined.
 
 ### Declined
 
-A root declines cooperation with the declared surface.
+A root declines cooperation with the declared surface or interface.
 
-Declining cooperation does not prevent the surface from existing locally.
+Decline is not punishment. It is a cooperation decision and a diagnostic signal.
 
 ### Isolated
 
-A surface may be left outside the cooperation layer because roots decline DNS recognition, peering, federation, routing, or other interfaces.
-
-Isolation is not central punishment. It is the ordinary consequence of declined cooperation.
+The surface may continue operating locally, but one or more cooperation layers
+are not recognized by other roots.
 
 ### Forked
 
-A surface may be a fork, alternative implementation, experimental implementation, or specialized local implementation.
+Another root or contributor may create a competing or divergent surface for the
+same county-state claim.
 
-A fork is not automatically a failure. It may become a useful diagnostic comparison.
+Forking is not automatically a failure. It may reveal specialization,
+redundancy, disagreement, or improved local fit.
 
 ## Example: Local Business Surface
 
-```yaml
-county: "Orange County"
-state: "California"
-county_state_label: "orange-ca"
-surface_domain: "orange-ca.ankerpoint-sawmill.com"
+A sawmill in Orange County, California controls:
 
-root_name: "Ankerpoint Sawmill"
-root_type: "local business"
-operator_contact: "hostmaster@ankerpoint-sawmill.com"
-attribution_name: "Ankerpoint Sawmill"
-
-local_standing:
-  type: "local business"
-  description: "Fine-cut lumber business operating in Orange County, California."
-
-interfaces:
-  dns: offered
-  public_ingress: offered
-  fediverse: not_offered
-  directory_ldap: planned
-  email_ceas: not_offered
-  wireguard: not_offered
-  dane: offered_for_https
-  attestation: planned
-
-affordances:
-  - LICENSED_PROFESSIONAL
-
-local_attribution:
-  display_name: "Ankerpoint Sawmill"
-  relationship: "local business contributor"
-  visibility_requested: true
+```text
+orange-ca.ankerpoint-sawmill.com
 ```
+
+The sawmill offers:
+
+- public ingress;
+- DNS cooperation;
+- a diagnostic surface emphasizing `LICENSED_PROFESSIONAL`;
+- local attribution to the sawmill as contributor;
+- no Fediverse node yet;
+- no WireGuard peering yet;
+- no CEAS interface yet.
+
+Other roots may recognize the DNS surface while declining other interfaces until
+those interfaces exist.
+
+The sawmill's local attribution is acceptable only because the contributor has
+local standing or direct operational contribution. A sawmill in another county
+has no automatic claim to visibility in this county surface.
 
 ## Example: Same County, Different Concern
 
-```yaml
-county: "Orange County"
-state: "California"
-county_state_label: "orange-ca"
-surface_domain: "orange-ca.floodplain-operator.example"
+A second Orange County contributor controls:
 
-root_name: "Floodplain-Affected Local Operator"
-root_type: "individual"
-operator_contact: "hostmaster@floodplain-operator.example"
-
-local_standing:
-  type: "parcel-linked affected resident"
-  description: "Contributor is affected by floodplain conditions in Orange County, California."
-
-interfaces:
-  dns: offered
-  public_ingress: offered
-  fediverse: offered
-  directory_ldap: not_offered
-  email_ceas: not_offered
-  wireguard: not_offered
-  dane: not_offered
-  attestation: offered
-
-affordances:
-  - FLOODPLAIN_AFFECTED_RESIDENT
-  - PARCEL_LINKED_OCCUPANT
+```text
+orange-ca.floodplain-operator.example
 ```
 
-These two surfaces may compete, cooperate, specialize, or remain separate. Neither receives a monopoly over the county label merely by existing.
+This contributor emphasizes:
+
+- `FLOODPLAIN_AFFECTED_RESIDENT`;
+- parcel / dwelling affordances;
+- durable publication of selected floodplain diagnostic records;
+- possibly no professional-surface work.
+
+The two surfaces may compete, cooperate, diverge, or be compared. The model does
+not require one canonical domain for the county.
+
+## Minimal Intake Record
+
+```yaml
+surface:
+  county:
+  state:
+  county_state_label:
+  parent_domain:
+  public_ingress:
+
+root:
+  operator_identity:
+  local_standing_basis:
+  administrative_contact:
+  attribution_requested:
+
+interfaces_offered:
+  dns: false
+  fediverse: false
+  directory_ldap: false
+  email_ceas: false
+  wireguard: false
+  dane: false
+  attestation: false
+
+affordances_surfaced: []
+
+cooperation_requested: []
+
+anti_capture_notes:
+
+diagnostic_status:
+  intake_state: draft
+  recognized_by: []
+  declined_by: []
+  partial_recognition: []
+  open_questions: []
+```
