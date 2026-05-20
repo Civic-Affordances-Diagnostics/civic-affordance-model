@@ -115,3 +115,23 @@ No service users are created at this layer.
 ## Playbook sequence
 
 See `PLAYBOOKS.md` for the current tested playbook sequence and the backup-first rule for the orchestration node.
+
+## Current tested playbook sequence
+
+The current tested Kane County reference sequence is:
+
+1. `playbooks/00-proxmox-create-cts.yml`
+
+   Creates the baseline Debian 13 LXC containers on the Proxmox host with internal LAN addressing only.
+
+2. `playbooks/01-bootstrap-ct-access.yml`
+
+   Bootstraps base packages, SSH, sudo, `cr-admin`, `ansible`, and internal Ansible control between CT109 and the other containers.
+
+3. `playbooks/03_configure_orchestrator.yml`
+
+   Configures CT109 / `orchestrator1.internal.diagnostics.kane-il.us` as the durable orchestration node.
+
+   This playbook creates a portable Proxmox backup before configuration and a second portable Proxmox backup after configuration. These are real backup archives, not snapshots. Operators should copy the backup archives and matching `.sha256` files off-host for disaster recovery.
+
+After `03_configure_orchestrator.yml`, CT109 is the intended durable control node for future playbook work.
