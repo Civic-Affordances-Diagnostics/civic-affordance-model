@@ -41,7 +41,7 @@ The playbook writes backups under the configured Proxmox backup directory and cr
 After `03_configure_orchestrator.yml`, CT109 should have:
 
 - a durable working directory
-- Git installed
+- Git and GitHub CLI installed
 - the model repository cloned
 - Ansible available
 - internal Ansible control over the already-created CTs

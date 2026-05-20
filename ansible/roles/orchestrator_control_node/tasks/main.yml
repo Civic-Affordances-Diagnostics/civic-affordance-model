@@ -75,7 +75,7 @@
     export NEEDRESTART_MODE=a
 
     apt-get update
-    apt-get install -y       ansible-core       ca-certificates       curl       git       gpg       openssh-client       python3       rsync       sudo
+    apt-get install -y ansible-core ca-certificates curl gh git gpg openssh-client python3 rsync sudo
 
     if ! getent group '{{ orchestrator_ops_group }}' >/dev/null; then
       groupadd '{{ orchestrator_ops_group }}'
