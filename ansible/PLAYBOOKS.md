@@ -49,3 +49,19 @@ After `03_configure_orchestrator.yml`, CT109 should have:
 - pre- and post-configuration portable backups
 
 No unrelated service configuration occurs in this playbook.
+
+## Bootstrap access correction
+
+The baseline CT creation/bootstrap boundary must prove more than Proxmox-mediated `pct exec` access.
+
+For Debian 13 LXC containers in this reference environment, the CT creation layer carries the county inventory variable `ct_features`, currently `nesting=1`, so systemd/getty/journald/tmpfiles behavior is normal after container start.
+
+The bootstrap layer sets initial interactive console passwords from the county inventory asset file. In the Kane County reference inventory these are deliberately obvious bootstrap values such as `ChangeB4DEPLOYMENT!`. They are implementation assets to be changed by the county root/operator before deployment. The reusable role consumes the variables; it does not own the password values.
+
+Expected password state after bootstrap:
+
+- `root`: password-capable for console recovery
+- `cr-admin`: password-capable human operator account
+- `ansible`: password-locked automation account using SSH keys and passwordless sudo
+
+The bootstrap layer should fail if systemd has failed units after bootstrap or if these account password states are not true.

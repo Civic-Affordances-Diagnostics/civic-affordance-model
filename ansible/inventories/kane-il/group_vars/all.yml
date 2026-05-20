@@ -61,3 +61,13 @@ orchestrator_ops_group: civic-ops
 orchestrator_git_user_name: git64bit
 orchestrator_git_user_email: postmaster@kane-il.us
 orchestrator_github_key_path: /home/ansible/.ssh/github_civic_affordance_model_ed25519
+
+# Debian 13 LXC baseline. Required for normal systemd/getty/journald behavior
+# in the Kane County reference Proxmox LXC environment.
+ct_features: nesting=1
+
+# Initial interactive console passwords for bootstrap/operator recovery.
+# These are county implementation assets, not reusable role constants.
+# Change before deployment outside the controlled bootstrap/reference environment.
+bootstrap_root_console_password: ChangeB4DEPLOYMENT!
+bootstrap_operator_console_password: ChangeB4DEPLOYMENT!

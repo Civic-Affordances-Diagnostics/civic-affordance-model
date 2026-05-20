@@ -29,15 +29,32 @@
 
     vmid='{{ hostvars[item].vmid }}'
     hostname='{{ item }}'
+    expected_features='{{ ct_features | default("") }}'
 
     if pct status "$vmid" >/dev/null 2>&1; then
       existing_hostname="$(pct config "$vmid" | awk -F': ' '$1 == "hostname" { print $2 }')"
+
       if [ "$existing_hostname" != "$hostname" ]; then
-        echo "VMID $vmid already exists with hostname '$existing_hostname', expected '$hostname'. Refusing to modify it." >&2
+        echo "VMID $vmid already exists with hostname '$existing_hostname', expected '$hostname'." >&2
+        echo "Refusing to modify it." >&2
         exit 20
       fi
+
+      if [ -n "$expected_features" ]; then
+        current_features="$(pct config "$vmid" | awk -F': ' '$1 == "features" { print $2 }')"
+        if [ "$current_features" != "$expected_features" ]; then
+          pct set "$vmid" -features "$expected_features"
+          echo "Updated CT $vmid ($hostname) features from '${current_features:-<none>}' to '$expected_features'."
+        fi
+      fi
+
       echo "CT $vmid ($hostname) already exists; leaving existing rootfs and config in place."
     else
+      features_args=()
+      if [ -n "$expected_features" ]; then
+        features_args=(--features "$expected_features")
+      fi
+
       pct create "$vmid" '{{ proxmox_template }}' \
         --hostname "$hostname" \
         --ostype debian \
@@ -47,11 +64,14 @@
         --rootfs '{{ proxmox_storage }}:{{ ct_disk_gb }}' \
         --net0 'name={{ ct_interface }},bridge={{ ct_bridge }},ip={{ hostvars[item].lan_ipv4 }},gw={{ ct_ipv4_gateway }},ip6={{ hostvars[item].lan_ipv6 }},gw6={{ ct_ipv6_gateway }}' \
         --unprivileged '{{ 1 if ct_unprivileged else 0 }}' \
-        --onboot '{{ 1 if ct_onboot else 0 }}'
+        --onboot '{{ 1 if ct_onboot else 0 }}' \
+        "${features_args[@]}"
+
       echo "Created CT $vmid ($hostname)."
     fi
 
     current_status="$(pct status "$vmid" | awk '{ print $2 }')"
+
     if [ "$current_status" != "running" ]; then
       pct start "$vmid"
       echo "Started CT $vmid ($hostname)."
@@ -64,7 +84,10 @@
   loop_control:
     label: "{{ item }} / VMID {{ hostvars[item].vmid }}"
   register: pct_create_result
-  changed_when: "'Created CT' in pct_create_result.stdout or 'Started CT' in pct_create_result.stdout"
+  changed_when: >-
+    'Created CT' in pct_create_result.stdout
+    or 'Started CT' in pct_create_result.stdout
+    or 'Updated CT' in pct_create_result.stdout
 
 - name: Show created/running CT summary
   ansible.builtin.command: pct list

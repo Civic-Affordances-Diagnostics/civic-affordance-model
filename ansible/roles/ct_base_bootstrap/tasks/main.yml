@@ -26,9 +26,11 @@
     fi
 
     tmp_script="$(mktemp)"
+
     cat > "$tmp_script" <<'SCRIPT'
     #!/usr/bin/env bash
     set -euo pipefail
+
     export DEBIAN_FRONTEND=noninteractive
     export NEEDRESTART_MODE=a
 
@@ -37,6 +39,7 @@
       -o Dpkg::Options::=--force-confdef \
       -o Dpkg::Options::=--force-confold \
       -y dist-upgrade
+
     apt-get install -y __PACKAGE_LIST__
 
     hostnamectl set-hostname '__HOSTNAME__'
@@ -44,12 +47,56 @@
     if ! getent passwd '{{ operator_user }}' >/dev/null; then
       useradd -m -s /bin/bash '{{ operator_user }}'
     fi
+
     if ! getent passwd '{{ automation_user }}' >/dev/null; then
       useradd -m -s /bin/bash '{{ automation_user }}'
     fi
 
     usermod -aG sudo '{{ operator_user }}'
     usermod -aG sudo '{{ automation_user }}'
+
+    root_console_password_b64='{{ bootstrap_root_console_password | default("") | b64encode }}'
+    operator_console_password_b64='{{ bootstrap_operator_console_password | default("") | b64encode }}'
+
+    if [ -z "$root_console_password_b64" ]; then
+      echo "bootstrap_root_console_password is not set." >&2
+      exit 31
+    fi
+
+    if [ -z "$operator_console_password_b64" ]; then
+      echo "bootstrap_operator_console_password is not set." >&2
+      exit 32
+    fi
+
+    root_console_password="$(printf '%s' "$root_console_password_b64" | base64 -d)"
+    operator_console_password="$(printf '%s' "$operator_console_password_b64" | base64 -d)"
+
+    printf 'root:%s\n' "$root_console_password" | chpasswd
+    printf '{{ operator_user }}:%s\n' "$operator_console_password" | chpasswd
+
+    passwd -l '{{ automation_user }}' >/dev/null 2>&1 || true
+
+    root_status="$(passwd -S root | awk '{ print $2 }')"
+    operator_status="$(passwd -S '{{ operator_user }}' | awk '{ print $2 }')"
+    automation_status="$(passwd -S '{{ automation_user }}' | awk '{ print $2 }')"
+
+    if [ "$root_status" != "P" ]; then
+      echo "root password status is '$root_status', expected P" >&2
+      exit 33
+    fi
+
+    if [ "$operator_status" != "P" ]; then
+      echo "{{ operator_user }} password status is '$operator_status', expected P" >&2
+      exit 34
+    fi
+
+    case "$automation_status" in
+      L|NP) ;;
+      *)
+        echo "{{ automation_user }} password status is '$automation_status', expected L or NP" >&2
+        exit 35
+        ;;
+    esac
 
     install -d -m 0700 -o '{{ operator_user }}' -g '{{ operator_user }}' '/home/{{ operator_user }}/.ssh'
     install -d -m 0700 -o '{{ automation_user }}' -g '{{ automation_user }}' '/home/{{ automation_user }}/.ssh'
@@ -59,6 +106,7 @@
     {{ key }}
     {% endfor %}
     KEYS
+
     cat > '/home/{{ automation_user }}/.ssh/authorized_keys' <<'KEYS'
     {% for key in bootstrap_public_keys %}
     {{ key }}
@@ -73,10 +121,30 @@
     {{ automation_user }} ALL=(ALL) NOPASSWD:ALL
     {{ operator_user }} ALL=(ALL) ALL
     SUDOERS
+
     chmod 0440 /etc/sudoers.d/90-civic-affordance-bootstrap
     visudo -cf /etc/sudoers.d/90-civic-affordance-bootstrap
 
     systemctl enable --now ssh
+
+    critical_failed_units="$(systemctl --failed --no-legend --plain \
+      | awk '
+          $1 ~ /^(console-getty|container-getty@.*|systemd-journald|systemd-tmpfiles-.*|systemd-udev-load-credentials|systemd-networkd|ssh|sshd)\\.(service|socket|mount)$/ {
+            print
+          }
+        ' || true)"
+
+    if [ -n "$critical_failed_units" ]; then
+      echo "Container has critical failed systemd units after bootstrap:" >&2
+      echo "$critical_failed_units" >&2
+      exit 41
+    fi
+
+    noncritical_failed_units="$(systemctl --failed --no-legend --plain || true)"
+    if [ -n "$noncritical_failed_units" ]; then
+      echo "Container has non-critical failed systemd units after bootstrap; reporting without failing:" >&2
+      echo "$noncritical_failed_units" >&2
+    fi
 
     tmp_hosts="$(mktemp)"
     awk '
@@ -84,6 +152,7 @@
       /^# END Civic Affordance bootstrap hosts$/ { skip=0; next }
       skip != 1 { print }
     ' /etc/hosts > "$tmp_hosts"
+
     cat >> "$tmp_hosts" <<'HOSTS'
     # BEGIN Civic Affordance bootstrap hosts
     {% for host in groups['civic_cts'] %}
@@ -91,6 +160,7 @@
     {% endfor %}
     # END Civic Affordance bootstrap hosts
     HOSTS
+
     cat "$tmp_hosts" > /etc/hosts
     rm -f "$tmp_hosts"
 
@@ -107,6 +177,7 @@
     sed -i "s|__PACKAGE_LIST__|$package_list|g; s|__HOSTNAME__|$hostname|g" "$tmp_script"
     pct push "$vmid" "$tmp_script" /root/civic-bootstrap-base.sh
     rm -f "$tmp_script"
+
     pct exec "$vmid" -- chmod 0700 /root/civic-bootstrap-base.sh
     pct exec "$vmid" -- /root/civic-bootstrap-base.sh
   args:
@@ -119,13 +190,17 @@
 - name: Generate dedicated ansible-controller SSH key on the orchestration CT
   ansible.builtin.shell: |
     set -euo pipefail
+
     vmid='{{ hostvars[orchestrator_host].vmid }}'
+
     pct exec "$vmid" -- bash -lc '
       set -euo pipefail
       install -d -m 0700 -o "{{ automation_user }}" -g "{{ automation_user }}" "/home/{{ automation_user }}/.ssh"
+
       if [ ! -f "{{ orchestrator_ansible_key_path }}" ]; then
         sudo -u "{{ automation_user }}" ssh-keygen -q -t ed25519 -N "" -C "ansible-controller@{{ civic_site_code }}" -f "{{ orchestrator_ansible_key_path }}"
       fi
+
       awk "/^ssh-(ed25519|rsa|ecdsa)/ { print; exit }" "{{ orchestrator_ansible_key_path }}.pub"
     '
   args:
@@ -136,9 +211,11 @@
 - name: Authorize orchestration CT ansible key on all CTs
   ansible.builtin.shell: |
     set -euo pipefail
+
     vmid='{{ hostvars[item].vmid }}'
     controller_key='{{ orchestrator_public_key.stdout | trim }}'
     encoded_key="$(printf '%s' "$controller_key" | base64 -w0)"
+
     pct exec "$vmid" -- bash -lc '
       set -euo pipefail
       controller_key="$(printf %s "'"$encoded_key"'" | base64 -d)"
@@ -158,8 +235,10 @@
 - name: Write future-controller inventory onto the orchestration CT
   ansible.builtin.shell: |
     set -euo pipefail
+
     vmid='{{ hostvars[orchestrator_host].vmid }}'
     tmp_inventory="$(mktemp)"
+
     cat > "$tmp_inventory" <<'YAML'
     ---
     all:
@@ -174,9 +253,11 @@
               role_label: {{ hostvars[host].role_label }}
     {% endfor %}
     YAML
+
     pct exec "$vmid" -- bash -lc "install -d -m 0755 -o '{{ automation_user }}' -g '{{ automation_user }}' '$(dirname {{ orchestrator_ansible_inventory_path }})'"
     pct push "$vmid" "$tmp_inventory" '{{ orchestrator_ansible_inventory_path }}'
     rm -f "$tmp_inventory"
+
     pct exec "$vmid" -- chmod 0644 '{{ orchestrator_ansible_inventory_path }}'
     pct exec "$vmid" -- chown '{{ automation_user }}:{{ automation_user }}' '{{ orchestrator_ansible_inventory_path }}'
   args:
@@ -195,7 +276,9 @@
 - name: Populate orchestration CT known_hosts for managed CT LAN IPv4 addresses
   ansible.builtin.shell: |
     set -euo pipefail
+
     vmid='{{ hostvars[orchestrator_host].vmid }}'
+
     pct exec "$vmid" -- bash -lc '
       set -euo pipefail
       install -d -m 0700 -o "{{ automation_user }}" -g "{{ automation_user }}" "/home/{{ automation_user }}/.ssh"
@@ -214,7 +297,9 @@
 - name: Verify orchestration CT can control every CT with Ansible ping and passwordless sudo
   ansible.builtin.shell: |
     set -euo pipefail
+
     vmid='{{ hostvars[orchestrator_host].vmid }}'
+
     pct exec "$vmid" -- bash -lc "
       set -euo pipefail
       sudo -u '{{ automation_user }}' ansible all -i '{{ orchestrator_ansible_inventory_path }}' -m ping
@@ -227,7 +312,9 @@
 - name: Report reboot-required markers without rebooting
   ansible.builtin.shell: |
     set -euo pipefail
+
     vmid='{{ hostvars[item].vmid }}'
+
     if pct exec "$vmid" -- test -f /var/run/reboot-required; then
       echo '{{ item }} requires reboot after dist-upgrade.'
     else
