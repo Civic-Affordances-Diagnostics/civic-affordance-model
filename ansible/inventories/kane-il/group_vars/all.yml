@@ -50,3 +50,14 @@ disable_root_ssh_after_bootstrap: false
 # Generated on the orchestration CT during playbook 01, then added to the managed CTs.
 orchestrator_ansible_key_path: /home/ansible/.ssh/id_ed25519
 orchestrator_ansible_inventory_path: /opt/civic-affordance/ansible/inventory/hosts.yml
+
+# Durable orchestration-node handoff.
+# Playbook 03 runs from the Proxmox bootstrap host and configures only CT109.
+orchestrator_backup_dir: /var/lib/vz/dump
+orchestrator_backup_tmpdir: /var/tmp
+orchestrator_repo_dir: /opt/civic-affordance-model/repo
+orchestrator_repo_url: https://github.com/Civic-Affordances-Diagnostics/civic-affordance-model.git
+orchestrator_ops_group: civic-ops
+orchestrator_git_user_name: git64bit
+orchestrator_git_user_email: postmaster@kane-il.us
+orchestrator_github_key_path: /home/ansible/.ssh/github_civic_affordance_model_ed25519

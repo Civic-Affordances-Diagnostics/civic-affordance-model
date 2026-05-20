@@ -111,3 +111,7 @@ ansible    automation sudo account
 ```
 
 No service users are created at this layer.
+
+## Playbook sequence
+
+See `PLAYBOOKS.md` for the current tested playbook sequence and the backup-first rule for the orchestration node.
