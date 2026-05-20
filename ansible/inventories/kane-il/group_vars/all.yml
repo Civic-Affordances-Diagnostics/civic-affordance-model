@@ -1,0 +1,52 @@
+---
+# Kane County reference implementation values.
+# Other county roots/operators should copy inventories/kane-il to their own site code,
+# then replace hostnames, VMIDs, addresses, gateways, bridge, storage, and keys.
+
+civic_site_code: kane-il
+civic_domain: diagnostics.kane-il.us
+
+# First bootstrap runs locally on the Proxmox host as root.
+proxmox_storage: local
+proxmox_template: local:vztmpl/debian-13-standard_13.1-2_amd64.tar.zst
+proxmox_template_filename: "{{ proxmox_template | regex_replace('^.*vztmpl/', '') }}"
+
+# Internal-only CT network for the first measure.
+ct_interface: eth0
+ct_bridge: vmbr1
+ct_ipv4_gateway: 192.168.1.1
+ct_ipv6_gateway: fd56:98f0:6a9::1
+
+# Reduced initial standing-up allocation. Do not use production sizing here.
+ct_memory_mb: 2048
+ct_swap_mb: 512
+ct_cores: 2
+ct_disk_gb: 32
+ct_unprivileged: true
+ct_onboot: true
+
+# Bootstrap accounts only. Service users belong to later service roles.
+operator_user: cr-admin
+automation_user: ansible
+orchestrator_host: orchestrator1.internal.diagnostics.kane-il.us
+
+bootstrap_public_keys:
+  - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF/qgl5lH9b2YpDI+pDKRJHJebutUkZiAvvc6jLizYnl ca-kane-diagnostics-edge-admin
+
+ct_base_packages:
+  - ca-certificates
+  - curl
+  - gpg
+  - openssh-server
+  - python3
+  - sudo
+
+orchestrator_packages:
+  - ansible-core
+
+# Keep root SSH policy untouched in the first pass unless an operator deliberately changes this.
+disable_root_ssh_after_bootstrap: false
+
+# Generated on the orchestration CT during playbook 01, then added to the managed CTs.
+orchestrator_ansible_key_path: /home/ansible/.ssh/id_ed25519
+orchestrator_ansible_inventory_path: /opt/civic-affordance/ansible/inventory/hosts.yml

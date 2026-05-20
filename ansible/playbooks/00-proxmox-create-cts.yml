@@ -1,0 +1,8 @@
+---
+- name: Create baseline Debian CTs on the Proxmox host
+  hosts: proxmox_hosts
+  gather_facts: false
+  become: true
+
+  roles:
+    - proxmox_lxc_create

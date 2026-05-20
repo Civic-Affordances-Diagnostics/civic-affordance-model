@@ -1,0 +1,71 @@
+---
+- name: Verify this host has Proxmox pct available
+  ansible.builtin.command: pct list
+  changed_when: false
+
+- name: Verify Proxmox storage is active
+  ansible.builtin.shell: |
+    set -eu
+    pvesm status | awk '$1 == "{{ proxmox_storage }}" && $3 == "active" { found=1 } END { exit found ? 0 : 1 }'
+  args:
+    executable: /bin/bash
+  changed_when: false
+
+- name: Verify Debian CT template is available
+  ansible.builtin.shell: |
+    set -eu
+    pveam list {{ proxmox_storage }} | awk '{ print $1 }' | grep -Fx '{{ proxmox_template }}'
+  args:
+    executable: /bin/bash
+  changed_when: false
+
+- name: Verify target bridge exists
+  ansible.builtin.command: ip link show {{ ct_bridge }}
+  changed_when: false
+
+- name: Create and start planned CTs with internal LAN addresses only
+  ansible.builtin.shell: |
+    set -euo pipefail
+
+    vmid='{{ hostvars[item].vmid }}'
+    hostname='{{ item }}'
+
+    if pct status "$vmid" >/dev/null 2>&1; then
+      existing_hostname="$(pct config "$vmid" | awk -F': ' '$1 == "hostname" { print $2 }')"
+      if [ "$existing_hostname" != "$hostname" ]; then
+        echo "VMID $vmid already exists with hostname '$existing_hostname', expected '$hostname'. Refusing to modify it." >&2
+        exit 20
+      fi
+      echo "CT $vmid ($hostname) already exists; leaving existing rootfs and config in place."
+    else
+      pct create "$vmid" '{{ proxmox_template }}' \
+        --hostname "$hostname" \
+        --ostype debian \
+        --cores '{{ ct_cores }}' \
+        --memory '{{ ct_memory_mb }}' \
+        --swap '{{ ct_swap_mb }}' \
+        --rootfs '{{ proxmox_storage }}:{{ ct_disk_gb }}' \
+        --net0 'name={{ ct_interface }},bridge={{ ct_bridge }},ip={{ hostvars[item].lan_ipv4 }},gw={{ ct_ipv4_gateway }},ip6={{ hostvars[item].lan_ipv6 }},gw6={{ ct_ipv6_gateway }}' \
+        --unprivileged '{{ 1 if ct_unprivileged else 0 }}' \
+        --onboot '{{ 1 if ct_onboot else 0 }}'
+      echo "Created CT $vmid ($hostname)."
+    fi
+
+    current_status="$(pct status "$vmid" | awk '{ print $2 }')"
+    if [ "$current_status" != "running" ]; then
+      pct start "$vmid"
+      echo "Started CT $vmid ($hostname)."
+    else
+      echo "CT $vmid ($hostname) is already running."
+    fi
+  args:
+    executable: /bin/bash
+  loop: "{{ groups['civic_cts'] }}"
+  loop_control:
+    label: "{{ item }} / VMID {{ hostvars[item].vmid }}"
+  register: pct_create_result
+  changed_when: "'Created CT' in pct_create_result.stdout or 'Started CT' in pct_create_result.stdout"
+
+- name: Show created/running CT summary
+  ansible.builtin.command: pct list
+  changed_when: false

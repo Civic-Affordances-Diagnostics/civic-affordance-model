@@ -1,0 +1,241 @@
+---
+- name: Verify all target CTs are running before bootstrap
+  ansible.builtin.shell: |
+    set -eu
+    pct status '{{ hostvars[item].vmid }}' | awk '$2 == "running" { found=1 } END { exit found ? 0 : 1 }'
+  args:
+    executable: /bin/bash
+  changed_when: false
+  loop: "{{ groups['civic_cts'] }}"
+  loop_control:
+    label: "{{ item }} / VMID {{ hostvars[item].vmid }}"
+
+- name: Run apt update, dist-upgrade, base package install, users, sudo, SSH, and hosts file inside each CT
+  ansible.builtin.shell: |
+    set -euo pipefail
+
+    vmid='{{ hostvars[item].vmid }}'
+    hostname='{{ item }}'
+    base_packages='{{ ct_base_packages | join(" ") }}'
+    orchestrator_packages='{{ orchestrator_packages | join(" ") }}'
+
+    if [ "$hostname" = '{{ orchestrator_host }}' ]; then
+      package_list="$base_packages $orchestrator_packages"
+    else
+      package_list="$base_packages"
+    fi
+
+    tmp_script="$(mktemp)"
+    cat > "$tmp_script" <<'SCRIPT'
+    #!/usr/bin/env bash
+    set -euo pipefail
+    export DEBIAN_FRONTEND=noninteractive
+    export NEEDRESTART_MODE=a
+
+    apt-get update
+    apt-get \
+      -o Dpkg::Options::=--force-confdef \
+      -o Dpkg::Options::=--force-confold \
+      -y dist-upgrade
+    apt-get install -y __PACKAGE_LIST__
+
+    hostnamectl set-hostname '__HOSTNAME__'
+
+    if ! getent passwd '{{ operator_user }}' >/dev/null; then
+      useradd -m -s /bin/bash '{{ operator_user }}'
+    fi
+    if ! getent passwd '{{ automation_user }}' >/dev/null; then
+      useradd -m -s /bin/bash '{{ automation_user }}'
+    fi
+
+    usermod -aG sudo '{{ operator_user }}'
+    usermod -aG sudo '{{ automation_user }}'
+
+    install -d -m 0700 -o '{{ operator_user }}' -g '{{ operator_user }}' '/home/{{ operator_user }}/.ssh'
+    install -d -m 0700 -o '{{ automation_user }}' -g '{{ automation_user }}' '/home/{{ automation_user }}/.ssh'
+
+    cat > '/home/{{ operator_user }}/.ssh/authorized_keys' <<'KEYS'
+    {% for key in bootstrap_public_keys %}
+    {{ key }}
+    {% endfor %}
+    KEYS
+    cat > '/home/{{ automation_user }}/.ssh/authorized_keys' <<'KEYS'
+    {% for key in bootstrap_public_keys %}
+    {{ key }}
+    {% endfor %}
+    KEYS
+
+    chown '{{ operator_user }}:{{ operator_user }}' '/home/{{ operator_user }}/.ssh/authorized_keys'
+    chown '{{ automation_user }}:{{ automation_user }}' '/home/{{ automation_user }}/.ssh/authorized_keys'
+    chmod 0600 '/home/{{ operator_user }}/.ssh/authorized_keys' '/home/{{ automation_user }}/.ssh/authorized_keys'
+
+    cat > /etc/sudoers.d/90-civic-affordance-bootstrap <<'SUDOERS'
+    {{ automation_user }} ALL=(ALL) NOPASSWD:ALL
+    {{ operator_user }} ALL=(ALL) ALL
+    SUDOERS
+    chmod 0440 /etc/sudoers.d/90-civic-affordance-bootstrap
+    visudo -cf /etc/sudoers.d/90-civic-affordance-bootstrap
+
+    systemctl enable --now ssh
+
+    tmp_hosts="$(mktemp)"
+    awk '
+      /^# BEGIN Civic Affordance bootstrap hosts$/ { skip=1; next }
+      /^# END Civic Affordance bootstrap hosts$/ { skip=0; next }
+      skip != 1 { print }
+    ' /etc/hosts > "$tmp_hosts"
+    cat >> "$tmp_hosts" <<'HOSTS'
+    # BEGIN Civic Affordance bootstrap hosts
+    {% for host in groups['civic_cts'] %}
+    {{ hostvars[host].lan_ipv4 | regex_replace('/.*$', '') }} {{ host }} {{ host.split('.')[0] }}
+    {% endfor %}
+    # END Civic Affordance bootstrap hosts
+    HOSTS
+    cat "$tmp_hosts" > /etc/hosts
+    rm -f "$tmp_hosts"
+
+    if [ '{{ disable_root_ssh_after_bootstrap | bool | lower }}' = 'true' ]; then
+      if grep -q '^PermitRootLogin' /etc/ssh/sshd_config; then
+        sed -i 's/^PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
+      else
+        printf '\nPermitRootLogin no\n' >> /etc/ssh/sshd_config
+      fi
+      systemctl reload ssh
+    fi
+    SCRIPT
+
+    sed -i "s|__PACKAGE_LIST__|$package_list|g; s|__HOSTNAME__|$hostname|g" "$tmp_script"
+    pct push "$vmid" "$tmp_script" /root/civic-bootstrap-base.sh
+    rm -f "$tmp_script"
+    pct exec "$vmid" -- chmod 0700 /root/civic-bootstrap-base.sh
+    pct exec "$vmid" -- /root/civic-bootstrap-base.sh
+  args:
+    executable: /bin/bash
+  loop: "{{ groups['civic_cts'] }}"
+  loop_control:
+    label: "{{ item }} / VMID {{ hostvars[item].vmid }}"
+  changed_when: false
+
+- name: Generate dedicated ansible-controller SSH key on the orchestration CT
+  ansible.builtin.shell: |
+    set -euo pipefail
+    vmid='{{ hostvars[orchestrator_host].vmid }}'
+    pct exec "$vmid" -- bash -lc '
+      set -euo pipefail
+      install -d -m 0700 -o "{{ automation_user }}" -g "{{ automation_user }}" "/home/{{ automation_user }}/.ssh"
+      if [ ! -f "{{ orchestrator_ansible_key_path }}" ]; then
+        sudo -u "{{ automation_user }}" ssh-keygen -q -t ed25519 -N "" -C "ansible-controller@{{ civic_site_code }}" -f "{{ orchestrator_ansible_key_path }}"
+      fi
+      awk "/^ssh-(ed25519|rsa|ecdsa)/ { print; exit }" "{{ orchestrator_ansible_key_path }}.pub"
+    '
+  args:
+    executable: /bin/bash
+  register: orchestrator_public_key
+  changed_when: false
+
+- name: Authorize orchestration CT ansible key on all CTs
+  ansible.builtin.shell: |
+    set -euo pipefail
+    vmid='{{ hostvars[item].vmid }}'
+    controller_key='{{ orchestrator_public_key.stdout | trim }}'
+    encoded_key="$(printf '%s' "$controller_key" | base64 -w0)"
+    pct exec "$vmid" -- bash -lc '
+      set -euo pipefail
+      controller_key="$(printf %s "'"$encoded_key"'" | base64 -d)"
+      install -d -m 0700 -o "{{ automation_user }}" -g "{{ automation_user }}" "/home/{{ automation_user }}/.ssh"
+      touch "/home/{{ automation_user }}/.ssh/authorized_keys"
+      chown "{{ automation_user }}:{{ automation_user }}" "/home/{{ automation_user }}/.ssh/authorized_keys"
+      chmod 0600 "/home/{{ automation_user }}/.ssh/authorized_keys"
+      grep -Fxq "$controller_key" "/home/{{ automation_user }}/.ssh/authorized_keys" || printf "%s\\n" "$controller_key" >> "/home/{{ automation_user }}/.ssh/authorized_keys"
+    '
+  args:
+    executable: /bin/bash
+  loop: "{{ groups['civic_cts'] }}"
+  loop_control:
+    label: "{{ item }} / VMID {{ hostvars[item].vmid }}"
+  changed_when: false
+
+- name: Write future-controller inventory onto the orchestration CT
+  ansible.builtin.shell: |
+    set -euo pipefail
+    vmid='{{ hostvars[orchestrator_host].vmid }}'
+    tmp_inventory="$(mktemp)"
+    cat > "$tmp_inventory" <<'YAML'
+    ---
+    all:
+      children:
+        civic_cts:
+          hosts:
+    {% for host in groups['civic_cts'] %}
+            {{ host }}:
+              ansible_host: {{ hostvars[host].lan_ipv4 | regex_replace('/.*$', '') }}
+              ansible_user: {{ automation_user }}
+              vmid: {{ hostvars[host].vmid }}
+              role_label: {{ hostvars[host].role_label }}
+    {% endfor %}
+    YAML
+    pct exec "$vmid" -- bash -lc "install -d -m 0755 -o '{{ automation_user }}' -g '{{ automation_user }}' '$(dirname {{ orchestrator_ansible_inventory_path }})'"
+    pct push "$vmid" "$tmp_inventory" '{{ orchestrator_ansible_inventory_path }}'
+    rm -f "$tmp_inventory"
+    pct exec "$vmid" -- chmod 0644 '{{ orchestrator_ansible_inventory_path }}'
+    pct exec "$vmid" -- chown '{{ automation_user }}:{{ automation_user }}' '{{ orchestrator_ansible_inventory_path }}'
+  args:
+    executable: /bin/bash
+  changed_when: false
+
+- name: Wait for SSH on each CT LAN IPv4 address from the Proxmox host
+  ansible.builtin.wait_for:
+    host: "{{ hostvars[item].lan_ipv4 | regex_replace('/.*$', '') }}"
+    port: 22
+    timeout: 90
+  loop: "{{ groups['civic_cts'] }}"
+  loop_control:
+    label: "{{ item }} / {{ hostvars[item].lan_ipv4 }}"
+
+- name: Populate orchestration CT known_hosts for managed CT LAN IPv4 addresses
+  ansible.builtin.shell: |
+    set -euo pipefail
+    vmid='{{ hostvars[orchestrator_host].vmid }}'
+    pct exec "$vmid" -- bash -lc '
+      set -euo pipefail
+      install -d -m 0700 -o "{{ automation_user }}" -g "{{ automation_user }}" "/home/{{ automation_user }}/.ssh"
+      tmp_known="$(mktemp)"
+      cp "/home/{{ automation_user }}/.ssh/known_hosts" "$tmp_known" 2>/dev/null || true
+      ssh-keyscan -H {% for host in groups['civic_cts'] %}{{ hostvars[host].lan_ipv4 | regex_replace('/.*$', '') }} {% endfor %} >> "$tmp_known" 2>/dev/null
+      sort -u "$tmp_known" > "/home/{{ automation_user }}/.ssh/known_hosts"
+      chown "{{ automation_user }}:{{ automation_user }}" "/home/{{ automation_user }}/.ssh/known_hosts"
+      chmod 0644 "/home/{{ automation_user }}/.ssh/known_hosts"
+      rm -f "$tmp_known"
+    '
+  args:
+    executable: /bin/bash
+  changed_when: false
+
+- name: Verify orchestration CT can control every CT with Ansible ping and passwordless sudo
+  ansible.builtin.shell: |
+    set -euo pipefail
+    vmid='{{ hostvars[orchestrator_host].vmid }}'
+    pct exec "$vmid" -- bash -lc "
+      set -euo pipefail
+      sudo -u '{{ automation_user }}' ansible all -i '{{ orchestrator_ansible_inventory_path }}' -m ping
+      sudo -u '{{ automation_user }}' ansible all -i '{{ orchestrator_ansible_inventory_path }}' -b -m command -a 'true'
+    "
+  args:
+    executable: /bin/bash
+  changed_when: false
+
+- name: Report reboot-required markers without rebooting
+  ansible.builtin.shell: |
+    set -euo pipefail
+    vmid='{{ hostvars[item].vmid }}'
+    if pct exec "$vmid" -- test -f /var/run/reboot-required; then
+      echo '{{ item }} requires reboot after dist-upgrade.'
+    else
+      echo '{{ item }} does not report reboot-required.'
+    fi
+  args:
+    executable: /bin/bash
+  loop: "{{ groups['civic_cts'] }}"
+  loop_control:
+    label: "{{ item }} / VMID {{ hostvars[item].vmid }}"
+  changed_when: false
