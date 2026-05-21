@@ -1,0 +1,119 @@
+---
+- name: 04 handoff WireGuard fabric control to CT109
+  hosts: proxmox_hosts
+  gather_facts: false
+  become: true
+
+  vars:
+    orchestrator_host: orchestrator1.internal.diagnostics.kane-il.us
+    orchestrator_vmid: 109
+
+    mx1_fqdn: mx1.diagnostics.kane-il.us
+    mx1_public_ipv4: 172.237.130.143
+    mx1_public_ipv6: "2600:3c06:e001:2ba::221/64"
+    mx1_wireguard_ipv4: 10.0.0.1
+    mx1_wireguard_ipv6: "fd56:98f0:6a9:10::1/64"
+
+    orchestrator_wireguard_ipv4: 10.0.0.109
+    orchestrator_wireguard_ipv6: "fd56:98f0:6a9:10::109/64"
+
+    orchestrator_repo_dir: /opt/civic-affordance-model/repo
+    orchestrator_stage_dir: /opt/civic-affordance-model/staged/04
+    orchestrator_private_state_dir: /var/lib/civic-affordance/private
+    orchestrator_handoff_state_file: /var/lib/civic-affordance/private/04-handoff-state.txt
+
+  tasks:
+    - name: Confirm CT109 is running
+      ansible.builtin.command: "pct status {{ orchestrator_vmid }}"
+      register: ct109_status
+      changed_when: false
+      failed_when: "'status: running' not in ct109_status.stdout"
+
+    - name: Confirm CT109 hostname matches expected orchestrator
+      ansible.builtin.shell: |
+        set -euo pipefail
+        actual="$(pct config {{ orchestrator_vmid }} | awk -F': ' '$1 == "hostname" { print $2 }')"
+        test "$actual" = "{{ orchestrator_host }}"
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+    - name: Confirm CT109 can execute shell commands
+      ansible.builtin.command: "pct exec {{ orchestrator_vmid }} -- true"
+      changed_when: false
+
+    - name: Confirm CT109 has Ansible available
+      ansible.builtin.command: "pct exec {{ orchestrator_vmid }} -- ansible --version"
+      changed_when: false
+
+    - name: Confirm CT109 can run local Ansible
+      ansible.builtin.command: >
+        pct exec {{ orchestrator_vmid }} --
+        ansible localhost -i localhost, -c local -m ping
+      changed_when: false
+
+    - name: Prepare CT109 staging and private state directories
+      ansible.builtin.command: >
+        pct exec {{ orchestrator_vmid }} --
+        bash -lc
+        'install -d -m 0755 {{ orchestrator_stage_dir }}
+        && install -d -m 0700 {{ orchestrator_private_state_dir }}'
+      changed_when: true
+
+    - name: Confirm Proxmox-side repository checkout exists
+      ansible.builtin.command: "git -C {{ playbook_dir }}/../.. rev-parse --show-toplevel"
+      register: proxmox_repo_root
+      changed_when: false
+
+    - name: Stage committed repository tree onto CT109
+      ansible.builtin.shell: |
+        set -euo pipefail
+        repo_root="{{ proxmox_repo_root.stdout }}"
+        pct exec {{ orchestrator_vmid }} -- bash -lc 'rm -rf {{ orchestrator_stage_dir }}.tmp && install -d -m 0755 {{ orchestrator_stage_dir }}.tmp'
+        git -C "$repo_root" archive --format=tar HEAD \
+          | pct exec {{ orchestrator_vmid }} -- tar -C {{ orchestrator_stage_dir }}.tmp -xf -
+        pct exec {{ orchestrator_vmid }} -- bash -lc 'rm -rf {{ orchestrator_stage_dir }} && mv {{ orchestrator_stage_dir }}.tmp {{ orchestrator_stage_dir }}'
+      args:
+        executable: /bin/bash
+      changed_when: true
+
+    - name: Confirm staged tree exists on CT109
+      ansible.builtin.command: >
+        pct exec {{ orchestrator_vmid }} --
+        test -f {{ orchestrator_stage_dir }}/ansible/PLAYBOOKS.md
+      changed_when: false
+
+    - name: Confirm CT109 can reach Linode public edge by SSH
+      ansible.builtin.command: >
+        pct exec {{ orchestrator_vmid }} --
+        ssh -o BatchMode=yes -o ConnectTimeout=10 root@{{ mx1_public_ipv4 }} true
+      changed_when: false
+
+    - name: Record 04 handoff state on CT109
+      ansible.builtin.shell: |
+        set -euo pipefail
+        pct exec {{ orchestrator_vmid }} -- bash -lc 'cat > {{ orchestrator_handoff_state_file }} <<EOF
+        04 handoff gate passed
+        orchestrator={{ orchestrator_host }}
+        orchestrator_vmid={{ orchestrator_vmid }}
+        orchestrator_wireguard_ipv4={{ orchestrator_wireguard_ipv4 }}
+        orchestrator_wireguard_ipv6={{ orchestrator_wireguard_ipv6 }}
+        mx1_fqdn={{ mx1_fqdn }}
+        mx1_public_ipv4={{ mx1_public_ipv4 }}
+        mx1_public_ipv6={{ mx1_public_ipv6 }}
+        mx1_wireguard_ipv4={{ mx1_wireguard_ipv4 }}
+        mx1_wireguard_ipv6={{ mx1_wireguard_ipv6 }}
+        EOF
+        chmod 0600 {{ orchestrator_handoff_state_file }}'
+      args:
+        executable: /bin/bash
+      changed_when: true
+
+    - name: Report first 04 gate complete
+      ansible.builtin.debug:
+        msg:
+          - "04 first gate complete."
+          - "Proxmox can launch CT109 handoff."
+          - "CT109 can run local Ansible."
+          - "Committed repo tree staged at {{ orchestrator_stage_dir }}."
+          - "CT109 can reach {{ mx1_fqdn }} / {{ mx1_public_ipv4 }} by SSH."
