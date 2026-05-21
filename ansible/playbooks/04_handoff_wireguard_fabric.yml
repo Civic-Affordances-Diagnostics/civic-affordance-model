@@ -83,10 +83,12 @@
         test -f {{ orchestrator_stage_dir }}/ansible/PLAYBOOKS.md
       changed_when: false
 
-    - name: Confirm CT109 can reach Linode public edge by SSH
+    - name: Confirm CT109 ansible user can reach Linode ansible user and sudo
       ansible.builtin.command: >
         pct exec {{ orchestrator_vmid }} --
-        ssh -o BatchMode=yes -o ConnectTimeout=10 root@{{ mx1_public_ipv4 }} true
+        runuser -u ansible --
+        ssh -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=accept-new
+        ansible@{{ mx1_public_ipv4 }} sudo -n true
       changed_when: false
 
     - name: Record 04 handoff state on CT109
