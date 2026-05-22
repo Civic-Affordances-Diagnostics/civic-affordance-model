@@ -15,7 +15,7 @@ The Linode public edge is intentionally appliance-like. It carries public DNS, W
 
 All Proxmox nodes are cloned from a 1 vCPU, 512 MB RAM, 8 GB storage template, and expanded as required.
 
-A Proxmox public node is a Proxmox-hosted VM with assigned public IPv4/IPv6 identity. A Proxmox internal/service node is reachable through private LAN and WireGuard addressing and is not assigned a public node identity in this design.
+A Proxmox public node is a Proxmox-hosted CT with assigned public IPv4/IPv6 identity. A Proxmox internal/service node is reachable through private LAN and WireGuard addressing and is not assigned a public node identity in this design.
 
 ## Addressing Conventions
 
@@ -406,20 +406,12 @@ Recommended SSH posture after bootstrap:
 
 Package names and exact system users may vary by Debian release and package defaults. The design rule is that daemons run as non-sudo users and do not share participant identity with system identity.
 
-### SSH Public Key Recorded for Bootstrap/Admin
 
-Public key label: `ca-kane-diagnostics-edge-admin`
-
-```text
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF/qgl5lH9b2YpDI+pDKRJHJebutUkZiAvvc6jLizYnl ca-kane-diagnostics-edge-admin
-```
-
-This is a public key only. The private key is kept on the Proxmox box and must not be committed to the repository.
-
-## Open Items Not Yet Assigned
+## Some Open Items Not Yet Assigned
 
 The following are intentionally not finalized in this design draft:
 
+- SSH keys and secure login between the nodes
 - LDAP authority placement.
 - DNSSEC key storage/signing placement.
 - DKIM signing placement.
