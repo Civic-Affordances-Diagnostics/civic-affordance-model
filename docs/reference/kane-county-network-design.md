@@ -13,7 +13,23 @@ The Kane County implementation uses multiple public and private nodes. The desig
 
 The Linode public edge is intentionally appliance-like. It carries public DNS, WireGuard, and mail transport. It does not host the reverse proxy, web applications, mailboxes, LDAP authority, databases, Hubzilla, CEAS state, or participant accounts.
 
-The reverse proxy belongs on the Proxmox side.
+All Proxmox nodes are cloned from a 1 vCPU, 512 MB RAM, 8 GB storage template, and expanded as required.
+
+A Proxmox public node is a Proxmox-hosted VM with assigned public IPv4/IPv6 identity. A Proxmox internal/service node is reachable through private LAN and WireGuard addressing and is not assigned a public node identity in this design.
+
+## Addressing Conventions
+
+Host tables record assigned node addresses. Network prefixes are recorded separately where they describe the shared segment rather than the individual node.
+
+| Segment | Prefix |
+|---|---:|
+| Proxmox/LAN IPv4 | `192.168.1.0/24` |
+| Site ULA | `fd56:98f0:6a9::/48` |
+| Proxmox/LAN IPv6 | `fd56:98f0:6a9:1::/64` |
+| WireGuard IPv4 | `10.0.0.0/24` |
+| WireGuard IPv6 | `fd56:98f0:6a9:10::/64` |
+
+Individual node rows list host addresses only.
 
 ## Confirmed Public Edge Node
 
@@ -26,9 +42,9 @@ Reason for primary identity: rDNS, SMTP banner, and mail transport alignment
 | Item | Value |
 |---|---:|
 | Public IPv4 | `172.237.130.143` |
-| Public IPv6 | `2600:3c06:e001:2ba::221/64` |
-| WireGuard IPv4: | 10.0.0.1/24 |
-| WireGuard IPv6: | fd56:98f0:6a9:10::1/64 |
+| Public IPv6 | `2600:3c06:e001:2ba::221` |
+| WireGuard IPv4 | `10.0.0.1` |
+| WireGuard IPv6 | `fd56:98f0:6a9:10::1` |
 | RAM | 1 GB |
 | CPU | 1 vCPU |
 | Storage | 25 GB |
@@ -52,7 +68,7 @@ Allowed on this node:
 - BIND9 authoritative DNS primary
 - WireGuard public endpoint
 - Postfix MTA relay / transport boundary
-- Firewalling and packet forwarding needed for those services
+- Packet forwarding needed for those services
 - Operator/service administration only
 
 Excluded from this node:
@@ -71,17 +87,17 @@ Excluded from this node:
 
 ### `ingress1.diagnostics.kane-il.us`
 
-Role: reverse proxy, TLS termination, HTTP/HTTPS ingress, BIND9 secondary  
+Role: reverse proxy, HTTP/HTTPS ingress, BIND9 secondary  
 Placement: Proxmox public node
 
 | Item | Value |
 |---|---:|
 | Public IPv4 | `15.235.0.200` |
-| Public IPv6 | `2607:5300:203:8784::102` |
-| Proxmox/LAN IPv4 | `192.168.1.102/16` |
-| Proxmox/LAN IPv6 | `fd56:98f0:6a9::102/48` |
-| WireGuard IPv4 | `10.0.0.102` |
-| WireGuard IPv6 | `fd56:98f0:6a9:10::102/64` |
+| Public IPv6 | `2607:5300:203:8784::101` |
+| Proxmox/LAN IPv4 | `192.168.1.101` |
+| Proxmox/LAN IPv6 | `fd56:98f0:6a9:1::101` |
+| WireGuard IPv4 | `10.0.0.101` |
+| WireGuard IPv6 | `fd56:98f0:6a9:10::101` |
 | Conservative RAM allocation | 2 GB |
 | Conservative CPU allocation | 2 vCPU |
 | Conservative storage allocation | 40 GB |
@@ -98,7 +114,6 @@ Placement: Proxmox public node
 Allowed on this node:
 
 - nginx reverse proxy
-- TLS termination
 - BIND9 authoritative secondary
 - public HTTP/HTTPS service routing
 - zone transfer receiving over WireGuard
@@ -121,11 +136,11 @@ Placement: dedicated Proxmox public node
 | Item | Value |
 |---|---:|
 | Public IPv4 | `15.235.0.96` |
-| Public IPv6 | `2607:5300:203:8784::106` |
-| Proxmox/LAN IPv4 | `192.168.1.106/16` |
-| Proxmox/LAN IPv6 | `fd56:98f0:6a9::106/48` |
-| WireGuard IPv4 | `10.0.0.106` |
-| WireGuard IPv6 | `fd56:98f0:6a9:10::106/64` |
+| Public IPv6 | `2607:5300:203:8784::102` |
+| Proxmox/LAN IPv4 | `192.168.1.102` |
+| Proxmox/LAN IPv6 | `fd56:98f0:6a9:1::102` |
+| WireGuard IPv4 | `10.0.0.102` |
+| WireGuard IPv6 | `fd56:98f0:6a9:10::102` |
 | Conservative RAM allocation | 8 GB |
 | Conservative CPU allocation | 4 vCPU |
 | Conservative storage allocation | 500 GB minimum, expandable |
@@ -137,7 +152,7 @@ Placement: dedicated Proxmox public node
 | `ipfs1.diagnostics.kane-il.us` | Public IPFS node identity |
 | `api1.ipfs.diagnostics.kane-il.us` | Controlled API surface for application read/write operations |
 
-The API is not a public raw IPFS administration interface. The raw IPFS API, pinset control, and git mutation authority remain private/internal.
+The API is a controlled application surface for approved read/write operations. It is not a public raw IPFS administration interface. Raw IPFS API access, unrestricted pinset mutation, direct repository control, and git mutation authority remain private/internal.
 
 ### IPFS Node Service Scope
 
@@ -149,10 +164,18 @@ Allowed on this node:
 - git/POSIX mapping
 - API-only access for controlled read/write operations
 
-Example deterministic mapping pattern:
+Example deterministic mapping pattern for the national county model:
 
 ```text
 orange-ca/affordance_family/surface_qualification/attestation/CID
+```
+
+This intentionally uses Orange County as a cross-county example. The Kane County reference implementation is designed to participate in a model that can represent all 3,000+ U.S. counties using county-scoped path prefixes.
+
+The same pattern applies to Kane County records:
+
+```text
+kane-il/affordance_family/surface_qualification/attestation/CID
 ```
 
 Excluded from this node:
@@ -173,8 +196,10 @@ Placement: Proxmox internal/service node
 
 | Item | Value |
 |---|---:|
-| Proxmox/LAN IPv4 | `192.168.1.107/16` |
-| Proxmox/LAN IPv6 | `fd56:98f0:6a9::107/48` |
+| Proxmox/LAN IPv4 | `192.168.1.103` |
+| Proxmox/LAN IPv6 | `fd56:98f0:6a9:1::103` |
+| WireGuard IPv4 | `10.0.0.103` |
+| WireGuard IPv6 | `fd56:98f0:6a9:10::103` |
 | Conservative RAM allocation | 4 GB |
 | Conservative CPU allocation | 2 vCPU |
 | Conservative storage allocation | 100 GB minimum |
@@ -215,8 +240,10 @@ Placement: Proxmox internal/service node
 
 | Item | Value |
 |---|---:|
-| Proxmox/LAN IPv4 | `192.168.1.108/16` |
-| Proxmox/LAN IPv6 | `fd56:98f0:6a9::108/48` |
+| Proxmox/LAN IPv4 | `192.168.1.104` |
+| Proxmox/LAN IPv6 | `fd56:98f0:6a9:1::104` |
+| WireGuard IPv4 | `10.0.0.104` |
+| WireGuard IPv6 | `fd56:98f0:6a9:10::104` |
 | Conservative RAM allocation | 8 GB |
 | Conservative CPU allocation | 4 vCPU |
 | Conservative storage allocation | 160 GB minimum |
@@ -241,8 +268,10 @@ Placement: Proxmox internal/service node
 
 | Item | Value |
 |---|---:|
-| Proxmox/LAN IPv4 | `192.168.1.109/16` |
-| Proxmox/LAN IPv6 | `fd56:98f0:6a9::109/48` |
+| Proxmox/LAN IPv4 | `192.168.1.105` |
+| Proxmox/LAN IPv6 | `fd56:98f0:6a9:1::105` |
+| WireGuard IPv4 | `10.0.0.105` |
+| WireGuard IPv6 | `fd56:98f0:6a9:10::105` |
 | Conservative RAM allocation | 4 GB |
 | Conservative CPU allocation | 2 vCPU |
 | Conservative storage allocation | 80 GB minimum |
@@ -264,33 +293,64 @@ Excluded from this node:
 - public DNS authority
 - raw public IPFS operations
 
+## Name Resolution Intent
+
+This table records intended placement only and is not a DNS zone file.
+
+| Name | Intended placement |
+|---|---|
+| `mx1.diagnostics.kane-il.us` | Linode public edge |
+| `ns1.diagnostics.kane-il.us` | Linode public edge |
+| `wg1.diagnostics.kane-il.us` | Linode public edge |
+| `ingress1.diagnostics.kane-il.us` | Reverse proxy node |
+| `ns2.diagnostics.kane-il.us` | Reverse proxy node |
+| `ipfs1.diagnostics.kane-il.us` | IPFS node |
+| `api1.ipfs.diagnostics.kane-il.us` | Controlled API surface for IPFS application access |
+
+## State Placement Principle
+
+Persistent application and participant state should remain on the service node assigned to that function.
+
+Mail state belongs on `mail1.internal.diagnostics.kane-il.us`.
+
+Hubzilla application and database state belong on `hubzilla1.internal.diagnostics.kane-il.us`, unless later deliberately separated.
+
+IPFS publication, pinning, and git/POSIX mapping state belong on `ipfs1.diagnostics.kane-il.us`.
+
+Orchestration job state belongs on `orchestrator1.internal.diagnostics.kane-il.us`.
+
+The Linode public edge should remain limited to public transport, DNS authority, WireGuard endpoint duties, and operator administration.
+
 ## Network Summary
 
 ### Public Address Summary
 
 | Node | Public IPv4 | Public IPv6 |
 |---|---:|---:|
-| `mx1.diagnostics.kane-il.us` | `172.237.130.143` | `2600:3c06:e001:2ba::221/64` |
-| `ingress1.diagnostics.kane-il.us` | `15.235.0.200` | `2607:5300:203:8784::102` |
-| `ipfs1.diagnostics.kane-il.us` | `15.235.0.96` | `2607:5300:203:8784::106` |
+| `mx1.diagnostics.kane-il.us` | `172.237.130.143` | `2600:3c06:e001:2ba::221` |
+| `ingress1.diagnostics.kane-il.us` | `15.235.0.200` | `2607:5300:203:8784::101` |
+| `ipfs1.diagnostics.kane-il.us` | `15.235.0.96` | `2607:5300:203:8784::102` |
 
 ### Proxmox/LAN Address Summary
 
 | Node | Proxmox/LAN IPv4 | Proxmox/LAN IPv6 |
 |---|---:|---:|
-| Reverse proxy / DNS secondary | `192.168.1.102/16` | `fd56:98f0:6a9::102/48` |
-| IPFS / git-POSIX / API | `192.168.1.106/16` | `fd56:98f0:6a9::106/48` |
-| Postfix / Dovecot backend | `192.168.1.107/16` | `fd56:98f0:6a9::107/48` |
-| Hubzilla | `192.168.1.108/16` | `fd56:98f0:6a9::108/48` |
-| Python orchestration | `192.168.1.109/16` | `fd56:98f0:6a9::109/48` |
+| Reverse proxy / DNS secondary | `192.168.1.101` | `fd56:98f0:6a9:1::101` |
+| IPFS / git-POSIX / API | `192.168.1.102` | `fd56:98f0:6a9:1::102` |
+| Postfix / Dovecot backend | `192.168.1.103` | `fd56:98f0:6a9:1::103` |
+| Hubzilla | `192.168.1.104` | `fd56:98f0:6a9:1::104` |
+| Python orchestration | `192.168.1.105` | `fd56:98f0:6a9:1::105` |
 
 ### WireGuard Address Summary
 
 | Node | WireGuard IPv4 | WireGuard IPv6 |
 |---|---:|---:|
-| Linode public edge | 10.0.0.1 | fd56:98f0:6a9:10::1 |
-| Reverse proxy / DNS secondary | `10.0.0.102` | `fd56:98f0:6a9:10::102/64` |
-| IPFS / git-POSIX / API | `10.0.0.106` | `fd56:98f0:6a9:10::106/64` |
+| Linode public edge | `10.0.0.1` | `fd56:98f0:6a9:10::1` |
+| Reverse proxy / DNS secondary | `10.0.0.101` | `fd56:98f0:6a9:10::101` |
+| IPFS / git-POSIX / API | `10.0.0.102` | `fd56:98f0:6a9:10::102` |
+| Postfix / Dovecot backend | `10.0.0.103` | `fd56:98f0:6a9:10::103` |
+| Hubzilla | `10.0.0.104` | `fd56:98f0:6a9:10::104` |
+| Python orchestration | `10.0.0.105` | `fd56:98f0:6a9:10::105` |
 
 ## Conservative Resource Allocation Summary
 
@@ -323,15 +383,15 @@ This section records intended user classes. It does not require that every user 
 | User | Scope | Purpose |
 |---|---|---|
 | `root` | all Linux nodes | bootstrap and emergency administration |
-| `cr-admin` | all managed nodes | named human/operator sudo administration |
+| `diagsudo` | all managed nodes | named human/operator sudo administration |
 | `ansible` | all managed nodes | automation account for Ansible-controlled configuration |
 
 Recommended SSH posture after bootstrap:
 
-- direct `root` SSH may be disabled after `cr-admin` and `ansible` are verified;
+- direct `root` SSH may be disabled after `diagsudo` and `ansible` are verified;
 - password SSH login should be disabled;
 - `ansible` may use passwordless sudo only where necessary for automation;
-- `cr-admin` may require sudo authentication depending on local policy.
+- `diagsudo` may require sudo authentication depending on local policy.
 
 ### Non-Sudo Service Users by Node
 
@@ -339,10 +399,10 @@ Recommended SSH posture after bootstrap:
 |---|---|---|
 | Linode public edge | `bind`, `postfix`, `_chrony` or equivalent OS time user | BIND9, MTA relay, base system services |
 | Reverse proxy / DNS secondary | `www-data`, `bind` | nginx and BIND9 secondary |
-| IPFS / git-POSIX / API | `ipfs`, `git`, `cr-api` | IPFS daemon, git/POSIX storage ownership, controlled API service |
+| IPFS / git-POSIX / API | `ipfs`, `git`, `diag-api` | IPFS daemon, git/POSIX storage ownership, controlled API service |
 | Mail backend | `postfix`, `dovecot`, `vmail`, optional `opendkim` | mail routing, IMAP/LMTP, virtual mailbox storage, DKIM signing if placed here |
 | Hubzilla | `www-data`, optional `hubzilla` | web application runtime and application ownership if separated from web server user |
-| Python orchestration | `cr-orch`, optional `cr-worker` | Python venv ownership, workers, orchestration jobs |
+| Python orchestration | `diag-orch`, optional `diag-worker` | Python venv ownership, workers, orchestration jobs |
 
 Package names and exact system users may vary by Debian release and package defaults. The design rule is that daemons run as non-sudo users and do not share participant identity with system identity.
 
@@ -354,7 +414,7 @@ Public key label: `ca-kane-diagnostics-edge-admin`
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF/qgl5lH9b2YpDI+pDKRJHJebutUkZiAvvc6jLizYnl ca-kane-diagnostics-edge-admin
 ```
 
-This is a public key only. The private key is not recorded here and must not be committed to the repository.
+This is a public key only. The private key is kept on the Proxmox box and must not be committed to the repository.
 
 ## Open Items Not Yet Assigned
 
@@ -364,5 +424,3 @@ The following are intentionally not finalized in this design draft:
 - DNSSEC key storage/signing placement.
 - DKIM signing placement.
 - Whether public names other than node FQDNs will resolve directly to the reverse proxy or use CNAME indirection.
-- Exact firewall policy per node.
-- Backup targets and restore procedure.
