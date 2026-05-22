@@ -1,8 +1,0 @@
----
-- name: Bootstrap base OS packages, SSH, sudo, and orchestration access
-  hosts: proxmox_hosts
-  gather_facts: false
-  become: true
-
-  roles:
-    - ct_base_bootstrap

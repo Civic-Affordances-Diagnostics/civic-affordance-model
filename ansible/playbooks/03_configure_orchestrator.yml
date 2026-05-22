@@ -1,8 +1,0 @@
----
-- name: Configure durable orchestration node with backup boundaries
-  hosts: proxmox_hosts
-  gather_facts: false
-  become: true
-
-  roles:
-    - orchestrator_control_node
