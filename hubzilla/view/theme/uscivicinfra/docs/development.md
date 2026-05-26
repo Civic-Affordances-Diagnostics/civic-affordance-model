@@ -35,6 +35,10 @@ templates/        empty until a template override is justified
 js/               empty until a behavior override is justified
 ```
 
+## Live-server verification log
+
+Deployment verification is recorded in [`live-server-deployment.md`](live-server-deployment.md). Update that file whenever a live-server operational assumption is confirmed or rejected.
+
 ## Installation
 
 From a Hubzilla checkout:

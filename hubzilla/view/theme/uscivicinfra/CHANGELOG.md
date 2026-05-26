@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add live-server deployment verification documentation.
+
 ## 0.1.0 - 2026-05-26
 
 - Add initial `uscivicinfra` derived theme skeleton.

@@ -46,6 +46,10 @@ Then enable the theme in the Hubzilla admin theme panel.
 - Core edits: none
 - Database changes: none
 
+## Deployment documentation
+
+Before live-server installation, see [`docs/live-server-deployment.md`](docs/live-server-deployment.md). That file records the verified Hubzilla checkout, parent-theme dependency, and operational constraints for deployment.
+
 ## First-use testing
 
 Recommended live-server test sequence:
