@@ -2,7 +2,7 @@
 
 `webforms` is intended to become a general-purpose JSON Form Runtime addon for Hubzilla.
 
-This initial contribution does **not** implement JSON rendering, storage, API processing, Civic Infrastructure workflows, or database changes. It creates only the first blank participant/user-facing container page at:
+This initial contribution does **not** implement JSON rendering, storage, API processing, Civic Infrastructure workflows, or database changes. It creates only the first blank user-facing container page at:
 
 ```text
 /webforms
@@ -20,8 +20,8 @@ It intentionally provides:
 - a module route at `/webforms`
 - a `load_pdl` hook handler
 - a local addon PDL file, `mod_webforms.pdl`
-- a blank runtime container in the central content region
-- an addon app descriptor so the page can be exposed through Hubzilla's app mechanism without adding an untracked core app/ file
+- a blank runtime container in the main content region
+- an addon app descriptor kept with the addon at `addon/webforms/webforms.apd`
 
 It intentionally avoids:
 
@@ -52,17 +52,19 @@ Later work may load JSON collections into this same container.
 
 ## PDL boundary
 
-The addon uses the `load_pdl` hook to supply the PDL shell for the `webforms` module. The PDL file currently places normal module content into the `content` region:
+The addon uses the `load_pdl` hook to supply the PDL shell for the `webforms` module. The PDL file places normal module content into the `content` region using Hubzilla's `full` template:
 
 ```text
-[template]default[/template]
+[template]full[/template]
 
 [region=content]
 $content
 [/region]
 ```
 
-This is deliberately minimal. The PDL layer places the runtime. It does not define JSON forms or civic business logic.
+The `full` template is used because the first live `/webforms` route test showed that the earlier `default` template preserved the right-side new-member area. The `full` template keeps the Hubzilla navbar while providing a single full-width content region for the future JSON Form Runtime.
+
+The PDL layer places the runtime. It does not define JSON forms or civic business logic.
 
 ## Expected first test
 

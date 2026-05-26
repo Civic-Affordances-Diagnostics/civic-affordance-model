@@ -1,6 +1,6 @@
 # Blank PDL Container Test
 
-This document records the intended scope of the first `webforms` implementation.
+This document records the intended scope and first live observations for the initial `webforms` implementation.
 
 ## Objective
 
@@ -24,15 +24,43 @@ Based on live inspection of Hubzilla 11.2.1:
 
 This first implementation tests that hypothesis with the smallest possible page.
 
-## What this test should prove
+## What the first live test proved
 
-A successful test proves only:
+The first live test proved:
 
-- the addon is visible to Hubzilla
-- `/webforms` resolves as a module route
-- the PDL hook does not break routing
-- the PDL shell can place `$content` in the page content region
-- a stable runtime container can appear on the page
+- the addon could be installed into the live Hubzilla checkout without core edits
+- the addon compatibility check passed after removing the invalid addon-header `Requires: local_channel`
+- the app descriptor belongs with the addon as `addon/webforms/webforms.apd`, not in the core `app/` directory
+- the addon could be enabled from `/admin/addons`
+- `/webforms` resolved as a route
+- the page loaded as a blank page
+- the Hubzilla top navigation and menus remained available
+
+## Layout observation
+
+The first PDL file used Hubzilla's default template:
+
+```text
+[template]default[/template]
+
+[region=content]
+$content
+[/region]
+```
+
+Live observation showed that this produced a usable blank page, but the right-side new-member area was still visible. For a JSON Form Runtime, the preferred first shell is a single content workspace that preserves Hubzilla navigation but does not reserve left or right sidebar regions.
+
+The next PDL test therefore uses the `full` template:
+
+```text
+[template]full[/template]
+
+[region=content]
+$content
+[/region]
+```
+
+The inspected `full` template is a single-column full-width layout with the Hubzilla navbar. That matches the current requirement better than the default three-column layout.
 
 ## What this test does not prove
 
