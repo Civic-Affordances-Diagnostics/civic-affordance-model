@@ -23,9 +23,11 @@ Center content becomes the Webforms runtime container.
 Right aside remains.
 ```
 
-The left aside should keep the normal profile card and then add plain-text Webforms placeholders:
+The left aside should show three stacked containers:
 
 ```text
+Profile card
+
 Webforms Menu
 - Open Repo
 - Download
@@ -35,6 +37,8 @@ Webforms Menu
 Selection Menu
 - No JSON collection selected.
 ```
+
+The profile card is supplied by Hubzilla's existing `vcard` widget because `/webforms` is a site/module route and does not provide the channel-page profile context required by `fullprofile`.
 
 The right side should remain Hubzilla-managed and may continue to show New Member Links or other standard widgets.
 

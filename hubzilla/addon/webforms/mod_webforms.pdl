@@ -1,7 +1,7 @@
 [template]default[/template]
 
 [region=aside]
-[widget=fullprofile][/widget]
+[widget=vcard][/widget]
 <div class="widget">
 <h3>Webforms Menu</h3>
 <div>Open Repo</div>

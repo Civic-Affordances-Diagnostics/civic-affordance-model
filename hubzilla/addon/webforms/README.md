@@ -2,7 +2,7 @@
 
 Webforms is intended to become a general-purpose JSON Form Runtime for Hubzilla.
 
-This first implementation is layout-only. It exists to prove that a Hubzilla addon route at `/webforms` can provide a PDL-backed page shell while preserving ordinary Hubzilla page structure.
+This implementation remains layout-only. It exists to prove that a Hubzilla addon route at `/webforms` can provide a PDL-backed page shell while preserving ordinary Hubzilla page structure.
 
 ## Current scope
 
@@ -10,7 +10,7 @@ The current page intentionally provides only:
 
 - the normal Hubzilla top navigation;
 - the default three-column Hubzilla page layout;
-- the profile card in the left aside;
+- the logged-in participant's default profile card in the left aside, using Hubzilla's existing `vcard` widget;
 - a plain-text Webforms Menu under the profile card;
 - a plain-text Selection Menu placeholder under the Webforms Menu;
 - a center runtime container placeholder;
@@ -33,4 +33,6 @@ The menu text is deliberately non-functional. Functional behavior must come late
 
 ## Design principle
 
-Webforms should enrich Hubzilla without taking over Hubzilla. The page shell should preserve Hubzilla identity, navigation, and side regions while reserving the center content region for the future runtime.
+Webforms should enrich Hubzilla without taking over Hubzilla.
+
+The page shell should preserve Hubzilla identity, navigation, and side regions while reserving the center content region for the future runtime.

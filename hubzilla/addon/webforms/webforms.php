@@ -1,7 +1,7 @@
 <?php
 /**
  * Name: Webforms
- * Description: General-purpose JSON Form Runtime for Hubzilla. Initial implementation provides a layout-only PDL-backed runtime container at /webforms.
+ * Description: General-purpose JSON Form Runtime for Hubzilla. Initial implementation provides a blank PDL-backed runtime container at /webforms.
  * Version: 0.1.0
  * Author: Civic Affordances Diagnostics
  * Maintainer: TheRON <webmaster@kane-il.us>
@@ -42,7 +42,7 @@ function webforms_content() {
 		return Apps::app_render($papp, 'module');
 	}
 
-	return '<div id="webforms-runtime-container" class="generic-content-wrapper-styled">'
+	return '<div id="webforms-runtime" class="generic-content-wrapper-styled">'
 		. '<h1>Webforms</h1>'
 		. '<p>JSON Form Runtime container.</p>'
 		. '<p>No JSON collection is loaded yet.</p>'

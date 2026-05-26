@@ -3,6 +3,5 @@ url: $baseurl/webforms
 requires: local_channel
 name: Webforms
 photo: icon:list-check
-categories: Productivity
-  Development
+categories: Productivity Development
 desc: General-purpose JSON Form Runtime for Hubzilla.
