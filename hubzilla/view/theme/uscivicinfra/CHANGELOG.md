@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Document live-server installation, PHP syntax checks, source commit, and file ownership for the deployed theme.
 - Add live-server deployment verification documentation.
 
 ## 0.1.0 - 2026-05-26
