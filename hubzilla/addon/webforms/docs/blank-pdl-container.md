@@ -1,53 +1,45 @@
-# Blank PDL Container Test
+# Blank PDL Container
 
-This document records the current layout-only Webforms test.
+This document records the current layout-only boundary for the initial `/webforms` page.
 
-## Confirmed route intent
+## Purpose
 
-The addon route is expected to be:
+The first `/webforms` page proves that a general-purpose Webforms addon can enter Hubzilla as a normal, participant-facing module page without altering Hubzilla core or taking over existing navigation.
 
-```text
-/webforms
-```
+The page is intentionally blank in the center because JSON rendering is a separate development phase.
 
-The route is site/module-level, while Hubzilla channel context remains available through the logged-in session.
+## Current PDL shell
 
-## Layout target
+The page uses Hubzilla's `default` template and three page regions:
 
-The desired first layout is the normal Hubzilla three-column page:
+- `aside`
+- `content`
+- `right_aside`
 
-```text
-Top navigation remains.
-Left aside remains.
-Center content becomes the Webforms runtime container.
-Right aside remains.
-```
+The left aside currently contains only plain-text layout placeholders:
 
-The left aside should show three stacked containers:
+- Webforms Menu
+- Selection Menu
 
-```text
-Profile card
+The center content region contains the blank runtime area supplied by the addon module.
 
-Webforms Menu
-- Open Repo
-- Download
-- Import
-- Help
+The right aside preserves normal Hubzilla widgets:
 
-Selection Menu
-- No JSON collection selected.
-```
+- notifications
+- newmember
 
-The profile card is supplied by Hubzilla's existing `vcard` widget because `/webforms` is a site/module route and does not provide the channel-page profile context required by `fullprofile`.
+## Removed profile-card experiment
 
-The right side should remain Hubzilla-managed and may continue to show New Member Links or other standard widgets.
+A profile-card experiment was attempted with Hubzilla profile widgets. This was removed.
 
-## Current implementation boundary
+Reason: `/webforms` is a site/module route, not a channel route. Hubzilla's `fullprofile` and `profile` widgets require `App::$profile['profile_uid']`, which is normally established on channel pages. The `vcard` widget was also tested as a possible observer-card option, but it did not render on `/webforms` in the current context.
 
-This is not runtime functionality. It is only a layout proof.
+The accepted layout therefore follows Hubzilla's module-page pattern: the left aside contains task-specific Webforms placeholders rather than forcing a channel profile card onto a site/module page.
 
-No menu item is a link. No JSON collection is loaded. No form control is rendered. No storage, import, export, API, or Civic Infrastructure behavior is implemented.
+A Webforms-specific identity/profile widget may be considered later, but that would be new behavior and is outside the current layout-only phase.
 
-## Next design boundary
+## Boundary
 
-Future behavior should be introduced through JSON definitions loaded by the Webforms runtime, not through hard-coded PHP page behavior.
+This page must remain layout-only until the design for the JSON Form Runtime is agreed.
+
+No JSON loading, form behavior, links, storage, API calls, or Civic Infrastructure-specific behavior should be added in this phase.

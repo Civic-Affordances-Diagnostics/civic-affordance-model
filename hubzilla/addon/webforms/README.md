@@ -1,38 +1,49 @@
 # Webforms
 
-Webforms is intended to become a general-purpose JSON Form Runtime for Hubzilla.
+Webforms is a general-purpose Hubzilla addon intended to provide a JSON Form Runtime.
 
-This implementation remains layout-only. It exists to prove that a Hubzilla addon route at `/webforms` can provide a PDL-backed page shell while preserving ordinary Hubzilla page structure.
+The addon is not Civic Infrastructure-specific. Civic Infrastructure may later be one JSON collection loaded by Webforms, but the addon itself should remain useful to all Hubzilla users for JSON-backed tools such as forms, local data managers, email-style tools, password-management experiments, or other user-controlled interfaces.
 
-## Current scope
+## Current status
 
-The current page intentionally provides only:
+The current implementation is layout-only.
 
-- the normal Hubzilla top navigation;
-- the default three-column Hubzilla page layout;
-- the logged-in participant's default profile card in the left aside, using Hubzilla's existing `vcard` widget;
-- a plain-text Webforms Menu under the profile card;
-- a plain-text Selection Menu placeholder under the Webforms Menu;
-- a center runtime container placeholder;
-- the existing right-side Hubzilla widgets, including New Member Links.
+It provides:
 
-## Non-goals for this step
+- an addon route at `/webforms`
+- a PDL-backed Hubzilla page shell
+- plain-text placeholders for the future Webforms menu and selected JSON collection menu
+- a blank center content area where a future JSON-rendered form/runtime will appear
+- preservation of the normal Hubzilla right-side widgets, including New Member Links
 
-This step does not implement:
+It deliberately does not provide:
 
-- JSON loading;
-- form controls;
-- menu links;
-- import or export behavior;
-- storage;
-- database tables;
-- API calls;
-- Civic Infrastructure behavior.
+- JSON loading
+- form controls
+- hyperlinks
+- import/export behavior
+- storage behavior
+- API behavior
+- Civic Infrastructure behavior
+- database changes
+- Hubzilla core edits
 
-The menu text is deliberately non-functional. Functional behavior must come later from JSON definitions and the JSON Form Runtime design, not from this PDL/layout test.
+## Layout principle
 
-## Design principle
+Webforms should enrich Hubzilla, not take over Hubzilla.
 
-Webforms should enrich Hubzilla without taking over Hubzilla.
+The initial `/webforms` route uses Hubzilla's default three-column page shell:
 
-The page shell should preserve Hubzilla identity, navigation, and side regions while reserving the center content region for the future runtime.
+- left aside: Webforms Menu and Selection Menu placeholders
+- center content: blank runtime/container placeholder
+- right aside: existing Hubzilla widgets such as notifications and New Member Links
+
+A previous test attempted to include a profile card in the left aside. That was removed because `/webforms` is a site/module route, not a channel page. Hubzilla's existing profile widgets depend on channel-page profile context and did not render reliably on the module route. This should not be reintroduced unless a deliberate Webforms-specific profile widget is designed later.
+
+## JSON Form Runtime direction
+
+The future runtime should load JSON definitions that describe menus, page regions, controls, validation hints, storage hints, and workflow behavior.
+
+The first stage should remain local-first. JSON records may be stored as files in a user-controlled storage area. Hubzilla's per-user file storage, such as a channel cloud path like `/cloud/theron`, is a candidate for JSON storage and should be evaluated later before implementation.
+
+External API processing may be added later as an expansion path, but the runtime should first work locally so that API support is an extension, not a redesign.
