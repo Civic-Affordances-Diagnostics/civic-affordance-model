@@ -1,0 +1,9 @@
+# Changelog
+
+## 0.1.0 - 2026-05-26
+
+- Add initial `uscivicinfra` derived theme skeleton.
+- Extend Hubzilla `redbasic` rather than replacing it.
+- Add CSS-only civic diagnostic visual layer.
+- Add development documentation and rollback guidance.
+- Add admin-panel screenshot placeholder.

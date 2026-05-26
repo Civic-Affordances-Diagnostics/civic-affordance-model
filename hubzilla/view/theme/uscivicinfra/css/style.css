@@ -1,0 +1,305 @@
+/*
+ * USCIVICINFRA theme overrides.
+ *
+ * This theme is intentionally conservative. It extends redbasic without
+ * replacing Hubzilla's interaction model. The first pass establishes a civic,
+ * diagnostic visual frame and reusable class hooks for later addons.
+ */
+
+:root {
+	--civicinfra-bg: #faf9f6;
+	--civicinfra-surface: #f2efe8;
+	--civicinfra-surface-muted: #e7e1d6;
+	--civicinfra-text: #24231f;
+	--civicinfra-muted: #5f655d;
+	--civicinfra-border: #cfc6b6;
+	--civicinfra-rule: #b7ad9d;
+	--civicinfra-primary: #243f3b;
+	--civicinfra-primary-contrast: #f8f6ef;
+	--civicinfra-accent: #8a673c;
+	--civicinfra-accent-muted: #d8c4a2;
+	--civicinfra-danger: #7a342c;
+	--civicinfra-focus: #5a6f69;
+	--civicinfra-mono-bg: #ebe6dc;
+
+	--bs-body-bg: var(--civicinfra-bg);
+	--bs-body-color: var(--civicinfra-text);
+	--bs-primary: var(--civicinfra-primary);
+	--bs-primary-rgb: 36, 63, 59;
+	--bs-link-color: #244f49;
+	--bs-link-hover-color: #193b36;
+	--bs-border-color: var(--civicinfra-border);
+	--bs-body-font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+	--bs-font-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	--bs-font-monospace: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+[data-bs-theme="dark"] {
+	--civicinfra-bg: #141715;
+	--civicinfra-surface: #1d211f;
+	--civicinfra-surface-muted: #272d2a;
+	--civicinfra-text: #eee9df;
+	--civicinfra-muted: #b4b9b1;
+	--civicinfra-border: #465049;
+	--civicinfra-rule: #667168;
+	--civicinfra-primary: #8ca79f;
+	--civicinfra-primary-contrast: #111412;
+	--civicinfra-accent: #c1a06c;
+	--civicinfra-accent-muted: #5c4b32;
+	--civicinfra-danger: #d09286;
+	--civicinfra-focus: #acc8c0;
+	--civicinfra-mono-bg: #242a27;
+
+	--bs-body-bg: var(--civicinfra-bg);
+	--bs-body-color: var(--civicinfra-text);
+	--bs-link-color: #aecbc3;
+	--bs-link-hover-color: #d3e4df;
+	--bs-border-color: var(--civicinfra-border);
+}
+
+body {
+	background-color: var(--civicinfra-bg);
+	color: var(--civicinfra-text);
+	text-rendering: optimizeLegibility;
+}
+
+body,
+button,
+input,
+select,
+textarea,
+.btn,
+.nav,
+.navbar,
+.dropdown-menu,
+.modal,
+.card,
+.badge,
+.alert {
+	font-family: var(--bs-font-sans-serif);
+}
+
+main,
+.wall-item-content,
+.generic-content-wrapper,
+.section-content-wrapper,
+#region_2,
+#content,
+.article-content {
+	font-family: var(--bs-body-font-family);
+}
+
+code,
+pre,
+kbd,
+samp,
+.civicinfra-record-id,
+.civicinfra-cid,
+.civicinfra-token {
+	font-family: var(--bs-font-monospace);
+}
+
+.navbar,
+#nav-bar,
+.app-menu,
+aside,
+.generic-content-wrapper,
+.section-content-wrapper,
+.card,
+.modal-content,
+.dropdown-menu {
+	border-color: var(--civicinfra-border);
+}
+
+.navbar,
+#nav-bar {
+	border-bottom: 1px solid var(--civicinfra-rule);
+	box-shadow: none;
+}
+
+.generic-content-wrapper,
+.section-content-wrapper,
+.card,
+.modal-content,
+.dropdown-menu {
+	background-color: var(--civicinfra-bg);
+}
+
+.card-header,
+.section-title-wrapper,
+.generic-content-wrapper-styled .section-title-wrapper {
+	background-color: var(--civicinfra-surface);
+	border-color: var(--civicinfra-border);
+	color: var(--civicinfra-text);
+}
+
+.btn-primary,
+.btn-success {
+	background-color: var(--civicinfra-primary);
+	border-color: var(--civicinfra-primary);
+	color: var(--civicinfra-primary-contrast);
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-success:hover,
+.btn-success:focus {
+	background-color: #1b312e;
+	border-color: #1b312e;
+	color: var(--civicinfra-primary-contrast);
+}
+
+[data-bs-theme="dark"] .btn-primary:hover,
+[data-bs-theme="dark"] .btn-primary:focus,
+[data-bs-theme="dark"] .btn-success:hover,
+[data-bs-theme="dark"] .btn-success:focus {
+	background-color: #a8beb7;
+	border-color: #a8beb7;
+	color: var(--civicinfra-primary-contrast);
+}
+
+a,
+.nav-link,
+.dropdown-item {
+	text-decoration-thickness: 0.08em;
+	text-underline-offset: 0.14em;
+}
+
+a:hover,
+a:focus {
+	text-decoration: underline;
+}
+
+:focus-visible {
+	outline: 3px solid var(--civicinfra-focus);
+	outline-offset: 2px;
+}
+
+hr,
+.dropdown-divider {
+	border-color: var(--civicinfra-rule);
+	opacity: 1;
+}
+
+/* Diagnostic and civic record primitives for future Hubzilla template/addon work. */
+
+.civicinfra-diagnostic-surface {
+	background: var(--civicinfra-bg);
+	border: 1px solid var(--civicinfra-border);
+	border-left: 0.35rem solid var(--civicinfra-primary);
+	padding: 1rem;
+}
+
+.civicinfra-record-frame {
+	background: var(--civicinfra-surface);
+	border: 1px solid var(--civicinfra-border);
+	padding: 0.85rem 1rem;
+}
+
+.civicinfra-record-heading {
+	color: var(--civicinfra-primary);
+	font-family: var(--bs-font-sans-serif);
+	font-size: 0.95rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.civicinfra-record-id,
+.civicinfra-cid {
+	background: var(--civicinfra-mono-bg);
+	border: 1px solid var(--civicinfra-border);
+	color: var(--civicinfra-text);
+	display: inline-block;
+	font-size: 0.85em;
+	padding: 0.12rem 0.35rem;
+	word-break: break-all;
+}
+
+.civicinfra-affordance,
+.civicinfra-scope-token {
+	border: 1px solid var(--civicinfra-border);
+	color: var(--civicinfra-text);
+	display: inline-flex;
+	font-family: var(--bs-font-monospace);
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	line-height: 1.2;
+	padding: 0.18rem 0.42rem;
+	text-transform: uppercase;
+}
+
+.civicinfra-affordance {
+	background: var(--civicinfra-surface);
+}
+
+.civicinfra-scope-token {
+	background: var(--civicinfra-accent-muted);
+	border-color: var(--civicinfra-accent);
+}
+
+.civicinfra-channel-list {
+	border: 1px solid var(--civicinfra-border);
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.civicinfra-channel-list > li {
+	border-bottom: 1px solid var(--civicinfra-border);
+	padding: 0.65rem 0.8rem;
+}
+
+.civicinfra-channel-list > li:last-child {
+	border-bottom: 0;
+}
+
+.civicinfra-channel-label {
+	color: var(--civicinfra-primary);
+	font-family: var(--bs-font-sans-serif);
+	font-weight: 700;
+}
+
+.civicinfra-form-section {
+	background: var(--civicinfra-bg);
+	border: 1px solid var(--civicinfra-border);
+	padding: 1rem;
+}
+
+.civicinfra-form-section + .civicinfra-form-section {
+	margin-top: 1rem;
+}
+
+.civicinfra-help-text,
+.civicinfra-field-note,
+.civicinfra-record-meta {
+	color: var(--civicinfra-muted);
+	font-family: var(--bs-font-sans-serif);
+	font-size: 0.875rem;
+}
+
+.civicinfra-notice {
+	background: var(--civicinfra-surface);
+	border: 1px solid var(--civicinfra-border);
+	border-left: 0.35rem solid var(--civicinfra-accent);
+	padding: 0.85rem 1rem;
+}
+
+.civicinfra-warning {
+	border-left-color: var(--civicinfra-danger);
+}
+
+@media (max-width: 767.98px) {
+	.civicinfra-diagnostic-surface,
+	.civicinfra-record-frame,
+	.civicinfra-form-section,
+	.civicinfra-notice {
+		padding: 0.8rem;
+	}
+
+	.civicinfra-record-id,
+	.civicinfra-cid {
+		max-width: 100%;
+	}
+}
