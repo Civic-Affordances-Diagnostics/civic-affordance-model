@@ -1,7 +1,0 @@
-version: 1
-url: $baseurl/webforms
-requires: local_channel
-name: Webforms
-photo: icon:ui-checks-grid
-categories: Productivity
-desc: General-purpose JSON Form Runtime.
