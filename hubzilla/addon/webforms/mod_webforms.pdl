@@ -1,5 +1,26 @@
-[template]full[/template]
+[template]default[/template]
+
+[region=aside]
+[widget=fullprofile][/widget]
+<div class="widget">
+<h3>Webforms Menu</h3>
+<div>Open Repo</div>
+<div>Download</div>
+<div>Import</div>
+<div>Help</div>
+</div>
+<div class="widget">
+<h3>Selection Menu</h3>
+<div>No JSON collection selected.</div>
+<div>When a collection is selected, its plain-text menu appears here.</div>
+</div>
+[/region]
 
 [region=content]
 $content
+[/region]
+
+[region=right_aside]
+[widget=notifications][/widget]
+[widget=newmember][/widget]
 [/region]

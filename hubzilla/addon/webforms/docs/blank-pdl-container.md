@@ -1,88 +1,49 @@
 # Blank PDL Container Test
 
-This document records the intended scope and first live observations for the initial `webforms` implementation.
+This document records the current layout-only Webforms test.
 
-## Objective
+## Confirmed route intent
 
-Create the smallest useful Hubzilla addon page for the future JSON Form Runtime:
+The addon route is expected to be:
 
 ```text
 /webforms
 ```
 
-The page should prove that Hubzilla can host a blank runtime container using an addon module and a PDL shell.
+The route is site/module-level, while Hubzilla channel context remains available through the logged-in session.
 
-## Current hypothesis
+## Layout target
 
-Based on live inspection of Hubzilla 11.2.1:
-
-- addon modules can expose routes such as `/webforms`
-- `load_pdl` is called during routing before theme initialization completes
-- existing addons can register `load_pdl`
-- an addon can set layout content when its module is active
-- addon PDL files can exist as `addon/<addon>/mod_<addon>.pdl`
-
-This first implementation tests that hypothesis with the smallest possible page.
-
-## What the first live test proved
-
-The first live test proved:
-
-- the addon could be installed into the live Hubzilla checkout without core edits
-- the addon compatibility check passed after removing the invalid addon-header `Requires: local_channel`
-- the app descriptor belongs with the addon as `addon/webforms/webforms.apd`, not in the core `app/` directory
-- the addon could be enabled from `/admin/addons`
-- `/webforms` resolved as a route
-- the page loaded as a blank page
-- the Hubzilla top navigation and menus remained available
-
-## Layout observation
-
-The first PDL file used Hubzilla's default template:
+The desired first layout is the normal Hubzilla three-column page:
 
 ```text
-[template]default[/template]
-
-[region=content]
-$content
-[/region]
+Top navigation remains.
+Left aside remains.
+Center content becomes the Webforms runtime container.
+Right aside remains.
 ```
 
-Live observation showed that this produced a usable blank page, but the right-side new-member area was still visible. For a JSON Form Runtime, the preferred first shell is a single content workspace that preserves Hubzilla navigation but does not reserve left or right sidebar regions.
-
-The next PDL test therefore uses the `full` template:
+The left aside should keep the normal profile card and then add plain-text Webforms placeholders:
 
 ```text
-[template]full[/template]
+Webforms Menu
+- Open Repo
+- Download
+- Import
+- Help
 
-[region=content]
-$content
-[/region]
+Selection Menu
+- No JSON collection selected.
 ```
 
-The inspected `full` template is a single-column full-width layout with the Hubzilla navbar. That matches the current requirement better than the default three-column layout.
+The right side should remain Hubzilla-managed and may continue to show New Member Links or other standard widgets.
 
-## What this test does not prove
+## Current implementation boundary
 
-This test does not prove:
+This is not runtime functionality. It is only a layout proof.
 
-- JSON form rendering
-- JSON validation
-- JSON record storage
-- MariaDB schema design
-- API processing
-- Civic Infrastructure workflow behavior
-- channel-relative routing such as `/channel/{channel}/webforms`
+No menu item is a link. No JSON collection is loaded. No form control is rendered. No storage, import, export, API, or Civic Infrastructure behavior is implemented.
 
-Those remain later design and implementation questions.
+## Next design boundary
 
-## Rollback expectation
-
-This contribution is intended to be reversible by disabling the addon or removing the copied files:
-
-```text
-addon/webforms/
-addon/webforms/webforms.apd
-```
-
-No database migration or core edit is introduced by this first test.
+Future behavior should be introduced through JSON definitions loaded by the Webforms runtime, not through hard-coded PHP page behavior.

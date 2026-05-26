@@ -1,7 +1,8 @@
-version: 1
+version: 2
 url: $baseurl/webforms
 requires: local_channel
 name: Webforms
-photo: icon:ui-checks-grid
+photo: icon:list-check
 categories: Productivity
-desc: General-purpose JSON Form Runtime.
+  Development
+desc: General-purpose JSON Form Runtime for Hubzilla.
