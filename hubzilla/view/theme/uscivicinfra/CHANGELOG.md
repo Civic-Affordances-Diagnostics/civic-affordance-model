@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Document successful live channel-selection retry after correcting the theme init signature.
+- Confirm `uscivicinfra` can be selected with the inherited `Focus (Hubzilla default)` scheme for the operator channel.
 - Fix `uscivicinfra_init()` function signature for Hubzilla 11.2.1 runtime invocation.
 - Document the first channel-selection failure, rollback, and root-cause evidence.
 - Document live-server installation, PHP syntax checks, source commit, and file ownership for the deployed theme.

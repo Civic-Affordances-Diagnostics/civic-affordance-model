@@ -327,3 +327,115 @@ Before retrying theme selection:
 - `/settings/display` loads again.
 - `redbasic` remains available.
 - No second enablement attempt should occur until the corrected `php/theme.php` is committed to GitHub, copied to the live server, syntax-checked, and documented.
+
+## Successful retry after init-signature fix
+
+After the root cause was identified, the corrected `php/theme.php` was committed to GitHub with `uscivicinfra_init()` accepting no required arguments. Browser-side GitHub visibility was delayed, so the retry used a server-side clone as the verification source.
+
+Server-side verification and disabled-copy update command:
+
+```bash
+cd /tmp && \
+rm -rf civic-affordance-model && \
+git clone --depth 1 https://github.com/Civic-Affordances-Diagnostics/civic-affordance-model.git && \
+grep -n "function uscivicinfra_init()" /tmp/civic-affordance-model/hubzilla/view/theme/uscivicinfra/php/theme.php && \
+sudo rsync -a \
+  /tmp/civic-affordance-model/hubzilla/view/theme/uscivicinfra/ \
+  /var/www/hubzilla/view/theme/uscivicinfra.disabled/ && \
+sudo chown -R www-data:www-data /var/www/hubzilla/view/theme/uscivicinfra.disabled && \
+cd /var/www/hubzilla && \
+php -l view/theme/uscivicinfra.disabled/php/theme.php && \
+php -l view/theme/uscivicinfra.disabled/php/style.php && \
+php -l view/theme/uscivicinfra.disabled/php/config.php
+```
+
+Observed output:
+
+```text
+Cloning into 'civic-affordance-model'...
+remote: Enumerating objects: 41, done.
+remote: Counting objects: 100% (41/41), done.
+remote: Compressing objects: 100% (37/37), done.
+remote: Total 41 (delta 0), reused 0, pack-reused 0 (from 0)
+Receiving objects: 100% (41/41), 178.67 KiB | 4.36 MiB/s, done.
+15:function uscivicinfra_init() {
+No syntax errors detected in view/theme/uscivicinfra.disabled/php/theme.php
+No syntax errors detected in view/theme/uscivicinfra.disabled/php/style.php
+No syntax errors detected in view/theme/uscivicinfra.disabled/php/config.php
+```
+
+Conclusion:
+
+- The server-side clone verified that the committed GitHub source contained the corrected zero-argument `uscivicinfra_init()` declaration.
+- The corrected theme files were copied only into the disabled directory first.
+- The three theme PHP files passed syntax checks in the disabled directory before restoring the normal theme path.
+
+Restore command:
+
+```bash
+cd /var/www/hubzilla && \
+test ! -d view/theme/uscivicinfra && \
+sudo mv view/theme/uscivicinfra.disabled view/theme/uscivicinfra && \
+sudo chown -R www-data:www-data view/theme/uscivicinfra && \
+echo "uscivicinfra restored" && \
+git status --short
+```
+
+Observed result:
+
+- The command completed without reported errors.
+- `/settings/display` loaded after the restore.
+- The Display Theme dropdown showed both `redbasic` and `uscivicinfra`.
+
+Second channel-selection test:
+
+- Display Theme was set to `uscivicinfra`.
+- Scheme was left as `Focus (Hubzilla default)`.
+- No other custom theme settings were changed.
+- The settings form submitted successfully.
+- The page loaded after submit.
+- The operator immediately observed a visible improvement, specifically reduced type size.
+
+Post-success verification command:
+
+```bash
+cd /var/www/hubzilla && \
+echo "=== git status ===" && \
+git status --short && \
+echo "=== recent uscivicinfra/php errors ===" && \
+tail -n 80 /var/log/nginx/error.log | grep -Ei 'uscivicinfra|fatal|ArgumentCountError|theme.php|settings/display' || true
+```
+
+Observed output:
+
+```text
+=== git status ===
+=== recent uscivicinfra/php errors ===
+2026/05/26 15:36:58 [error] 122#122: *6547 FastCGI sent in stderr: "PHP message: PHP Fatal error:  Uncaught ArgumentCountError: Too few arguments to function uscivicinfra_init(), 0 passed in /var/www/hubzilla/Zotlabs/Web/Router.php on line 273 and exactly 1 expected in /var/www/hubzilla/view/theme/uscivicinfra/php/theme.php:15
+#0 /var/www/hubzilla/Zotlabs/Web/Router.php(273): uscivicinfra_init()
+  thrown in /var/www/hubzilla/view/theme/uscivicinfra/php/theme.php on line 15" while reading response header from upstream, client: 192.168.1.101, server: directory.diagnostics.kane-il.us, request: "GET /settings/display HTTP/1.1", upstream: "fastcgi://unix:/run/php/php8.2-fpm.sock:", host: "directory.diagnostics.kane-il.us", referrer: "https://directory.diagnostics.kane-il.us/settings/display"
+```
+
+Conclusion:
+
+- `git status --short` produced no output, so the tracked Hubzilla working tree remained clean after the successful retry.
+- The only matching fatal error shown in the checked log output was the known earlier `15:36:58` failure.
+- No newer `uscivicinfra` fatal error was reported in the pasted verification output after the successful retry.
+
+## Current deployment state after successful retry
+
+Known state after the successful second channel-selection test:
+
+- GitHub source contains the corrected zero-argument `uscivicinfra_init()` declaration.
+- The corrected theme is restored at `/var/www/hubzilla/view/theme/uscivicinfra/`.
+- The theme is available in Hubzilla.
+- The operator channel can select `uscivicinfra` from `/settings/display`.
+- The operator channel is using `uscivicinfra` with the inherited `Focus (Hubzilla default)` scheme.
+- The first visible improvement was observed after applying the theme.
+- `redbasic` remains available.
+- Hubzilla tracked core files remain clean under `git status --short`.
+- The old fatal error remains in the historical nginx log and should not be mistaken for a new post-fix failure.
+
+## Next intended operational step after this documentation update
+
+Commit this successful retry documentation to the Civic Affordance GitHub repository before any additional design, scheme, addon, wiki, or template-override work. After that commit, the next technical work should be limited to observation and small theme refinements unless a new failure is found.
