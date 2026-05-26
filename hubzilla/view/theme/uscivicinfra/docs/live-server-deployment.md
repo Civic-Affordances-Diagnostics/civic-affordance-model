@@ -479,3 +479,193 @@ Known state after the channel-scoped smoke test:
 ## Next intended operational step after this documentation update
 
 Commit this smoke-test documentation before any further theme refinement. The next technical step should be observation on representative Hubzilla pages, followed by one small CSS or documentation change at a time. Do not begin addon, wiki, JSON-form, or template-override work until the base theme behavior has been observed across enough ordinary Hubzilla pages to establish a stable foundation.
+
+## Inherited redbasic scheme inspection
+
+After the channel-scoped smoke test, the operator tested the inherited redbasic scheme selector under `uscivicinfra`.
+
+Observed result in the Hubzilla display settings page:
+
+- Switching between `Focus (Hubzilla default)` and `Focus-boxy` did not produce an obvious visible difference for the tested page.
+- The `Custom Theme Settings` area remained available, which suggests that inherited redbasic settings may currently provide more practical control than the existing scheme difference.
+
+The installed redbasic scheme files were then inspected on the live server before any custom `uscivicinfra` scheme was proposed.
+
+Command used:
+
+```bash
+cd /var/www/hubzilla && \
+echo "=== redbasic schema files ===" && \
+find view/theme/redbasic/schema -maxdepth 1 -type f | sort && \
+echo "=== focus files ===" && \
+ls -l view/theme/redbasic/schema/*Focus* 2>/dev/null || true
+```
+
+Observed output:
+
+```text
+=== redbasic schema files ===
+view/theme/redbasic/schema/Focus-Boxy.css
+view/theme/redbasic/schema/Focus-Boxy.php
+view/theme/redbasic/schema/bootstrap-nightfall.css
+=== focus files ===
+-rw-r--r-- 1 www-data www-data 717 May 25 12:22 view/theme/redbasic/schema/Focus-Boxy.css
+-rw-r--r-- 1 www-data www-data   6 May 25 12:22 view/theme/redbasic/schema/Focus-Boxy.php
+```
+
+The content of the installed scheme files was then inspected.
+
+Command used:
+
+```bash
+cd /var/www/hubzilla && \
+echo "=== Focus-Boxy.css ===" && \
+cat view/theme/redbasic/schema/Focus-Boxy.css && \
+echo && \
+echo "=== Focus-Boxy.php ===" && \
+cat view/theme/redbasic/schema/Focus-Boxy.php && \
+echo && \
+echo "=== bootstrap-nightfall.css first 80 lines ===" && \
+sed -n '1,80p' view/theme/redbasic/schema/bootstrap-nightfall.css
+```
+
+Observed `Focus-Boxy.css` content:
+
+```css
+.comment .wall-item-body,
+.comment .wall-item-tools-left {
+        padding-left: 3.4rem;
+}
+
+.wall-item-content-wrapper.comment {
+        border-bottom: 1px solid var(--bs-border-color);
+}
+
+.hide-comments-outer,
+.hide-comments-outer:hover {
+        border: 0;
+}
+
+.widget {
+        border: 1px solid var(--bs-border-color);
+}
+
+#note-text {
+        border: 1px solid transparent;
+}
+
+.vcard-card {
+        border: 1px solid var(--bs-border-color);
+        border-bottom: 0;
+}
+
+.vcard-card .card {
+        border: 1px solid var(--bs-border-color);
+        border-top: 0;
+        border-right: 0;
+        border-left: 0;
+}
+
+.vcard-card .vcard {
+        border: 1px solid var(--bs-border-color);
+        border-top: 0;
+        border-right: 0;
+        border-left: 0;
+}
+
+.contact-block-img {
+        width: 2.89rem;
+        height: 2.89rem;
+}
+```
+
+Observed `Focus-Boxy.php` content:
+
+```php
+<?php
+```
+
+Observed beginning of `bootstrap-nightfall.css`:
+
+```css
+/*!
+ * Bootstrap v5.1.3 (https://getbootstrap.com/)
+ * Copyright 2011-2022 The Bootstrap Authors
+ * Copyright 2011-2022 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
+ *
+ * Bootstrap-Nightfall v1.1.3 (https://vinorodrigues.github.io/bootstrap-dark-5/)
+ * Copyright 2020-2022 Vino Rodrigues
+ * This version is an extraction with only the dark elements, or deltas, of the
+ * dark theme.  Used as a bootstrap plugin.
+ */
+:root {
+  color-scheme: dark;
+}
+
+:root {
+  --bs-blue: #375a7f;
+  --bs-indigo: #673ab7;
+  --bs-purple: #654ea3;
+  --bs-pink: #e83e8c;
+  --bs-red: #e74c3c;
+  --bs-orange: #fd7e14;
+  --bs-yellow: #f39c12;
+  --bs-green: #00bc8c;
+  --bs-teal: #45b5aa;
+  --bs-cyan: #17a2b8;
+  --bs-white: #fafafa;
+  --bs-black: #111;
+  --bs-gray: #7e7e7e;
+  --bs-gray-dark: #121212;
+  --bs-gray-100: #e1e1e1;
+  --bs-gray-200: #cfcfcf;
+  --bs-gray-300: #b1b1b1;
+  --bs-gray-400: #9e9e9e;
+  --bs-gray-500: #7e7e7e;
+  --bs-gray-600: #626262;
+  --bs-gray-700: #515151;
+  --bs-gray-800: #3b3b3b;
+  --bs-gray-900: #222;
+  --bs-primary: #375a7f;
+  --bs-secondary: #626262;
+  --bs-success: #00bc8c;
+  --bs-info: #17a2b8;
+  --bs-warning: #f39c12;
+  --bs-danger: #e74c3c;
+  --bs-light: #9e9e9e;
+  --bs-dark: #3b3b3b;
+  --bs-primary-rgb: 55, 90, 127;
+  --bs-secondary-rgb: 98, 98, 98;
+  --bs-success-rgb: 0, 188, 140;
+  --bs-info-rgb: 23, 162, 184;
+  --bs-warning-rgb: 243, 156, 18;
+  --bs-danger-rgb: 231, 76, 60;
+  --bs-light-rgb: 158, 158, 158;
+  --bs-dark-rgb: 59, 59, 59;
+  --bs-white-rgb: 250, 250, 250;
+  --bs-black-rgb: 17, 17, 17;
+  --bs-body-color-rgb: 225, 225, 225;
+  --bs-body-bg-rgb: 34, 34, 34;
+  --bs-body-color: #e1e1e1;
+  --bs-body-bg: #222;
+  --bs-gradient: linear-gradient(180deg, rgba(17, 17, 17, 0.15), rgba(17, 17, 17, 0));
+}
+```
+
+Conclusions:
+
+- `Focus` appears to be the redbasic default baseline rather than a separately installed local file.
+- `Focus-Boxy` is a small CSS overlay, not a broad alternate layout system.
+- `Focus-Boxy.php` contains only the PHP open tag and no apparent logic.
+- `bootstrap-nightfall.css` is a dark Bootstrap variable/style overlay and has not yet been tested under `uscivicinfra`.
+- The inherited redbasic scheme mechanism works enough to expose the selector, but the observed `Focus` versus `Focus-boxy` difference is small.
+- Future `uscivicinfra` schemes remain possible, but should not be created until the base theme is tested across more ordinary Hubzilla pages and the actual desired use-case differences are clearer.
+- For now, `Custom Theme Settings` may be the more practical Hubzilla-native adjustment layer for operator preferences.
+
+Current recommendation:
+
+- Do not create custom `uscivicinfra` schemes yet.
+- Do not perform color coordination yet.
+- Continue documenting ordinary-page observations before adding new CSS.
+- Treat future schemes as presentation variants only, not as a place for civic workflow logic.
