@@ -21,7 +21,7 @@ It intentionally provides:
 - a `load_pdl` hook handler
 - a local addon PDL file, `mod_webforms.pdl`
 - a blank runtime container in the central content region
-- an app descriptor so the page can be exposed through Hubzilla's app mechanism
+- an addon app descriptor so the page can be exposed through Hubzilla's app mechanism without adding an untracked core app/ file
 
 It intentionally avoids:
 
@@ -66,6 +66,6 @@ This is deliberately minimal. The PDL layer places the runtime. It does not defi
 
 ## Expected first test
 
-After the addon and app descriptor are copied into the live Hubzilla checkout and the addon is enabled, visiting `/webforms` as a local channel should load a blank Webforms container page.
+After the addon directory is copied into the live Hubzilla checkout and the addon is enabled, visiting `/webforms` as a local channel should load a blank Webforms container page.
 
 If the app is available but not installed for the channel, Hubzilla may show the normal app installation prompt.

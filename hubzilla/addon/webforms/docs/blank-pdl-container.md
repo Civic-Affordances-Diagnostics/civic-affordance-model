@@ -54,7 +54,7 @@ This contribution is intended to be reversible by disabling the addon or removin
 
 ```text
 addon/webforms/
-app/webforms.apd
+addon/webforms/webforms.apd
 ```
 
 No database migration or core edit is introduced by this first test.

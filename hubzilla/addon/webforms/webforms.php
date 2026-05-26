@@ -39,7 +39,7 @@ function webforms_content() {
 		return '';
 	}
 
-	if (class_exists('Zotlabs\\Lib\\Apps') && !Apps::system_app_installed(local_channel(), 'Webforms')) {
+	if (class_exists('Zotlabs\\Lib\\Apps') && !Apps::addon_app_installed(local_channel(), 'webforms')) {
 		$papp = Apps::get_papp('Webforms');
 		return Apps::app_render($papp, 'module');
 	}
