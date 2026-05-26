@@ -439,3 +439,43 @@ Known state after the successful second channel-selection test:
 ## Next intended operational step after this documentation update
 
 Commit this successful retry documentation to the Civic Affordance GitHub repository before any additional design, scheme, addon, wiki, or template-override work. After that commit, the next technical work should be limited to observation and small theme refinements unless a new failure is found.
+
+## Channel-scoped visual smoke test
+
+After the successful channel-selection retry was documented and committed, the operator performed an initial visual smoke test using the `uscivicinfra` theme on the default channel.
+
+Observed result:
+
+- The site front page loaded while logged in with the default channel.
+- Main navigation was visible.
+- The page was readable.
+- No obvious broken layout, overlap, or blocking display problem was reported.
+- The operator observed that the reduced type size was an immediate improvement.
+
+The operator also tested behavior outside the selected channel context:
+
+- A different browser visiting as a public visitor still loaded `redbasic`.
+- Other channels still loaded `redbasic`.
+- The `uscivicinfra` theme applied only to the operator's default channel.
+
+Conclusion:
+
+- The first visual smoke test passed for the selected channel.
+- The theme selection behaved as a channel-level display preference, not as a site-wide default change.
+- Visitor presentation and other channels were not changed by the operator-channel test.
+- This confirms that the first live test stayed within the intended limited blast radius.
+
+## Current deployment state after visual smoke test
+
+Known state after the channel-scoped smoke test:
+
+- `uscivicinfra` is installed under `/var/www/hubzilla/view/theme/uscivicinfra/`.
+- `uscivicinfra` is available in Hubzilla.
+- The operator's default channel can use `uscivicinfra` with the inherited `Focus (Hubzilla default)` scheme.
+- The site remains on `redbasic` for public visitors.
+- Other channels remain on `redbasic` unless individually changed.
+- No additional theme code changes were made during this observation step.
+
+## Next intended operational step after this documentation update
+
+Commit this smoke-test documentation before any further theme refinement. The next technical step should be observation on representative Hubzilla pages, followed by one small CSS or documentation change at a time. Do not begin addon, wiki, JSON-form, or template-override work until the base theme behavior has been observed across enough ordinary Hubzilla pages to establish a stable foundation.
