@@ -7,7 +7,6 @@
  * Maintainer: TheRON <webmaster@kane-il.us>
  * MinVersion: 11.0
  * MaxVersion: 12.0
- * Requires: local_channel
  */
 
 use Zotlabs\Lib\Apps;
