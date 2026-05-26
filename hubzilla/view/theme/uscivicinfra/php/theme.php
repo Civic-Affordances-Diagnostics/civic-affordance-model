@@ -12,7 +12,7 @@
  * Background_Color: rgb(250,249,246)
  */
 
-function uscivicinfra_init(&$a) {
+function uscivicinfra_init() {
 	if (class_exists('App')) {
 		App::$theme_info['extends'] = 'redbasic';
 	}

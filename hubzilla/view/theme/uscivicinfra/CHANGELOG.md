@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fix `uscivicinfra_init()` function signature for Hubzilla 11.2.1 runtime invocation.
+- Document the first channel-selection failure, rollback, and root-cause evidence.
 - Document live-server installation, PHP syntax checks, source commit, and file ownership for the deployed theme.
 - Add live-server deployment verification documentation.
 

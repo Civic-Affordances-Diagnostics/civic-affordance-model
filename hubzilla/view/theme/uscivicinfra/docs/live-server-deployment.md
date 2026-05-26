@@ -263,3 +263,67 @@ Current known state after the install, syntax check, and ownership verification:
 After this installation documentation is committed to GitHub, the next operational step is to check whether Hubzilla lists `uscivicinfra` in its theme administration interface. If it appears, enable it only for the operator/admin channel first, not as a broad site default.
 
 Do not begin addon, wiki, JSON form, or template-override work until the foundation theme has been confirmed selectable and reversible on the live server.
+
+
+## First enablement and rollback incident
+
+After installation and documentation, the theme was made available in the Hubzilla admin theme interface. The administrator observed that both `redbasic` and `uscivicinfra` could be enabled at the same time. This confirmed that the admin theme page controls available themes, not the single active channel theme.
+
+The administrator then observed that `/settings/display` showed both `redbasic` and `uscivicinfra` in the Display Theme dropdown. The `screenshot.png` file did not appear as a preview image in that page, but direct browser access to the screenshot URL succeeded. This indicated that the screenshot was present, web-accessible, and not itself the blocker.
+
+When `uscivicinfra` was selected for the operator channel with the inherited `Focus (Hubzilla default)` scheme and the form was submitted, the page failed with a browser error indicating that the site could not currently handle the request.
+
+Rollback command used:
+
+```bash
+cd /var/www/hubzilla && \
+sudo mv view/theme/uscivicinfra view/theme/uscivicinfra.disabled && \
+echo "uscivicinfra disabled by directory rename" && \
+git status --short
+```
+
+Observed rollback result:
+
+- `/settings/display` loaded again.
+- `uscivicinfra` disappeared from the Display Theme dropdown.
+- The rollback was therefore effective and reversible.
+
+## Root-cause evidence for first failure
+
+Server log inspection found the fatal error associated with the failed `/settings/display` request. The relevant nginx/PHP-FPM log entry was:
+
+```text
+2026/05/26 15:36:58 [error] 122#122: *6547 FastCGI sent in stderr: "PHP message: PHP Fatal error:  Uncaught ArgumentCountError: Too few arguments to function uscivicinfra_init(), 0 passed in /var/www/hubzilla/Zotlabs/Web/Router.php on line 273 and exactly 1 expected in /var/www/hubzilla/view/theme/uscivicinfra/php/theme.php:15
+#0 /var/www/hubzilla/Zotlabs/Web/Router.php(273): uscivicinfra_init()
+#1 /var/www/hubzilla/Zotlabs/Web/WebServer.php(118): Zotlabs\Web\Router->Dispatch()
+#2 /var/www/hubzilla/index.php(14): Zotlabs\Web\WebServer->run()
+  thrown in /var/www/hubzilla/view/theme/uscivicinfra/php/theme.php on line 15" while reading response header from upstream, client: 192.168.1.101, server: directory.diagnostics.kane-il.us, request: "GET /settings/display HTTP/1.1", upstream: "fastcgi://unix:/run/php/php8.2-fpm.sock:", host: "directory.diagnostics.kane-il.us", referrer: "https://directory.diagnostics.kane-il.us/settings/display"
+```
+
+Conclusion:
+
+- The failure was not caused by CSS, screenshot availability, file ownership, scheme selection, or missing `redbasic`.
+- The live Hubzilla runtime called `uscivicinfra_init()` with zero arguments.
+- The theme implementation incorrectly declared `uscivicinfra_init(&$a)`, requiring one argument.
+- PHP raised an `ArgumentCountError`, causing the page failure.
+
+Corrective action in the next repository update:
+
+```php
+function uscivicinfra_init() {
+	if (class_exists('App')) {
+		App::$theme_info['extends'] = 'redbasic';
+	}
+}
+```
+
+This preserves the redbasic-derived intent while matching the actual Hubzilla 11.2.1 runtime call observed on the live server.
+
+## State before retry
+
+Before retrying theme selection:
+
+- `uscivicinfra` remains renamed to `view/theme/uscivicinfra.disabled` on the live server.
+- `/settings/display` loads again.
+- `redbasic` remains available.
+- No second enablement attempt should occur until the corrected `php/theme.php` is committed to GitHub, copied to the live server, syntax-checked, and documented.
