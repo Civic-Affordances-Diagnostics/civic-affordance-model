@@ -2,25 +2,31 @@
 
 [region=aside]
 
-### Webforms
+<div class="webforms-aside">
+  <h3>Webforms</h3>
 
-Mode:
+  <div class="webforms-mode">
+    <strong>Mode</strong>
+    <div>Design / Deploy</div>
+  </div>
 
-Design / Deploy
+  <div class="webforms-design-placeholder">
+    <h4>Design Mode</h4>
+    <ul>
+      <li>Toolkit placeholder</li>
+      <li>Field palette placeholder</li>
+      <li>Properties placeholder</li>
+    </ul>
+  </div>
 
-### Design Mode
-
-Toolkit placeholder
-
-Field palette placeholder
-
-Properties placeholder
-
-### Deploy Mode
-
-Catalog placeholder
-
-Collection navigation placeholder
+  <div class="webforms-deploy-placeholder">
+    <h4>Deploy Mode</h4>
+    <ul>
+      <li>Catalog placeholder</li>
+      <li>Collection navigation placeholder</li>
+    </ul>
+  </div>
+</div>
 
 [/region]
 
@@ -28,17 +34,19 @@ Collection navigation placeholder
 
 $content
 
-### Design Mode
+<div class="webforms-content">
+  <section class="webforms-design-workspace-placeholder">
+    <h3>Design Mode</h3>
+    <p>An inert grid/snap workspace for composing JSON-defined forms will appear here.</p>
+    <p>No JSON authoring behavior is active yet.</p>
+  </section>
 
-An inert grid/snap workspace for composing JSON-defined forms will appear here.
-
-No JSON authoring behavior is active yet.
-
-### Deploy Mode
-
-Selected JSON-composed webforms will render here after the runtime is implemented.
-
-No deployed webform behavior is active yet.
+  <section class="webforms-deploy-view-placeholder">
+    <h3>Deploy Mode</h3>
+    <p>Selected JSON-composed webforms will render here after the runtime is implemented.</p>
+    <p>No deployed webform behavior is active yet.</p>
+  </section>
+</div>
 
 [/region]
 
