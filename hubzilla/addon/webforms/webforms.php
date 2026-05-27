@@ -68,11 +68,14 @@ function webforms_content() {
         );
     }
 
-    return webforms_design_placeholder(webforms_safe_query_value('design_form'));
+    return webforms_design_placeholder(
+        webforms_safe_query_value('design_form'),
+        webforms_safe_query_value('design_tab')
+    );
 }
 
-function webforms_design_placeholder($design_form = '') {
-    $forms = [
+function webforms_design_options() {
+    return [
         '' => [
             'label' => 'New blank form',
             'description' => 'Start with an empty inert root form container.'
@@ -90,16 +93,58 @@ function webforms_design_placeholder($design_form = '') {
             'description' => 'Placeholder for designing an inert bare-bones email composition sub-form.'
         ],
     ];
+}
+
+function webforms_design_tabs() {
+    return [
+        'grid' => 'Grid',
+        'json' => 'JSON',
+        'services' => 'Services',
+        'federation' => 'Federation',
+        'help' => 'Help',
+    ];
+}
+
+function webforms_normalize_design_tab($design_tab) {
+    if (!array_key_exists($design_tab, webforms_design_tabs())) {
+        return 'grid';
+    }
+
+    return $design_tab;
+}
+
+function webforms_design_tab_nav($design_form, $active_tab) {
+    $tabs = webforms_design_tabs();
+    $out = '<ul class="nav nav-tabs mb-3" id="webforms-design-tabs">';
+
+    foreach ($tabs as $tab => $label) {
+        $class = ($active_tab === $tab) ? 'nav-link active' : 'nav-link';
+        $href = 'webforms?mode=design&design_form=' . rawurlencode($design_form) . '&design_tab=' . rawurlencode($tab);
+
+        $out .= '<li class="nav-item">';
+        $out .= '<a class="' . $class . '" href="' . webforms_h($href) . '">' . webforms_h($label) . '</a>';
+        $out .= '</li>';
+    }
+
+    $out .= '</ul>';
+
+    return $out;
+}
+
+function webforms_design_placeholder($design_form = '', $design_tab = '') {
+    $forms = webforms_design_options();
 
     if (!array_key_exists($design_form, $forms)) {
         $design_form = '';
     }
 
+    $design_tab = webforms_normalize_design_tab($design_tab);
+
     $label = webforms_h($forms[$design_form]['label']);
     $description = webforms_h($forms[$design_form]['description']);
 
     return '
-        <div id="webforms-runtime" class="webforms-content" data-webforms-mode="design" data-webforms-design-form="' . webforms_h($design_form) . '">
+        <div id="webforms-runtime" class="webforms-content" data-webforms-mode="design" data-webforms-design-form="' . webforms_h($design_form) . '" data-webforms-design-tab="' . webforms_h($design_tab) . '">
             <header id="webforms-runtime-header">
                 <h2>Webforms</h2>
                 <p>Mode: Design</p>
@@ -109,24 +154,110 @@ function webforms_design_placeholder($design_form = '') {
                 <h3>Design workspace: ' . $label . '</h3>
                 <p>' . $description . '</p>
 
-                <div id="webforms-design-grid"
-                     class="webforms-design-grid"
-                     data-webforms-container="root-form"
-                     style="min-height: 420px; border: 1px solid #ccc; border-radius: 4px; padding: 1rem; background-image: linear-gradient(#e6e6e6 1px, transparent 1px), linear-gradient(90deg, #e6e6e6 1px, transparent 1px); background-size: 24px 24px; position: relative;">
-                    <div id="webforms-grid-origin"
-                         data-webforms-grid-origin="0,0"
-                         style="position: absolute; top: 8px; left: 8px; font-size: 0.85rem; opacity: 0.75;">
-                        root container · 24px grid · inert
-                    </div>
+                ' . webforms_design_tab_nav($design_form, $design_tab) . '
 
-                    <div id="webforms-sample-field-box"
-                         data-webforms-object="sample-field"
-                         style="position: absolute; top: 72px; left: 72px; width: 220px; min-height: 74px; border: 1px dashed #777; border-radius: 4px; background: rgba(255,255,255,0.85); padding: 0.5rem;">
-                        <label for="webforms-sample-field">Sample field</label>
-                        <input id="webforms-sample-field" class="form-control form-control-sm" type="text" value="" placeholder="inert preview" disabled="disabled">
-                    </div>
-                </div>
+                ' . webforms_design_tab_content($design_tab) . '
             </section>
+        </div>
+    ';
+}
+
+function webforms_design_tab_content($design_tab) {
+    if ($design_tab === 'json') {
+        return webforms_design_json_tab();
+    }
+
+    if ($design_tab === 'services') {
+        return webforms_design_services_tab();
+    }
+
+    if ($design_tab === 'federation') {
+        return webforms_design_federation_tab();
+    }
+
+    if ($design_tab === 'help') {
+        return webforms_design_help_tab();
+    }
+
+    return webforms_design_grid_tab();
+}
+
+function webforms_design_grid_tab() {
+    return '
+        <div id="webforms-design-grid-tab" data-webforms-design-tab-panel="grid">
+            <div id="webforms-design-grid"
+                 class="webforms-design-grid"
+                 data-webforms-container="root-form"
+                 style="min-height: 420px; border: 1px solid #ccc; border-radius: 4px; padding: 1rem; background-image: linear-gradient(#e6e6e6 1px, transparent 1px), linear-gradient(90deg, #e6e6e6 1px, transparent 1px); background-size: 24px 24px; position: relative;">
+                <div id="webforms-grid-origin"
+                     data-webforms-grid-origin="0,0"
+                     style="position: absolute; top: 8px; left: 8px; font-size: 0.85rem; opacity: 0.75;">
+                    root container · 24px grid · inert
+                </div>
+
+                <div id="webforms-sample-field-box"
+                     data-webforms-object="sample-field"
+                     style="position: absolute; top: 72px; left: 72px; width: 220px; min-height: 74px; border: 1px dashed #777; border-radius: 4px; background: rgba(255,255,255,0.85); padding: 0.5rem;">
+                    <label for="webforms-sample-field">Sample field</label>
+                    <input id="webforms-sample-field" class="form-control form-control-sm" type="text" value="" placeholder="inert preview" disabled="disabled">
+                </div>
+            </div>
+        </div>
+    ';
+}
+
+function webforms_design_json_tab() {
+    $sample_json = [
+        'type' => 'webforms.designDraft',
+        'status' => 'inert-placeholder',
+        'note' => 'Browser-generated JSON will appear here later. No server write is performed by this placeholder.'
+    ];
+
+    return '
+        <div id="webforms-design-json-tab" data-webforms-design-tab-panel="json">
+            <h4>JSON</h4>
+            <p>This tab will show the form definition generated from the browser-local design state.</p>
+            <textarea class="form-control" rows="14" readonly="readonly">' . webforms_h(json_encode($sample_json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)) . '</textarea>
+        </div>
+    ';
+}
+
+function webforms_design_services_tab() {
+    return '
+        <div id="webforms-design-services-tab" data-webforms-design-tab-panel="services">
+            <h4>Services</h4>
+            <p>This tab will describe local-only mode and optional service settings for the selected form.</p>
+            <div class="well">
+                <p><strong>Current state:</strong> local-only placeholder.</p>
+                <p>No API keys, credentials, external services, or server writes are active.</p>
+            </div>
+        </div>
+    ';
+}
+
+function webforms_design_federation_tab() {
+    return '
+        <div id="webforms-design-federation-tab" data-webforms-design-tab-panel="federation">
+            <h4>Federation</h4>
+            <p>This tab will later describe Hubzilla-native sharing, service requests, service offers, service results, and permissioned records.</p>
+            <div class="well">
+                Federation behavior is not active.
+            </div>
+        </div>
+    ';
+}
+
+function webforms_design_help_tab() {
+    return '
+        <div id="webforms-design-help-tab" data-webforms-design-tab-panel="help">
+            <h4>Help</h4>
+            <p>Design mode creates inert JSON-composed webform definitions.</p>
+            <ul>
+                <li>Use Grid for visual placement.</li>
+                <li>Use JSON to inspect the generated form definition.</li>
+                <li>Use Services for local/API/service settings.</li>
+                <li>Use Federation for future Hubzilla-native sharing concepts.</li>
+            </ul>
         </div>
     ';
 }
