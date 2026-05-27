@@ -1,0 +1,302 @@
+{
+  "schema_version": "webforms.collection.v0.1-draft",
+  "kind": "collection",
+  "id": "example.short-message-service",
+  "label": "Short Message Service Example",
+  "description": "A non-functional example showing the proposed JSON-Composed Web Forms structure.",
+  "catalog": {
+    "label": "Short Message Service",
+    "description": "Compose and inspect constrained short messages.",
+    "category": "Communication",
+    "tags": ["message", "plain-text", "example"],
+    "visible": true,
+    "order": 100
+  },
+  "navigation": [
+    {
+      "id": "nav.short_message",
+      "label": "Short Message Service",
+      "parent": null,
+      "kind": "collection",
+      "target": "example.short-message-service",
+      "order": 10
+    },
+    {
+      "id": "nav.compose",
+      "label": "Compose Message",
+      "parent": "nav.short_message",
+      "kind": "webform",
+      "target": "webform.compose_short_message",
+      "order": 20
+    },
+    {
+      "id": "nav.forwarding_setting",
+      "label": "Forwarding Address",
+      "parent": "nav.short_message",
+      "kind": "webform",
+      "target": "webform.save_forwarding_address",
+      "order": 30
+    }
+  ],
+  "settings": [
+    {
+      "id": "setting.saved_forwarding_address",
+      "label": "Saved Forwarding Address",
+      "type": "email",
+      "scope": "private_user_setting",
+      "secret": false,
+      "exportable": false,
+      "required": false,
+      "validation": [
+        {
+          "type": "email_single"
+        }
+      ]
+    }
+  ],
+  "webforms": [
+    {
+      "id": "webform.compose_short_message",
+      "label": "Compose Short Message",
+      "description": "Compose a one-recipient plain-text message with strict subject and body limits.",
+      "role": "compose",
+      "pages": [
+        {
+          "id": "page.compose",
+          "title": "Compose Message",
+          "description": "Attachments, CC, BCC, HTML mail, and multiple recipients are outside this example.",
+          "groups": [
+            {
+              "id": "group.message",
+              "label": "Message",
+              "description": "Plain-text message fields.",
+              "fields": [
+                {
+                  "id": "field.to",
+                  "label": "To",
+                  "type": "email",
+                  "required": true,
+                  "validation": [
+                    {
+                      "type": "email_single"
+                    }
+                  ],
+                  "storage_key": "to",
+                  "exportable": true
+                },
+                {
+                  "id": "field.subject",
+                  "label": "Subject",
+                  "type": "text",
+                  "required": true,
+                  "validation": [
+                    {
+                      "type": "max_length",
+                      "value": 64
+                    }
+                  ],
+                  "storage_key": "subject",
+                  "exportable": true
+                },
+                {
+                  "id": "field.body",
+                  "label": "Body",
+                  "type": "textarea",
+                  "required": true,
+                  "validation": [
+                    {
+                      "type": "max_length",
+                      "value": 512
+                    }
+                  ],
+                  "storage_key": "body",
+                  "exportable": false
+                }
+              ],
+              "order": 10
+            }
+          ],
+          "actions": [
+            {
+              "id": "action.send",
+              "label": "Send",
+              "kind": "submit_service_request",
+              "requires_confirmation": false,
+              "service_target": "service.mail_compose_send",
+              "success_result_panel": "result.send_success",
+              "failure_result_panel": "result.send_failure"
+            }
+          ],
+          "result_panels": [
+            {
+              "id": "result.send_success",
+              "label": "Message Sent"
+            },
+            {
+              "id": "result.send_failure",
+              "label": "Message Failed"
+            }
+          ]
+        }
+      ],
+      "service": {
+        "id": "service.mail_compose_send",
+        "type": "mail.compose_send",
+        "mode": "server_adapter",
+        "requires_online_service": true,
+        "inputs": ["to", "subject", "body"],
+        "outputs": ["message_id", "status", "sent_at", "failure_reason"],
+        "success_result_schema": "result.mail_send_attempt",
+        "failure_result_schema": "result.mail_send_attempt",
+        "guarantees": [
+          "input_validated",
+          "one_recipient_enforced",
+          "subject_limit_enforced",
+          "body_limit_enforced",
+          "send_attempt_recorded"
+        ],
+        "side_effects": ["may_send_email"],
+        "credential_requirements": []
+      },
+      "results": [
+        {
+          "record_type": "result.mail_send_attempt",
+          "record_id_strategy": "runtime_assigned",
+          "status_field": "status",
+          "created_at_field": "created_at",
+          "source_webform": "webform.compose_short_message",
+          "exportable": true,
+          "visibility": "private",
+          "retention": "server_managed"
+        }
+      ],
+      "storage": {
+        "record_store": "local_json",
+        "local_json_filename": "mail-send-attempts.json",
+        "per_user": true,
+        "exportable": true,
+        "restorable": true
+      },
+      "visibility": {
+        "default": "private"
+      },
+      "retention": {
+        "policy": "server_managed",
+        "window_days": 31,
+        "notes": "This example models a recent-message window and does not define server mail retention behavior."
+      }
+    },
+    {
+      "id": "webform.save_forwarding_address",
+      "label": "Save Forwarding Address",
+      "description": "Save one external forwarding address as a private user setting. This example does not define automatic forwarding.",
+      "role": "configure",
+      "pages": [
+        {
+          "id": "page.forwarding_address",
+          "title": "Forwarding Address",
+          "description": "Used only for manual forwarding in this pilot example.",
+          "groups": [
+            {
+              "id": "group.forwarding_address",
+              "label": "Private Setting",
+              "description": "One saved external forwarding address.",
+              "fields": [
+                {
+                  "id": "field.forwarding_address",
+                  "label": "External forwarding address",
+                  "type": "email",
+                  "required": false,
+                  "validation": [
+                    {
+                      "type": "email_single"
+                    }
+                  ],
+                  "storage_key": "saved_forwarding_address",
+                  "exportable": false
+                }
+              ],
+              "order": 10
+            }
+          ],
+          "actions": [
+            {
+              "id": "action.save_forwarding_address",
+              "label": "Save",
+              "kind": "save_setting",
+              "requires_confirmation": false,
+              "service_target": "service.save_private_setting",
+              "success_result_panel": "result.save_success",
+              "failure_result_panel": "result.save_failure"
+            }
+          ],
+          "result_panels": [
+            {
+              "id": "result.save_success",
+              "label": "Setting Saved"
+            },
+            {
+              "id": "result.save_failure",
+              "label": "Setting Not Saved"
+            }
+          ]
+        }
+      ],
+      "service": {
+        "id": "service.save_private_setting",
+        "type": "settings.save_private",
+        "mode": "server_adapter",
+        "requires_online_service": false,
+        "inputs": ["saved_forwarding_address"],
+        "outputs": ["status", "updated_at", "failure_reason"],
+        "success_result_schema": "result.private_setting_update",
+        "failure_result_schema": "result.private_setting_update",
+        "guarantees": [
+          "email_single_validated",
+          "private_setting_recorded",
+          "setting_not_exported_as_record"
+        ],
+        "side_effects": ["may_update_private_user_setting"],
+        "credential_requirements": []
+      },
+      "results": [
+        {
+          "record_type": "result.private_setting_update",
+          "record_id_strategy": "runtime_assigned",
+          "status_field": "status",
+          "created_at_field": "created_at",
+          "source_webform": "webform.save_forwarding_address",
+          "exportable": false,
+          "visibility": "private",
+          "retention": "latest_only"
+        }
+      ],
+      "storage": {
+        "record_store": "private_user_setting",
+        "per_user": true,
+        "exportable": false,
+        "restorable": false
+      },
+      "visibility": {
+        "default": "private"
+      },
+      "retention": {
+        "policy": "latest_only"
+      }
+    }
+  ],
+  "handoffs": [],
+  "storage": {
+    "record_store": "local_json",
+    "per_user": true,
+    "exportable": true,
+    "restorable": true
+  },
+  "visibility": {
+    "default": "private"
+  },
+  "retention": {
+    "policy": "mixed",
+    "notes": "Each webform may declare a more specific retention policy."
+  }
+}

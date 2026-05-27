@@ -4,13 +4,13 @@
 
 Design document only.
 
-This index tracks example webforms and collections used to shape the JSON Form Runtime before implementation.
+This index tracks example webforms, comparison documents, and schema-draft documents used to shape the JSON Form Runtime before implementation.
 
 ## Purpose
 
 The project should not design the framework from abstract theory alone.
 
-The framework should be shaped by several concrete service examples, each testing a different kind of requirement.
+The framework should be shaped by concrete service examples, each testing a different kind of requirement.
 
 The first examples are:
 
@@ -20,7 +20,7 @@ Placekey / Address Validation
 Bare-Bones Email Client
 ```
 
-After at least these examples are documented, the framework can be analyzed for common requirements and a first schema draft can take shape.
+After these examples were documented, they were compared for shared framework requirements. That comparison supports an initial static schema draft, but not runtime implementation.
 
 ## Example 1: IPFS / CID Mapping
 
@@ -63,7 +63,7 @@ Primary document:
 hubzilla/addon/webforms/docs/placekey-address-validation-design.md
 ```
 
-This example should test:
+This example tests:
 
 - API key configuration
 - pasted single-line address input
@@ -108,7 +108,7 @@ hubzilla/addon/webforms/docs/bare-bones-email-client-design.md
 
 This example tests requirements not fully covered by IPFS/CID Mapping or Placekey validation.
 
-This example should test:
+This example tests:
 
 - strict subject/body length limits
 - one-recipient send constraint
@@ -134,8 +134,7 @@ one saved external forwarding address
 no attachments
 ```
 
-
-## Framework comparison
+## Comparison document
 
 Primary document:
 
@@ -143,29 +142,65 @@ Primary document:
 hubzilla/addon/webforms/docs/pilot-examples-framework-comparison.md
 ```
 
-After the first three pilot examples, the comparison identifies the shared framework requirements for JSON-Composed Web Forms.
+The comparison identifies shared framework requirements across the three pilot examples.
 
-It focuses on general Hubzilla utility and keeps the addon content-neutral.
+Shared requirements include:
 
-The comparison concludes that the framework is ready for an initial static schema draft, but not ready for runtime coding or external service implementation.
+- Catalog entries
+- collections
+- cascading navigation
+- service-capable webforms
+- display schema
+- data schema
+- validation rules
+- service contracts
+- result records
+- handoff declarations
+- storage/export policy
+- private settings
+- visibility and retention
+- offline/online boundaries
 
-## Analysis plan after examples
+The comparison concludes that a first static schema draft is justified.
 
-After the first three examples are documented, compare them for shared requirements.
+It does not conclude that runtime coding should begin.
 
-The comparison should identify:
+## Initial schema draft
 
-- common metadata fields
-- common navigation fields
-- common form/page/field definitions
-- common validation rule types
-- common service contract fields
-- common result record fields
-- common handoff declarations
-- common storage/export declarations
-- special cases that should not be forced into the core framework
+Primary document:
 
-The result should be a conservative first schema draft.
+```text
+hubzilla/addon/webforms/docs/initial-json-schema-draft.md
+```
+
+Static JSON example:
+
+```text
+hubzilla/addon/webforms/docs/schema-draft-v0.1-collection-example.json
+```
+
+The initial schema draft proposes a minimal vocabulary:
+
+```text
+collection
+catalog
+navigation
+setting
+webform
+page
+group
+field
+validation
+action
+service
+result
+handoff
+storage
+visibility
+retention
+```
+
+The static JSON example is non-functional. It exists to show the proposed object shape before runtime code is written.
 
 ## Guardrails
 
@@ -173,11 +208,13 @@ Do not implement runtime behavior from these examples yet.
 
 Do not add Civic Infrastructure-specific defaults to the `webforms` addon.
 
-Do not hard-code IPFS, Gitea, Placekey, LDAP, MariaDB, or Civic behavior in PHP.
+Do not hard-code IPFS, Gitea, Placekey, LDAP, MariaDB, or mail behavior in PHP.
 
 Do not create database tables until the JSON model stabilizes.
 
 Do not treat these examples as mandatory bundled applications for all Hubzilla users.
+
+Do not treat the static JSON example as a supported runtime format until the schema is reviewed and approved.
 
 ## Current framework hypothesis
 
@@ -192,4 +229,19 @@ What does a service contract require?
 How do outputs become inputs?
 How are records stored and exported?
 How does the left-side navigation represent composition?
+How are private settings separated from exportable records?
+How much of the JSON shape can be validated before any service executes?
 ```
+
+## Current next step
+
+Review the initial schema draft for general Hubzilla utility.
+
+The review should ask:
+
+- Is the vocabulary too large for a first implementation?
+- Is anything application-specific leaking into the framework?
+- Are private settings and exportable records clearly separated?
+- Does the schema describe enough to render static forms later?
+- Does the schema avoid promising external service execution?
+- Can Hubzilla users use this for purposes unrelated to the pilot examples?
