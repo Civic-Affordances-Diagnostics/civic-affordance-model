@@ -60,7 +60,7 @@ IPFS Gitea Browse
 Primary document:
 
 ```text
-not yet created
+hubzilla/addon/webforms/docs/placekey-address-validation-design.md
 ```
 
 This example should test:
@@ -76,6 +76,8 @@ This example should test:
 - batch processing
 - validation failure records
 - downstream handoff to LDAP or other directory schemas
+- candidate/result classification
+- secret/non-secret configuration boundaries
 
 The initial simple case is:
 
