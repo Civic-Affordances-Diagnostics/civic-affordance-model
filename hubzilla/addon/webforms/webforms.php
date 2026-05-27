@@ -109,8 +109,22 @@ function webforms_design_placeholder($design_form = '') {
                 <h3>Design workspace: ' . $label . '</h3>
                 <p>' . $description . '</p>
 
-                <div id="webforms-design-grid" class="well" data-webforms-container="root-form" style="min-height: 320px;">
-                    Root form container placeholder
+                <div id="webforms-design-grid"
+                     class="webforms-design-grid"
+                     data-webforms-container="root-form"
+                     style="min-height: 420px; border: 1px solid #ccc; border-radius: 4px; padding: 1rem; background-image: linear-gradient(#e6e6e6 1px, transparent 1px), linear-gradient(90deg, #e6e6e6 1px, transparent 1px); background-size: 24px 24px; position: relative;">
+                    <div id="webforms-grid-origin"
+                         data-webforms-grid-origin="0,0"
+                         style="position: absolute; top: 8px; left: 8px; font-size: 0.85rem; opacity: 0.75;">
+                        root container · 24px grid · inert
+                    </div>
+
+                    <div id="webforms-sample-field-box"
+                         data-webforms-object="sample-field"
+                         style="position: absolute; top: 72px; left: 72px; width: 220px; min-height: 74px; border: 1px dashed #777; border-radius: 4px; background: rgba(255,255,255,0.85); padding: 0.5rem;">
+                        <label for="webforms-sample-field">Sample field</label>
+                        <input id="webforms-sample-field" class="form-control form-control-sm" type="text" value="" placeholder="inert preview" disabled="disabled">
+                    </div>
                 </div>
             </section>
         </div>

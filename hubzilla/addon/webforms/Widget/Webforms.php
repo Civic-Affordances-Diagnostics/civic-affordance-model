@@ -126,11 +126,18 @@ class Webforms {
 
                     <hr>
 
-                    <ul>
-                        <li data-webforms-tool="container">Container</li>
-                        <li data-webforms-tool="field">Field</li>
-                        <li data-webforms-tool="properties">Properties</li>
-                    </ul>
+                    <div id="webforms-design-toolbar" class="webforms-design-toolbar" data-webforms-panel="toolbar">
+                        <h5>Toolbar</h5>
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" disabled="disabled" data-webforms-tool="container">Container</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" disabled="disabled" data-webforms-tool="field">Field</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" disabled="disabled" data-webforms-tool="label">Label</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" disabled="disabled" data-webforms-tool="button">Button</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" disabled="disabled" data-webforms-tool="result-panel">Result panel</button>
+                        </div>
+                    </div>
+
+                    <hr>
 
                     <div id="webforms-design-selection" data-webforms-panel="selection">
                         <h5>Selected object</h5>
