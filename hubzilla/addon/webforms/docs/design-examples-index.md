@@ -17,7 +17,7 @@ The first examples are:
 ```text
 IPFS / CID Mapping
 Placekey / Address Validation
-one additional example to be selected
+Bare-Bones Email Client
 ```
 
 After at least these examples are documented, the framework can be analyzed for common requirements and a first schema draft can take shape.
@@ -98,27 +98,41 @@ TIGER/Census street data
   -> address/result records
 ```
 
-## Example 3: To be selected
+## Example 3: Bare-Bones Email Client
 
-The third example should test requirements not fully covered by IPFS/CID Mapping or Placekey validation.
-
-Possible candidates:
+Primary document:
 
 ```text
-LDAP schema/import workflow
-MariaDB migration workflow
-document attestation workflow
-email/newsletter workflow
-JSON backup/restore workflow
+hubzilla/addon/webforms/docs/bare-bones-email-client-design.md
 ```
 
-Selection criteria:
+This example tests requirements not fully covered by IPFS/CID Mapping or Placekey validation.
 
-- exposes a different class of validation
-- produces a different class of output record
-- demonstrates another form of handoff
-- helps identify general framework requirements
-- remains useful outside Civic Infrastructure
+This example should test:
+
+- strict subject/body length limits
+- one-recipient send constraint
+- no attachments in the webform UI
+- plain-text-only composition
+- recent-message windowing for sent and received mail
+- manual forwarding only
+- one saved external forwarding address
+- private per-user configuration
+- server-policy alignment
+- result records for send/forward attempts
+- non-exportable private settings
+
+The confirmed pilot scope is:
+
+```text
+read messages sent or received in the last 30 / 31 days
+compose one-recipient plain-text message
+subject <= 64 characters
+body <= 512 characters
+manual forwarding only
+one saved external forwarding address
+no attachments
+```
 
 ## Analysis plan after examples
 
