@@ -8,8 +8,6 @@
  * MaxVersion: 12.0
  */
 
-use Zotlabs\Lib\Apps;
-
 function webforms_module() {}
 
 function webforms_load() {
@@ -35,11 +33,6 @@ function webforms_load_pdl(&$b) {
 function webforms_content() {
     if (!local_channel()) {
         return '<div class="webforms-content"><h2>Webforms</h2><p>Sign in to use Webforms.</p></div>';
-    }
-
-    if (class_exists('Zotlabs\\Lib\\Apps') && !Apps::addon_app_installed(local_channel(), 'webforms')) {
-        $papp = Apps::get_papp('Webforms');
-        return Apps::app_render($papp, 'module');
     }
 
     $mode = 'design';
