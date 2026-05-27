@@ -15,6 +15,21 @@
 
   <div id="webforms-design-tools" class="webforms-design-tools" data-webforms-panel="design-tools">
     <h4>Design</h4>
+
+    <form id="webforms-design-selector" method="get" action="webforms">
+      <input type="hidden" name="mode" value="design">
+      <label for="webforms-design-form-select">Select form to design</label>
+      <select id="webforms-design-form-select" name="design_form" class="form-control form-control-sm">
+        <option value="">New blank form</option>
+        <option value="ipfs-publish">IPFS Publish</option>
+        <option value="placekey-verify-address">Placekey Verify Address</option>
+        <option value="email-compose">Email Compose</option>
+      </select>
+      <button type="submit" class="btn btn-sm btn-secondary mt-2">Load design</button>
+    </form>
+
+    <hr>
+
     <ul>
       <li data-webforms-tool="container">Container</li>
       <li data-webforms-tool="field">Field</li>
