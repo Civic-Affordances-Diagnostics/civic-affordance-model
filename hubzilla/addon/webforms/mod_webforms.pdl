@@ -5,25 +5,31 @@
 <div class="webforms-aside">
   <h3>Webforms</h3>
 
-  <div class="webforms-mode">
+  <div class="webforms-mode-selector">
     <strong>Mode</strong>
-    <div>Design / Deploy</div>
+    <div class="btn-group btn-group-sm mt-2 mb-3" role="group" aria-label="Webforms mode placeholder">
+      <button type="button" class="btn btn-primary" disabled="disabled">Design</button>
+      <button type="button" class="btn btn-outline-secondary" disabled="disabled">Deploy</button>
+    </div>
   </div>
 
-  <div class="webforms-design-placeholder">
-    <h4>Design Mode</h4>
+  <div class="webforms-design-tools">
+    <h4>Design</h4>
     <ul>
-      <li>Toolkit placeholder</li>
-      <li>Field palette placeholder</li>
-      <li>Properties placeholder</li>
+      <li>Toolkit</li>
+      <li>Field palette</li>
+      <li>Properties</li>
     </ul>
   </div>
 
-  <div class="webforms-deploy-placeholder">
-    <h4>Deploy Mode</h4>
+  <hr>
+
+  <div class="webforms-deploy-navigation">
+    <h4>Deploy</h4>
     <ul>
-      <li>Catalog placeholder</li>
-      <li>Collection navigation placeholder</li>
+      <li>Catalog</li>
+      <li>Collections</li>
+      <li>Webforms</li>
     </ul>
   </div>
 </div>
@@ -36,13 +42,15 @@ $content
 
 <div class="webforms-content">
   <section class="webforms-design-workspace-placeholder">
-    <h3>Design Mode</h3>
-    <p>An inert grid/snap workspace for composing JSON-defined forms will appear here.</p>
-    <p>No JSON authoring behavior is active yet.</p>
+    <h3>Design workspace</h3>
+    <p>This area will become an inert grid/snap workspace for composing JSON-defined forms.</p>
+    <div class="well">
+      Grid / snap workspace placeholder
+    </div>
   </section>
 
   <section class="webforms-deploy-view-placeholder">
-    <h3>Deploy Mode</h3>
+    <h3>Deploy preview</h3>
     <p>Selected JSON-composed webforms will render here after the runtime is implemented.</p>
     <p>No deployed webform behavior is active yet.</p>
   </section>
