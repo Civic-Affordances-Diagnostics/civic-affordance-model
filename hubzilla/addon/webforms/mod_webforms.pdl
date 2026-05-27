@@ -2,7 +2,10 @@
 
 [region=aside]
 
-[widget=webforms][/widget]
+<div id="webforms-aside" class="webforms-aside">
+  <h3>Webforms</h3>
+  <p>Webforms sidebar fallback.</p>
+</div>
 
 [/region]
 
