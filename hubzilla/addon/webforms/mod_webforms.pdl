@@ -1,24 +1,14 @@
 [template]default[/template]
 
 [region=aside]
-
-<div id="webforms-aside" class="webforms-aside">
-  <h3>Webforms</h3>
-  <p>Webforms sidebar fallback.</p>
-</div>
-
+[widget=webforms][/widget]
 [/region]
 
 [region=content]
-
 $content
-
 [/region]
 
 [region=right_aside]
-
 [widget=notifications][/widget]
-
 [widget=newmember][/widget]
-
 [/region]
