@@ -1,25 +1,51 @@
 [template]default[/template]
 
 [region=aside]
-<div class="widget">
-<h3>Webforms Menu</h3>
-<div>Open Repo</div>
-<div>Download</div>
-<div>Import</div>
-<div>Help</div>
-</div>
-<div class="widget">
-<h3>Selection Menu</h3>
-<div>No JSON collection selected.</div>
-<div>When a collection is selected, its plain-text menu appears here.</div>
-</div>
+
+### Webforms
+
+Mode:
+
+Design / Deploy
+
+### Design Mode
+
+Toolkit placeholder
+
+Field palette placeholder
+
+Properties placeholder
+
+### Deploy Mode
+
+Catalog placeholder
+
+Collection navigation placeholder
+
 [/region]
 
 [region=content]
+
 $content
+
+### Design Mode
+
+An inert grid/snap workspace for composing JSON-defined forms will appear here.
+
+No JSON authoring behavior is active yet.
+
+### Deploy Mode
+
+Selected JSON-composed webforms will render here after the runtime is implemented.
+
+No deployed webform behavior is active yet.
+
 [/region]
 
 [region=right_aside]
+
 [widget=notifications][/widget]
+
 [widget=newmember][/widget]
+
 [/region]
