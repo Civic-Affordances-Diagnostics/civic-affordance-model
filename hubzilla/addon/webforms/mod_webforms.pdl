@@ -7,9 +7,9 @@
 
   <div class="webforms-mode-selector">
     <strong>Mode</strong>
-    <div class="btn-group btn-group-sm mt-2 mb-3" role="group" aria-label="Webforms mode placeholder">
-      <button type="button" class="btn btn-primary" disabled="disabled">Design</button>
-      <button type="button" class="btn btn-outline-secondary" disabled="disabled">Deploy</button>
+    <div class="btn-group btn-group-sm mt-2 mb-3" role="group" aria-label="Webforms mode">
+      <a class="btn btn-outline-secondary" href="webforms?mode=design">Design</a>
+      <a class="btn btn-outline-secondary" href="webforms?mode=deploy">Deploy</a>
     </div>
   </div>
 
@@ -39,22 +39,6 @@
 [region=content]
 
 $content
-
-<div class="webforms-content">
-  <section class="webforms-design-workspace-placeholder">
-    <h3>Design workspace</h3>
-    <p>This area will become an inert grid/snap workspace for composing JSON-defined forms.</p>
-    <div class="well">
-      Grid / snap workspace placeholder
-    </div>
-  </section>
-
-  <section class="webforms-deploy-view-placeholder">
-    <h3>Deploy preview</h3>
-    <p>Selected JSON-composed webforms will render here after the runtime is implemented.</p>
-    <p>No deployed webform behavior is active yet.</p>
-  </section>
-</div>
 
 [/region]
 
