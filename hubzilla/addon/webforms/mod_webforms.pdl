@@ -20,6 +20,11 @@
       <li data-webforms-tool="field">Field</li>
       <li data-webforms-tool="properties">Properties</li>
     </ul>
+
+    <div id="webforms-design-selection" data-webforms-panel="selection">
+      <h5>Selected object</h5>
+      <p>No object selected.</p>
+    </div>
   </div>
 
   <hr>

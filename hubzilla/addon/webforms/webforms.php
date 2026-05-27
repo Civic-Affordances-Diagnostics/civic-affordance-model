@@ -63,11 +63,6 @@ function webforms_design_placeholder() {
                 <div id="webforms-design-grid" class="well" data-webforms-container="root-form" style="min-height: 320px;">
                     Root form container placeholder
                 </div>
-
-                <div id="webforms-design-selection" data-webforms-panel="selection">
-                    <h4>Selected object</h4>
-                    <p>No object selected.</p>
-                </div>
             </section>
         </div>
     ';
