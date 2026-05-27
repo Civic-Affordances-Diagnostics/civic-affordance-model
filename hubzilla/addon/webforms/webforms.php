@@ -32,7 +32,7 @@ function webforms_load_pdl(&$b) {
 
 function webforms_content() {
     if (!local_channel()) {
-        return '<div class="webforms-content"><h2>Webforms</h2><p>Sign in to use Webforms.</p></div>';
+        return '<div id="webforms-runtime" class="webforms-content"><h2>Webforms</h2><p>Sign in to use Webforms.</p></div>';
     }
 
     $mode = 'design';
@@ -50,15 +50,24 @@ function webforms_content() {
 
 function webforms_design_placeholder() {
     return '
-        <div class="webforms-content">
-            <h2>Webforms</h2>
-            <section class="webforms-design-workspace-placeholder">
+        <div id="webforms-runtime" class="webforms-content" data-webforms-mode="design">
+            <header id="webforms-runtime-header">
+                <h2>Webforms</h2>
+                <p>Mode: Design</p>
+            </header>
+
+            <section id="webforms-design-workspace" class="webforms-design-workspace-placeholder" data-webforms-container="design-workspace">
                 <h3>Design workspace</h3>
-                <p>This area will become an inert grid/snap workspace for composing JSON-defined forms.</p>
-                <div class="well">
-                    Grid / snap workspace placeholder
+                <p>This inert workspace will later compose JSON-defined forms.</p>
+
+                <div id="webforms-design-grid" class="well" data-webforms-container="root-form" style="min-height: 320px;">
+                    Root form container placeholder
                 </div>
-                <p>No JSON authoring behavior is active yet.</p>
+
+                <div id="webforms-design-selection" data-webforms-panel="selection">
+                    <h4>Selected object</h4>
+                    <p>No object selected.</p>
+                </div>
             </section>
         </div>
     ';
@@ -66,12 +75,19 @@ function webforms_design_placeholder() {
 
 function webforms_deploy_placeholder() {
     return '
-        <div class="webforms-content">
-            <h2>Webforms</h2>
-            <section class="webforms-deploy-view-placeholder">
+        <div id="webforms-runtime" class="webforms-content" data-webforms-mode="deploy">
+            <header id="webforms-runtime-header">
+                <h2>Webforms</h2>
+                <p>Mode: Deploy</p>
+            </header>
+
+            <section id="webforms-deploy-view" class="webforms-deploy-view-placeholder" data-webforms-container="deploy-view">
                 <h3>Deploy preview</h3>
                 <p>Selected JSON-composed webforms will render here after the runtime is implemented.</p>
-                <p>No deployed webform behavior is active yet.</p>
+
+                <div id="webforms-deploy-empty-state" class="well" data-webforms-panel="empty-deploy-view">
+                    No JSON collection selected.
+                </div>
             </section>
         </div>
     ';
