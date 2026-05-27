@@ -42,7 +42,18 @@ function webforms_content() {
     }
 
     if ($mode === 'deploy') {
-        return webforms_deploy_placeholder();
+        $collection = '';
+        $deploy_form = '';
+
+        if (isset($_GET['collection'])) {
+            $collection = preg_replace('/[^a-z0-9_-]/', '', $_GET['collection']);
+        }
+
+        if (isset($_GET['deploy_form'])) {
+            $deploy_form = preg_replace('/[^a-z0-9_-]/', '', $_GET['deploy_form']);
+        }
+
+        return webforms_deploy_placeholder($collection, $deploy_form);
     }
 
     $design_form = '';
@@ -100,9 +111,50 @@ function webforms_design_placeholder($design_form = '') {
     ';
 }
 
-function webforms_deploy_placeholder() {
+function webforms_deploy_placeholder($collection = '', $deploy_form = '') {
+    $collections = [
+        '' => 'No collection selected',
+        'cid-mapping' => 'CID Mapping',
+        'placekey-address-validation' => 'Placekey Address Validation',
+        'bare-bones-email-client' => 'Bare-Bones Email Client',
+    ];
+
+    $forms = [
+        '' => 'No webform selected',
+        'ipfs-publish' => 'IPFS Publish',
+        'ipfs-pin-request' => 'IPFS Pin Request',
+        'ipfs-schedule-pin' => 'IPFS Schedule Pin',
+        'ipfs-map-pin' => 'IPFS Map Pin',
+        'ipfs-gitea-browse' => 'IPFS Gitea Browse',
+        'placekey-verify-address' => 'Placekey Verify Address',
+        'email-inbox' => 'Email Recent Messages',
+        'email-compose' => 'Email Compose',
+        'email-forward' => 'Email Forward',
+    ];
+
+    if (!array_key_exists($collection, $collections)) {
+        $collection = '';
+    }
+
+    if (!array_key_exists($deploy_form, $forms)) {
+        $deploy_form = '';
+    }
+
+    $collection_label = htmlspecialchars($collections[$collection], ENT_QUOTES, 'UTF-8');
+    $form_label = htmlspecialchars($forms[$deploy_form], ENT_QUOTES, 'UTF-8');
+
+    if ($collection === '' && $deploy_form === '') {
+        $message = 'No JSON collection or webform selected.';
+    }
+    elseif ($deploy_form === '') {
+        $message = 'Collection selected. No webform selected.';
+    }
+    else {
+        $message = 'Inert deploy placeholder for the selected webform.';
+    }
+
     return '
-        <div id="webforms-runtime" class="webforms-content" data-webforms-mode="deploy">
+        <div id="webforms-runtime" class="webforms-content" data-webforms-mode="deploy" data-webforms-collection="' . htmlspecialchars($collection, ENT_QUOTES, 'UTF-8') . '" data-webforms-deploy-form="' . htmlspecialchars($deploy_form, ENT_QUOTES, 'UTF-8') . '">
             <header id="webforms-runtime-header">
                 <h2>Webforms</h2>
                 <p>Mode: Deploy</p>
@@ -110,10 +162,11 @@ function webforms_deploy_placeholder() {
 
             <section id="webforms-deploy-view" class="webforms-deploy-view-placeholder" data-webforms-container="deploy-view">
                 <h3>Deploy preview</h3>
-                <p>Selected JSON-composed webforms will render here after the runtime is implemented.</p>
 
                 <div id="webforms-deploy-empty-state" class="well" data-webforms-panel="empty-deploy-view">
-                    No JSON collection selected.
+                    <p><strong>Collection:</strong> ' . $collection_label . '</p>
+                    <p><strong>Webform:</strong> ' . $form_label . '</p>
+                    <p>' . htmlspecialchars($message, ENT_QUOTES, 'UTF-8') . '</p>
                 </div>
             </section>
         </div>

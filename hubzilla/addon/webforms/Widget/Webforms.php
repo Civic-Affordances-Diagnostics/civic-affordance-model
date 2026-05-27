@@ -81,6 +81,52 @@ class Webforms {
     }
 
     private function deploy_widget() {
+        $collection = '';
+
+        if (isset($_GET['collection'])) {
+            $collection = preg_replace('/[^a-z0-9_-]/', '', $_GET['collection']);
+        }
+
+        $deploy_form = '';
+
+        if (isset($_GET['deploy_form'])) {
+            $deploy_form = preg_replace('/[^a-z0-9_-]/', '', $_GET['deploy_form']);
+        }
+
+        $collections = [
+            '' => 'Select collection',
+            'cid-mapping' => 'CID Mapping',
+            'placekey-address-validation' => 'Placekey Address Validation',
+            'bare-bones-email-client' => 'Bare-Bones Email Client',
+        ];
+
+        $forms = [
+            '' => 'Select webform',
+            'ipfs-publish' => 'IPFS Publish',
+            'ipfs-pin-request' => 'IPFS Pin Request',
+            'ipfs-schedule-pin' => 'IPFS Schedule Pin',
+            'ipfs-map-pin' => 'IPFS Map Pin',
+            'ipfs-gitea-browse' => 'IPFS Gitea Browse',
+            'placekey-verify-address' => 'Placekey Verify Address',
+            'email-inbox' => 'Email Recent Messages',
+            'email-compose' => 'Email Compose',
+            'email-forward' => 'Email Forward',
+        ];
+
+        $collection_select = '';
+
+        foreach ($collections as $value => $label) {
+            $selected = ($collection === $value) ? ' selected="selected"' : '';
+            $collection_select .= '<option value="' . htmlspecialchars($value, ENT_QUOTES, 'UTF-8') . '"' . $selected . '>' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</option>';
+        }
+
+        $form_select = '';
+
+        foreach ($forms as $value => $label) {
+            $selected = ($deploy_form === $value) ? ' selected="selected"' : '';
+            $form_select .= '<option value="' . htmlspecialchars($value, ENT_QUOTES, 'UTF-8') . '"' . $selected . '>' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</option>';
+        }
+
         return '
             <div id="webforms-aside" class="webforms-aside" data-webforms-mode="deploy">
                 <h3>Webforms</h3>
@@ -95,11 +141,22 @@ class Webforms {
 
                 <div id="webforms-deploy-navigation" class="webforms-deploy-navigation" data-webforms-panel="deploy-navigation">
                     <h4>Deploy</h4>
-                    <ul>
-                        <li data-webforms-nav="catalog">Catalog</li>
-                        <li data-webforms-nav="collections">Collections</li>
-                        <li data-webforms-nav="webforms">Webforms</li>
-                    </ul>
+
+                    <form id="webforms-deploy-selector" method="get" action="webforms">
+                        <input type="hidden" name="mode" value="deploy">
+
+                        <label for="webforms-deploy-collection-select">Collection</label>
+                        <select id="webforms-deploy-collection-select" name="collection" class="form-control form-control-sm">'
+                            . $collection_select .
+                        '</select>
+
+                        <label for="webforms-deploy-form-select" class="mt-2">Webform</label>
+                        <select id="webforms-deploy-form-select" name="deploy_form" class="form-control form-control-sm">'
+                            . $form_select .
+                        '</select>
+
+                        <button type="submit" class="btn btn-sm btn-secondary mt-2">Load deploy view</button>
+                    </form>
                 </div>
             </div>
         ';
