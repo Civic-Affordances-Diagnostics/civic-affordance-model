@@ -134,6 +134,21 @@ one saved external forwarding address
 no attachments
 ```
 
+
+## Framework comparison
+
+Primary document:
+
+```text
+hubzilla/addon/webforms/docs/pilot-examples-framework-comparison.md
+```
+
+After the first three pilot examples, the comparison identifies the shared framework requirements for JSON-Composed Web Forms.
+
+It focuses on general Hubzilla utility and keeps the addon content-neutral.
+
+The comparison concludes that the framework is ready for an initial static schema draft, but not ready for runtime coding or external service implementation.
+
 ## Analysis plan after examples
 
 After the first three examples are documented, compare them for shared requirements.
