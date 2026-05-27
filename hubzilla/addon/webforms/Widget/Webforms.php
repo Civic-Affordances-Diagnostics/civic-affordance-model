@@ -49,6 +49,26 @@ class Webforms {
         ];
     }
 
+    private function design_tabs() {
+        return [
+            'grid' => 'Grid',
+            'json' => 'JSON',
+            'services' => 'Services',
+            'federation' => 'Federation',
+            'help' => 'Help',
+        ];
+    }
+
+    private function current_design_tab() {
+        $design_tab = $this->safe_query_value('design_tab');
+
+        if (!array_key_exists($design_tab, $this->design_tabs())) {
+            return 'grid';
+        }
+
+        return $design_tab;
+    }
+
     private function collection_options() {
         return [
             '' => 'Select collection',
@@ -106,17 +126,18 @@ class Webforms {
             $design_form = '';
         }
 
+        $design_tab = $this->current_design_tab();
+
         return '
-            <div id="webforms-aside" class="widget webforms-aside" data-webforms-mode="design">
+            <div id="webforms-aside" class="widget webforms-aside" data-webforms-mode="design" data-webforms-design-tab="' . $this->h($design_tab) . '">
                 <h3>Webforms</h3>
 
                 ' . $this->mode_selector('design') . '
 
                 <div id="webforms-design-tools" class="webforms-design-tools" data-webforms-panel="design-tools">
-                    <h4>Design</h4>
-
                     <form id="webforms-design-selector" method="get" action="webforms">
                         <input type="hidden" name="mode" value="design">
+                        <input type="hidden" name="design_tab" value="' . $this->h($design_tab) . '">
                         <label for="webforms-design-form-select">Select form to design</label>
                         <select id="webforms-design-form-select" name="design_form" class="form-control form-control-sm">'
                             . $this->select_options($this->design_options(), $design_form) .
@@ -126,14 +147,11 @@ class Webforms {
 
                     <hr>
 
-                    <div id="webforms-design-toolbar" class="webforms-design-toolbar" data-webforms-panel="toolbar">
-                        <h5>Toolbar</h5>
-                        <div class="d-grid gap-2">
-                            <button type="button" class="btn btn-sm btn-outline-secondary" disabled="disabled" data-webforms-tool="container">Container</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" disabled="disabled" data-webforms-tool="field">Field</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" disabled="disabled" data-webforms-tool="label">Label</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" disabled="disabled" data-webforms-tool="button">Button</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" disabled="disabled" data-webforms-tool="result-panel">Result panel</button>
+                    <div id="webforms-design-toolbar" class="webforms-design-toolbar" data-webforms-panel="toolbar" data-webforms-toolbar-tab="' . $this->h($design_tab) . '">
+                        <h5>Toolbar: ' . $this->h($this->design_tabs()[$design_tab]) . '</h5>
+                        ' . $this->toolbar_matrix($design_tab) . '
+                        <div id="webforms-tool-status" class="small text-muted mt-2" data-webforms-panel="tool-status">
+                            Select a tool to see details.
                         </div>
                     </div>
 
@@ -146,6 +164,100 @@ class Webforms {
                 </div>
             </div>
         ';
+    }
+
+    private function toolbar_matrix($design_tab) {
+        $tools = $this->toolbar_tools($design_tab);
+        $out = '<div class="webforms-toolbar-grid" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.25rem;" role="group" aria-label="Webforms design toolbar">';
+
+        for ($i = 0; $i < 30; $i++) {
+            if (isset($tools[$i])) {
+                $tool = $tools[$i];
+                $out .= '
+                    <button type="button"
+                            class="btn btn-sm btn-outline-secondary"
+                            disabled="disabled"
+                            title="' . $this->h($tool['title']) . '"
+                            data-webforms-tool="' . $this->h($tool['key']) . '"
+                            data-webforms-tool-description="' . $this->h($tool['title']) . '">'
+                            . $this->h($tool['label']) .
+                    '</button>
+                ';
+            }
+            else {
+                $out .= '<span class="webforms-toolbar-empty" aria-hidden="true"></span>';
+            }
+        }
+
+        $out .= '</div>';
+
+        return $out;
+    }
+
+    private function toolbar_tools($design_tab) {
+        if ($design_tab === 'json') {
+            return [
+                ['key' => 'copy-json', 'label' => 'Copy', 'title' => 'Copy generated JSON'],
+                ['key' => 'download-json', 'label' => 'Save', 'title' => 'Download generated JSON'],
+                ['key' => 'import-json', 'label' => 'Import', 'title' => 'Import JSON into the designer'],
+                ['key' => 'validate-json', 'label' => 'Check', 'title' => 'Validate JSON structure'],
+                ['key' => 'format-json', 'label' => 'Format', 'title' => 'Format JSON for readability'],
+                ['key' => 'clear-json', 'label' => 'Clear', 'title' => 'Clear local draft JSON'],
+            ];
+        }
+
+        if ($design_tab === 'services') {
+            return [
+                ['key' => 'service', 'label' => 'Svc', 'title' => 'Add service definition'],
+                ['key' => 'endpoint', 'label' => 'URL', 'title' => 'Add service endpoint'],
+                ['key' => 'auth', 'label' => 'Auth', 'title' => 'Add authentication method'],
+                ['key' => 'api-key', 'label' => 'Key', 'title' => 'Add API key setting'],
+                ['key' => 'login', 'label' => 'Login', 'title' => 'Add login setting'],
+                ['key' => 'local-only', 'label' => 'Local', 'title' => 'Set local-only mode'],
+                ['key' => 'result-map', 'label' => 'Result', 'title' => 'Add result mapping'],
+                ['key' => 'failure-map', 'label' => 'Fail', 'title' => 'Add failure mapping'],
+                ['key' => 'timeout', 'label' => 'Time', 'title' => 'Add timeout setting'],
+                ['key' => 'retry', 'label' => 'Retry', 'title' => 'Add retry policy'],
+            ];
+        }
+
+        if ($design_tab === 'federation') {
+            return [
+                ['key' => 'channel-target', 'label' => 'Chan', 'title' => 'Add channel target'],
+                ['key' => 'group-target', 'label' => 'Group', 'title' => 'Add privacy group target'],
+                ['key' => 'public-visibility', 'label' => 'Public', 'title' => 'Add public visibility'],
+                ['key' => 'service-request', 'label' => 'Req', 'title' => 'Add service request'],
+                ['key' => 'service-offer', 'label' => 'Offer', 'title' => 'Add service offer'],
+                ['key' => 'service-result', 'label' => 'Result', 'title' => 'Add service result'],
+                ['key' => 'summary', 'label' => 'Sum', 'title' => 'Add public summary'],
+                ['key' => 'retention', 'label' => 'Retain', 'title' => 'Add retention hint'],
+                ['key' => 'permission', 'label' => 'Perm', 'title' => 'Add permission rule'],
+                ['key' => 'clone-note', 'label' => 'Clone', 'title' => 'Add clone or nomadic identity note'],
+            ];
+        }
+
+        if ($design_tab === 'help') {
+            return [
+                ['key' => 'help-grid', 'label' => 'Grid', 'title' => 'Show grid help'],
+                ['key' => 'help-json', 'label' => 'JSON', 'title' => 'Show JSON help'],
+                ['key' => 'help-services', 'label' => 'Svc', 'title' => 'Show services help'],
+                ['key' => 'help-federation', 'label' => 'Fed', 'title' => 'Show federation help'],
+                ['key' => 'help-shortcuts', 'label' => 'Keys', 'title' => 'Show keyboard shortcut help'],
+            ];
+        }
+
+        return [
+            ['key' => 'container', 'label' => 'Box', 'title' => 'Add container'],
+            ['key' => 'field', 'label' => 'Field', 'title' => 'Add field'],
+            ['key' => 'label', 'label' => 'Label', 'title' => 'Add label'],
+            ['key' => 'text', 'label' => 'Text', 'title' => 'Add text input'],
+            ['key' => 'textarea', 'label' => 'Area', 'title' => 'Add textarea'],
+            ['key' => 'select', 'label' => 'Select', 'title' => 'Add select list'],
+            ['key' => 'checkbox', 'label' => 'Check', 'title' => 'Add checkbox'],
+            ['key' => 'button', 'label' => 'Button', 'title' => 'Add button'],
+            ['key' => 'result-panel', 'label' => 'Result', 'title' => 'Add result panel'],
+            ['key' => 'help-text', 'label' => 'Help', 'title' => 'Add help text'],
+        ];
     }
 
     private function deploy_widget() {
