@@ -68,10 +68,18 @@ function webforms_content() {
         );
     }
 
+    webforms_add_design_assets();
+
     return webforms_design_placeholder(
         webforms_safe_query_value('design_form'),
         webforms_safe_query_value('design_tab')
     );
+}
+
+function webforms_add_design_assets() {
+    if (function_exists('head_add_js')) {
+        head_add_js('/addon/webforms/view/js/webforms-design.js?v=property-editing-2');
+    }
 }
 
 function webforms_design_options() {
@@ -154,7 +162,6 @@ function webforms_design_placeholder($design_form = '', $design_tab = '') {
                 ' . webforms_design_tab_content($design_tab) . '
             </section>
         </div>
-        <script src="addon/webforms/view/js/webforms-design.js?v=property-editing-1"></script>
     ';
 }
 
