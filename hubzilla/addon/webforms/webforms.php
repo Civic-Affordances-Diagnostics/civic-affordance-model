@@ -42,6 +42,10 @@ function webforms_current_mode() {
     return 'design';
 }
 
+function webforms_access_state() {
+    return local_channel() ? 'logged-in' : 'public';
+}
+
 function webforms_safe_query_value($name) {
     if (!isset($_GET[$name])) {
         return '';
@@ -55,10 +59,6 @@ function webforms_h($value) {
 }
 
 function webforms_content() {
-    if (!local_channel()) {
-        return '<div id="webforms-runtime" class="webforms-content"><p>Sign in to use Webforms.</p></div>';
-    }
-
     $mode = webforms_current_mode();
 
     if ($mode === 'deploy') {
@@ -82,8 +82,28 @@ function webforms_add_design_assets() {
     }
 
     if (function_exists('head_add_js')) {
-        head_add_js('/addon/webforms/view/js/webforms-design.js?v=property-editing-3');
+        head_add_js('/addon/webforms/view/js/webforms-design.js?v=public-access-1');
     }
+}
+
+function webforms_access_notice($mode) {
+    if (webforms_access_state() === 'logged-in') {
+        return '';
+    }
+
+    if ($mode === 'design') {
+        return '
+            <div class="alert alert-info py-2 webforms-access-notice" role="status">
+                Public local-only Design mode. Sign in to save, publish, deploy, or use private services.
+            </div>
+        ';
+    }
+
+    return '
+        <div class="alert alert-info py-2 webforms-access-notice" role="status">
+            Public Deploy mode. Sign in to access private forms, storage, services, or federation.
+        </div>
+    ';
 }
 
 function webforms_design_options() {
@@ -154,10 +174,13 @@ function webforms_design_placeholder($design_form = '', $design_tab = '') {
 
     $label = webforms_h($forms[$design_form]['label']);
     $description = webforms_h($forms[$design_form]['description']);
+    $access_state = webforms_access_state();
 
     return '
-        <div id="webforms-runtime" class="webforms-content" data-webforms-mode="design" data-webforms-design-form="' . webforms_h($design_form) . '" data-webforms-design-tab="' . webforms_h($design_tab) . '">
+        <div id="webforms-runtime" class="webforms-content" data-webforms-mode="design" data-webforms-access="' . webforms_h($access_state) . '" data-webforms-design-form="' . webforms_h($design_form) . '" data-webforms-design-tab="' . webforms_h($design_tab) . '">
             <section id="webforms-design-workspace" class="webforms-design-workspace-placeholder" data-webforms-container="design-workspace">
+                ' . webforms_access_notice('design') . '
+
                 <h3>Design workspace: ' . $label . '</h3>
                 <p>' . $description . '</p>
 
@@ -287,6 +310,7 @@ function webforms_deploy_placeholder($collection = '', $deploy_form = '') {
 
     $collection_label = webforms_h($collections[$collection]);
     $form_label = webforms_h($forms[$deploy_form]);
+    $access_state = webforms_access_state();
 
     if ($collection === '' && $deploy_form === '') {
         $message = 'No JSON collection or webform selected.';
@@ -299,8 +323,10 @@ function webforms_deploy_placeholder($collection = '', $deploy_form = '') {
     }
 
     return '
-        <div id="webforms-runtime" class="webforms-content" data-webforms-mode="deploy" data-webforms-collection="' . webforms_h($collection) . '" data-webforms-deploy-form="' . webforms_h($deploy_form) . '">
+        <div id="webforms-runtime" class="webforms-content" data-webforms-mode="deploy" data-webforms-access="' . webforms_h($access_state) . '" data-webforms-collection="' . webforms_h($collection) . '" data-webforms-deploy-form="' . webforms_h($deploy_form) . '">
             <section id="webforms-deploy-view" class="webforms-deploy-view-placeholder" data-webforms-container="deploy-view">
+                ' . webforms_access_notice('deploy') . '
+
                 <h3>Deploy preview</h3>
 
                 <div id="webforms-deploy-empty-state" class="well" data-webforms-panel="empty-deploy-view">

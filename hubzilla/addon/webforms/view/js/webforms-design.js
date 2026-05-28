@@ -11,11 +11,16 @@
     function buildDraft(runtime) {
         const designForm = runtime.dataset.webformsDesignForm || '';
         const designTab = runtime.dataset.webformsDesignTab || 'grid';
+        const access = runtime.dataset.webformsAccess || 'public';
 
         return {
             schema: 'hubzilla.webforms.designDraft',
             version: '0.1',
             status: 'browser-local',
+            access: {
+                mode: access,
+                public_local_only: access === 'public'
+            },
             form: {
                 id: designForm || 'new-blank-form',
                 title: designForm ? humanizeSlug(designForm) : 'New blank form'
