@@ -2,6 +2,7 @@
     'use strict';
 
     const VERSION = '0.1';
+    const DEFAULT_GRID_SIZE = 24;
 
     function init() {
         const runtime = document.getElementById('webforms-runtime');
@@ -84,7 +85,7 @@
         root.innerHTML = '';
 
         const heading = document.createElement('h4');
-        heading.textContent = pkg.form.title || pkg.meta.title || pkg.form.id || 'Webform';
+        heading.textContent = pkg.form.title || (pkg.meta && pkg.meta.title) || pkg.form.id || 'Webform';
 
         const notice = document.createElement('p');
         notice.className = 'small text-muted';
@@ -92,15 +93,22 @@
 
         const form = document.createElement('form');
         form.className = 'webforms-deploy-rendered-form';
+        form.style.position = 'relative';
+        form.style.overflow = 'auto';
         form.addEventListener('submit', function (event) {
             event.preventDefault();
         });
 
+        const gridSize = packageGridSize(pkg);
+        const bounds = layoutBounds(pkg.form.layout, gridSize);
         const fieldsById = fieldsMap(pkg.form.fields);
+
+        form.style.width = bounds.width + 'px';
+        form.style.minHeight = bounds.height + 'px';
 
         pkg.form.layout.forEach(function (layoutItem) {
             const field = fieldsById[layoutItem.id] || null;
-            const rendered = renderLayoutItem(layoutItem, field);
+            const rendered = renderLayoutItem(layoutItem, field, gridSize);
 
             if (rendered) {
                 form.appendChild(rendered);
@@ -112,6 +120,31 @@
         root.appendChild(form);
     }
 
+    function packageGridSize(pkg) {
+        if (pkg.design && pkg.design.grid && pkg.design.grid.size) {
+            return parseInt(pkg.design.grid.size, 10) || DEFAULT_GRID_SIZE;
+        }
+
+        return DEFAULT_GRID_SIZE;
+    }
+
+    function layoutBounds(layout, gridSize) {
+        const extents = layout.reduce(function (bounds, item) {
+            const right = (parseInt(item.x, 10) || 0) + (parseInt(item.width, 10) || 1);
+            const bottom = (parseInt(item.y, 10) || 0) + (parseInt(item.height, 10) || 1);
+
+            return {
+                columns: Math.max(bounds.columns, right),
+                rows: Math.max(bounds.rows, bottom)
+            };
+        }, { columns: 1, rows: 1 });
+
+        return {
+            width: Math.max(extents.columns * gridSize, gridSize * 8),
+            height: Math.max(extents.rows * gridSize, gridSize * 6)
+        };
+    }
+
     function fieldsMap(fields) {
         return fields.reduce(function (map, field) {
             map[field.id] = field;
@@ -119,50 +152,57 @@
         }, {});
     }
 
-    function renderLayoutItem(layoutItem, field) {
+    function renderLayoutItem(layoutItem, field, gridSize) {
+        let rendered = null;
+
         if (layoutItem.type === 'container') {
-            return renderContainer(layoutItem);
+            rendered = renderContainer(layoutItem);
+        }
+        else if (layoutItem.type === 'label') {
+            rendered = renderLabel(layoutItem);
+        }
+        else if (layoutItem.type === 'result_panel') {
+            rendered = renderResultPanel(layoutItem);
+        }
+        else if (layoutItem.type === 'help_text') {
+            rendered = renderHelpText(layoutItem);
+        }
+        else if (field && field.type === 'textarea') {
+            rendered = renderTextarea(field);
+        }
+        else if (field && field.type === 'checkbox') {
+            rendered = renderCheckbox(field);
+        }
+        else if (field && field.type === 'button') {
+            rendered = renderButton(field);
+        }
+        else if (field && field.type === 'select') {
+            rendered = renderSelect(field);
+        }
+        else if (field) {
+            rendered = renderTextInput(field);
         }
 
-        if (layoutItem.type === 'label') {
-            return renderLabel(layoutItem);
+        if (rendered) {
+            applyPlacement(rendered, layoutItem, gridSize);
         }
 
-        if (layoutItem.type === 'result_panel') {
-            return renderResultPanel(layoutItem);
-        }
+        return rendered;
+    }
 
-        if (layoutItem.type === 'help_text') {
-            return renderHelpText(layoutItem);
-        }
-
-        if (!field) {
-            return null;
-        }
-
-        if (field.type === 'textarea') {
-            return renderTextarea(field);
-        }
-
-        if (field.type === 'checkbox') {
-            return renderCheckbox(field);
-        }
-
-        if (field.type === 'button') {
-            return renderButton(field);
-        }
-
-        if (field.type === 'select') {
-            return renderSelect(field);
-        }
-
-        return renderTextInput(field);
+    function applyPlacement(node, layoutItem, gridSize) {
+        node.style.position = 'absolute';
+        node.style.left = ((parseInt(layoutItem.x, 10) || 0) * gridSize) + 'px';
+        node.style.top = ((parseInt(layoutItem.y, 10) || 0) * gridSize) + 'px';
+        node.style.width = ((parseInt(layoutItem.width, 10) || 1) * gridSize) + 'px';
+        node.style.minHeight = ((parseInt(layoutItem.height, 10) || 1) * gridSize) + 'px';
+        node.dataset.webformsLayoutId = layoutItem.id;
+        node.dataset.webformsLayoutType = layoutItem.type;
     }
 
     function renderContainer(layoutItem) {
         const box = document.createElement('fieldset');
         box.className = 'well webforms-deploy-container';
-        box.dataset.webformsLayoutId = layoutItem.id;
 
         const legend = document.createElement('legend');
         legend.className = 'small';
@@ -176,7 +216,6 @@
     function renderLabel(layoutItem) {
         const block = document.createElement('p');
         block.className = 'webforms-deploy-label';
-        block.dataset.webformsLayoutId = layoutItem.id;
         block.textContent = layoutItem.label || layoutItem.id;
 
         return block;
@@ -185,7 +224,6 @@
     function renderResultPanel(layoutItem) {
         const panel = document.createElement('div');
         panel.className = 'well webforms-deploy-result-panel';
-        panel.dataset.webformsLayoutId = layoutItem.id;
 
         const label = document.createElement('strong');
         label.textContent = layoutItem.label || layoutItem.id;
@@ -203,7 +241,6 @@
     function renderHelpText(layoutItem) {
         const block = document.createElement('div');
         block.className = 'alert alert-secondary py-2 webforms-deploy-help-text';
-        block.dataset.webformsLayoutId = layoutItem.id;
         block.textContent = layoutItem.text || layoutItem.label || layoutItem.id;
 
         return block;

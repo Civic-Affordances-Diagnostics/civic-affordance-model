@@ -30,7 +30,7 @@
                 active_tab: designTab,
                 selected_object_id: null,
                 source: 'browser',
-                next_object_number: 2
+                next_object_number: 1
             },
             grid: {
                 id: 'root-form',
@@ -40,9 +40,7 @@
                 rows_observed: 17,
                 placement_scope: 'immediate-container'
             },
-            objects: [
-                createObject('field-1', 'text', 'Sample field', 'browser-local preview', 3, 3, 9, 3)
-            ],
+            objects: [],
             notes: [
                 'This draft exists in browser memory only.',
                 'No server write, storage, API call, or federation action is performed.'
@@ -169,7 +167,7 @@
     };
 
     function parseOptions(value) {
-        return String(value).split('\\n').map(function (line) {
+        return String(value).split('\n').map(function (line) {
             return line.trim();
         }).filter(Boolean).map(function (line) {
             const parts = line.split('|');
@@ -190,7 +188,7 @@
 
         return object.options.map(function (option) {
             return option.value + '|' + option.label;
-        }).join('\\n');
+        }).join('\n');
     };
 
     ns.addObject = function (draft, object) {
