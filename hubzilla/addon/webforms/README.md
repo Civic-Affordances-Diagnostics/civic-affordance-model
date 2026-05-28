@@ -2,7 +2,7 @@
 
 `webforms` is a Hubzilla addon for browser-local JSON-composed webform design.
 
-This repository state is intended as an early maintainer-review checkpoint. The addon is intentionally small and incomplete so Hubzilla developers can review the addon structure, routing, widget registration, PDL placement, asset loading, and file organization before larger Deploy/runtime behavior is added.
+This repository state is intended as an early maintainer-review checkpoint. The addon is intentionally small and incomplete so Hubzilla developers can review the addon structure, routing, widget registration, PDL placement, asset loading, public/local behavior, and file organization before larger Deploy/runtime behavior is added.
 
 ## Current purpose
 
@@ -14,9 +14,13 @@ Design / Deploy mode switch
 registered left sidebar widget
 Hubzilla PDL page shell
 browser-local Design grid
+browser-local object creation
+browser-local object deletion
 browser-local object selection and property editing
 browser-local package JSON generation
 JSON copy and download from the browser
+browser-session draft persistence
+browser-session draft clear/reset
 public local-only Design mode
 ```
 
@@ -34,9 +38,12 @@ addon/webforms/
 │   ├── css/
 │   │   └── webforms.css
 │   └── js/
+│       ├── webforms-design-draft.js
 │       ├── webforms-design-grid.js
 │       ├── webforms-design-json.js
+│       ├── webforms-design-package.js
 │       ├── webforms-design-properties.js
+│       ├── webforms-design-session.js
 │       ├── webforms-design-state.js
 │       └── webforms-design.js
 ├── webforms.apd
@@ -68,7 +75,7 @@ head_add_css()
   CSS asset registration
 
 head_add_js()
-  JavaScript asset registration
+  ordered JavaScript asset registration
 ```
 
 The sidebar widget is registered on addon load:
@@ -100,15 +107,66 @@ The browser currently handles:
 ```text
 grid rendering
 object creation
+object deletion
 object selection
 property editing
 session draft persistence
+session draft clear/reset
 package JSON generation
 JSON copy
 JSON download
 ```
 
 The browser uses `sessionStorage` only so work survives Grid / JSON tab navigation during the same browser session. This is not permanent save/publish behavior.
+
+## JavaScript module layout
+
+The Design JavaScript is split by responsibility:
+
+```text
+webforms-design-state.js
+  shared namespace constants
+
+webforms-design-draft.js
+  draft construction
+  object factories
+  object lookup/mutation
+  add/delete/select object helpers
+  shared escape helpers
+
+webforms-design-session.js
+  sessionStorage load/persist/clear
+  runtime access/tab refresh
+  draft counter repair
+
+webforms-design-package.js
+  hubzilla.webforms.package generation
+  meta/design/form/runtime sections
+  JSON textarea rendering
+
+webforms-design-grid.js
+  grid rendering
+  generated object rendering
+  grid selection visuals
+  grid preview updates
+
+webforms-design-properties.js
+  compact selected-object property editor
+  placement dropdowns
+  property updates
+
+webforms-design-json.js
+  copy package JSON
+  download package JSON
+  clear/reset current browser-session draft
+
+webforms-design.js
+  initialization
+  toolbar dispatch
+  high-level orchestration
+```
+
+The files are loaded in dependency order by `webforms.php`.
 
 ## Public and logged-in access
 
