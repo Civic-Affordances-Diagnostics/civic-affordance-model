@@ -84,14 +84,14 @@ function webforms_add_design_assets() {
     }
 
     if (function_exists('head_add_js')) {
-        head_add_js('/addon/webforms/view/js/webforms-design-state.js?v=deploy-layout-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-draft.js?v=deploy-layout-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-session.js?v=deploy-layout-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-package.js?v=deploy-layout-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=deploy-layout-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-properties.js?v=deploy-layout-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-json.js?v=deploy-layout-1');
-        head_add_js('/addon/webforms/view/js/webforms-design.js?v=deploy-layout-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-state.js?v=deploy-grid-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-draft.js?v=deploy-grid-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-session.js?v=deploy-grid-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-package.js?v=deploy-grid-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=deploy-grid-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-properties.js?v=deploy-grid-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-json.js?v=deploy-grid-1');
+        head_add_js('/addon/webforms/view/js/webforms-design.js?v=deploy-grid-1');
     }
 }
 
@@ -101,7 +101,7 @@ function webforms_add_deploy_assets() {
     }
 
     if (function_exists('head_add_js')) {
-        head_add_js('/addon/webforms/view/js/webforms-deploy.js?v=deploy-layout-1');
+        head_add_js('/addon/webforms/view/js/webforms-deploy.js?v=deploy-grid-1');
     }
 }
 

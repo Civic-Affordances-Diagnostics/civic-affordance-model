@@ -89,35 +89,43 @@
 
         const notice = document.createElement('p');
         notice.className = 'small text-muted';
-        notice.textContent = 'Browser-local Deploy render from loaded package JSON. No submit, storage, service, or federation action is active.';
+        notice.textContent = 'Browser-local Deploy render from loaded package JSON. Controls are interactive, but no submit, storage, service, or federation action is active.';
 
-        const form = document.createElement('form');
-        form.className = 'webforms-deploy-rendered-form';
-        form.style.position = 'relative';
-        form.style.overflow = 'auto';
-        form.addEventListener('submit', function (event) {
+        const grid = document.createElement('form');
+        grid.className = 'webforms-design-grid webforms-deploy-grid';
+        grid.dataset.webformsDeployGrid = '1';
+        grid.addEventListener('submit', function (event) {
             event.preventDefault();
         });
+
+        const origin = document.createElement('div');
+        origin.id = 'webforms-deploy-grid-origin';
+        origin.className = 'webforms-grid-origin';
+        origin.dataset.webformsGridOrigin = '0,0';
+        origin.textContent = 'root container · Deploy render · browser-local package';
 
         const gridSize = packageGridSize(pkg);
         const bounds = layoutBounds(pkg.form.layout, gridSize);
         const fieldsById = fieldsMap(pkg.form.fields);
 
-        form.style.width = bounds.width + 'px';
-        form.style.minHeight = bounds.height + 'px';
+        grid.style.position = 'relative';
+        grid.style.width = bounds.width + 'px';
+        grid.style.minHeight = bounds.height + 'px';
+
+        grid.appendChild(origin);
 
         pkg.form.layout.forEach(function (layoutItem) {
             const field = fieldsById[layoutItem.id] || null;
             const rendered = renderLayoutItem(layoutItem, field, gridSize);
 
             if (rendered) {
-                form.appendChild(rendered);
+                grid.appendChild(rendered);
             }
         });
 
         root.appendChild(heading);
         root.appendChild(notice);
-        root.appendChild(form);
+        root.appendChild(grid);
     }
 
     function packageGridSize(pkg) {
@@ -137,11 +145,11 @@
                 columns: Math.max(bounds.columns, right),
                 rows: Math.max(bounds.rows, bottom)
             };
-        }, { columns: 1, rows: 1 });
+        }, { columns: 22, rows: 17 });
 
         return {
-            width: Math.max(extents.columns * gridSize, gridSize * 8),
-            height: Math.max(extents.rows * gridSize, gridSize * 6)
+            width: extents.columns * gridSize,
+            height: extents.rows * gridSize
         };
     }
 
@@ -191,22 +199,25 @@
     }
 
     function applyPlacement(node, layoutItem, gridSize) {
+        node.classList.add('webforms-js-object');
+        node.dataset.webformsGeneratedObject = '1';
+        node.dataset.webformsLayoutId = layoutItem.id;
+        node.dataset.webformsLayoutType = layoutItem.type;
+
         node.style.position = 'absolute';
         node.style.left = ((parseInt(layoutItem.x, 10) || 0) * gridSize) + 'px';
         node.style.top = ((parseInt(layoutItem.y, 10) || 0) * gridSize) + 'px';
         node.style.width = ((parseInt(layoutItem.width, 10) || 1) * gridSize) + 'px';
         node.style.minHeight = ((parseInt(layoutItem.height, 10) || 1) * gridSize) + 'px';
-        node.dataset.webformsLayoutId = layoutItem.id;
-        node.dataset.webformsLayoutType = layoutItem.type;
     }
 
     function renderContainer(layoutItem) {
         const box = document.createElement('fieldset');
-        box.className = 'well webforms-deploy-container';
+        box.className = 'webforms-js-container webforms-deploy-container';
 
         const legend = document.createElement('legend');
         legend.className = 'small';
-        legend.textContent = layoutItem.id;
+        legend.textContent = layoutItem.label || layoutItem.id;
 
         box.appendChild(legend);
 
@@ -214,8 +225,8 @@
     }
 
     function renderLabel(layoutItem) {
-        const block = document.createElement('p');
-        block.className = 'webforms-deploy-label';
+        const block = document.createElement('div');
+        block.className = 'webforms-object-label webforms-deploy-label';
         block.textContent = layoutItem.label || layoutItem.id;
 
         return block;
@@ -223,13 +234,14 @@
 
     function renderResultPanel(layoutItem) {
         const panel = document.createElement('div');
-        panel.className = 'well webforms-deploy-result-panel';
+        panel.className = 'webforms-deploy-result-panel';
 
-        const label = document.createElement('strong');
+        const label = document.createElement('div');
+        label.className = 'webforms-object-label';
         label.textContent = layoutItem.label || layoutItem.id;
 
-        const text = document.createElement('p');
-        text.className = 'mb-0';
+        const text = document.createElement('div');
+        text.className = 'well well-sm mt-1 mb-0';
         text.textContent = layoutItem.text || 'Result output placeholder';
 
         panel.appendChild(label);
@@ -240,8 +252,18 @@
 
     function renderHelpText(layoutItem) {
         const block = document.createElement('div');
-        block.className = 'alert alert-secondary py-2 webforms-deploy-help-text';
-        block.textContent = layoutItem.text || layoutItem.label || layoutItem.id;
+        block.className = 'webforms-deploy-help-text';
+
+        const label = document.createElement('div');
+        label.className = 'webforms-object-label';
+        label.textContent = layoutItem.label || layoutItem.id;
+
+        const text = document.createElement('p');
+        text.className = 'small mb-0';
+        text.textContent = layoutItem.text || 'Helpful instructions or explanatory text.';
+
+        block.appendChild(label);
+        block.appendChild(text);
 
         return block;
     }
@@ -250,7 +272,7 @@
         const group = formGroup(field);
         const input = document.createElement('input');
 
-        input.className = 'form-control';
+        input.className = 'form-control form-control-sm';
         input.type = 'text';
         input.name = field.id;
         input.id = 'webforms-deploy-field-' + field.id;
@@ -267,7 +289,7 @@
         const group = formGroup(field);
         const textarea = document.createElement('textarea');
 
-        textarea.className = 'form-control';
+        textarea.className = 'form-control form-control-sm';
         textarea.name = field.id;
         textarea.id = 'webforms-deploy-field-' + field.id;
         textarea.placeholder = field.placeholder || '';
@@ -281,7 +303,7 @@
 
     function renderCheckbox(field) {
         const group = document.createElement('div');
-        group.className = 'form-check mb-2';
+        group.className = 'form-check webforms-deploy-check';
 
         const input = document.createElement('input');
         input.className = 'form-check-input';
@@ -304,9 +326,8 @@
     function renderButton(field) {
         const button = document.createElement('button');
 
-        button.className = 'btn btn-secondary mb-2';
+        button.className = 'btn btn-sm btn-secondary';
         button.type = 'button';
-        button.disabled = true;
         button.textContent = field.label || field.id;
 
         return button;
@@ -316,7 +337,7 @@
         const group = formGroup(field);
         const select = document.createElement('select');
 
-        select.className = 'form-control';
+        select.className = 'form-control form-control-sm';
         select.name = field.id;
         select.id = 'webforms-deploy-field-' + field.id;
         select.required = Boolean(field.required);
@@ -335,7 +356,7 @@
 
     function formGroup(field) {
         const group = document.createElement('div');
-        group.className = 'form-group mb-2';
+        group.className = 'webforms-deploy-field';
 
         const label = document.createElement('label');
         label.setAttribute('for', 'webforms-deploy-field-' + field.id);
