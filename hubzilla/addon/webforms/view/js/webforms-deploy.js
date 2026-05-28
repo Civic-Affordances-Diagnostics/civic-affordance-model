@@ -36,24 +36,34 @@
     }
 
     function loadDraft(formId) {
+        const activeDraft = loadStoredDraft(activeDraftKey());
+
+        if (isValidDraft(activeDraft, formId)) {
+            return activeDraft;
+        }
+
+        const exactDraft = loadStoredDraft(storageKeyForForm(formId));
+
+        if (isValidDraft(exactDraft, formId)) {
+            return exactDraft;
+        }
+
+        return null;
+    }
+
+    function loadStoredDraft(key) {
         if (!window.sessionStorage) {
             return null;
         }
 
         try {
-            const raw = window.sessionStorage.getItem(storageKeyForForm(formId));
+            const raw = window.sessionStorage.getItem(key);
 
             if (!raw) {
                 return null;
             }
 
-            const draft = JSON.parse(raw);
-
-            if (!isValidDraft(draft, formId)) {
-                return null;
-            }
-
-            return draft;
+            return JSON.parse(raw);
         }
         catch (error) {
             console.warn('Webforms deploy draft load failed.', error);
@@ -63,6 +73,10 @@
 
     function storageKeyForForm(formId) {
         return 'hubzilla.webforms.designDraft.' + VERSION + '.' + formId;
+    }
+
+    function activeDraftKey() {
+        return 'hubzilla.webforms.activeDesignDraft.' + VERSION;
     }
 
     function isValidDraft(draft, formId) {

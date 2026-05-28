@@ -27,7 +27,10 @@
         }
 
         try {
-            window.sessionStorage.setItem(storageKeyForForm(draft.form.id), JSON.stringify(draft));
+            const payload = JSON.stringify(draft);
+
+            window.sessionStorage.setItem(storageKeyForForm(draft.form.id), payload);
+            window.sessionStorage.setItem(activeDraftKey(), payload);
         }
         catch (error) {
             console.warn('Webforms draft was not persisted to sessionStorage.', error);
@@ -41,6 +44,7 @@
 
         try {
             window.sessionStorage.removeItem(storageKeyForForm(formId));
+            window.sessionStorage.removeItem(activeDraftKey());
         }
         catch (error) {
             console.warn('Webforms session draft was not cleared.', error);
@@ -53,21 +57,24 @@
         }
 
         const formId = runtimeFormId(runtime);
+        const activeDraft = loadStoredDraft(activeDraftKey());
 
+        if (isValidSessionDraft(activeDraft, formId)) {
+            return activeDraft;
+        }
+
+        return loadStoredDraft(storageKeyForForm(formId));
+    }
+
+    function loadStoredDraft(key) {
         try {
-            const raw = window.sessionStorage.getItem(storageKeyForForm(formId));
+            const raw = window.sessionStorage.getItem(key);
 
             if (!raw) {
                 return null;
             }
 
-            const draft = JSON.parse(raw);
-
-            if (!isValidSessionDraft(draft, formId)) {
-                return null;
-            }
-
-            return draft;
+            return JSON.parse(raw);
         }
         catch (error) {
             console.warn('Webforms session draft was ignored.', error);
@@ -77,6 +84,10 @@
 
     function storageKeyForForm(formId) {
         return 'hubzilla.webforms.designDraft.' + ns.VERSION + '.' + formId;
+    }
+
+    function activeDraftKey() {
+        return 'hubzilla.webforms.activeDesignDraft.' + ns.VERSION;
     }
 
     function runtimeFormId(runtime) {

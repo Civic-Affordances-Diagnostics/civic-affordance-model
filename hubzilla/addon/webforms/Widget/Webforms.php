@@ -104,16 +104,27 @@ class Webforms {
         return $out;
     }
 
-    private function mode_selector($active_mode) {
+    private function mode_selector($active_mode, $design_form = '', $deploy_form = '') {
         $design_class = ($active_mode === 'design') ? 'btn btn-primary' : 'btn btn-outline-secondary';
         $deploy_class = ($active_mode === 'deploy') ? 'btn btn-primary' : 'btn btn-outline-secondary';
+
+        $design_href = 'webforms?mode=design';
+        $deploy_href = 'webforms?mode=deploy';
+
+        if ($active_mode === 'deploy' && $deploy_form !== '') {
+            $design_href .= '&design_form=' . rawurlencode($deploy_form);
+        }
+
+        if ($active_mode === 'design' && $design_form !== '') {
+            $deploy_href .= '&deploy_form=' . rawurlencode($design_form);
+        }
 
         return '
             <div id="webforms-mode-selector" class="webforms-mode-selector">
                 <strong>Mode</strong>
                 <div class="btn-group btn-group-sm mt-2 mb-3" role="group" aria-label="Webforms mode">
-                    <a class="' . $design_class . '" href="webforms?mode=design">Design</a>
-                    <a class="' . $deploy_class . '" href="webforms?mode=deploy">Deploy</a>
+                    <a class="' . $design_class . '" href="' . $this->h($design_href) . '">Design</a>
+                    <a class="' . $deploy_class . '" href="' . $this->h($deploy_href) . '">Deploy</a>
                 </div>
             </div>
         ';
@@ -132,7 +143,7 @@ class Webforms {
             <div id="webforms-aside" class="widget webforms-aside" data-webforms-mode="design" data-webforms-design-tab="' . $this->h($design_tab) . '">
                 <h3>Webforms</h3>
 
-                ' . $this->mode_selector('design') . '
+                ' . $this->mode_selector('design', $design_form, '') . '
 
                 <div id="webforms-design-tools" class="webforms-design-tools" data-webforms-panel="design-tools">
                     <form id="webforms-design-selector" method="get" action="webforms">
@@ -279,7 +290,7 @@ class Webforms {
             <div id="webforms-aside" class="widget webforms-aside" data-webforms-mode="deploy">
                 <h3>Webforms</h3>
 
-                ' . $this->mode_selector('deploy') . '
+                ' . $this->mode_selector('deploy', '', $deploy_form) . '
 
                 <div id="webforms-deploy-navigation" class="webforms-deploy-navigation" data-webforms-panel="deploy-navigation">
                     <h4>Deploy</h4>
