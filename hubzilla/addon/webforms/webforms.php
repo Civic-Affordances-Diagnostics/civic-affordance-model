@@ -62,6 +62,8 @@ function webforms_content() {
     $mode = webforms_current_mode();
 
     if ($mode === 'deploy') {
+        webforms_add_deploy_assets();
+
         return webforms_deploy_placeholder(
             webforms_safe_query_value('collection'),
             webforms_safe_query_value('deploy_form')
@@ -82,14 +84,24 @@ function webforms_add_design_assets() {
     }
 
     if (function_exists('head_add_js')) {
-        head_add_js('/addon/webforms/view/js/webforms-design-state.js?v=layout-components-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-draft.js?v=layout-components-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-session.js?v=layout-components-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-package.js?v=layout-components-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=layout-components-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-properties.js?v=layout-components-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-json.js?v=layout-components-1');
-        head_add_js('/addon/webforms/view/js/webforms-design.js?v=layout-components-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-state.js?v=deploy-render-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-draft.js?v=deploy-render-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-session.js?v=deploy-render-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-package.js?v=deploy-render-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=deploy-render-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-properties.js?v=deploy-render-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-json.js?v=deploy-render-1');
+        head_add_js('/addon/webforms/view/js/webforms-design.js?v=deploy-render-1');
+    }
+}
+
+function webforms_add_deploy_assets() {
+    if (function_exists('head_add_css')) {
+        head_add_css('/addon/webforms/view/css/webforms.css?v=css-extract-1');
+    }
+
+    if (function_exists('head_add_js')) {
+        head_add_js('/addon/webforms/view/js/webforms-deploy.js?v=deploy-render-1');
     }
 }
 
@@ -319,16 +331,6 @@ function webforms_deploy_placeholder($collection = '', $deploy_form = '') {
     $form_label = webforms_h($forms[$deploy_form]);
     $access_state = webforms_access_state();
 
-    if ($collection === '' && $deploy_form === '') {
-        $message = 'No JSON collection or webform selected.';
-    }
-    elseif ($deploy_form === '') {
-        $message = 'Collection selected. No webform selected.';
-    }
-    else {
-        $message = 'Inert deploy placeholder for the selected webform.';
-    }
-
     return '
         <div id="webforms-runtime" class="webforms-content" data-webforms-mode="deploy" data-webforms-access="' . webforms_h($access_state) . '" data-webforms-collection="' . webforms_h($collection) . '" data-webforms-deploy-form="' . webforms_h($deploy_form) . '">
             <section id="webforms-deploy-view" class="webforms-deploy-view-placeholder" data-webforms-container="deploy-view">
@@ -336,10 +338,14 @@ function webforms_deploy_placeholder($collection = '', $deploy_form = '') {
 
                 <h3>Deploy preview</h3>
 
-                <div id="webforms-deploy-empty-state" class="well" data-webforms-panel="empty-deploy-view">
-                    <p><strong>Collection:</strong> ' . $collection_label . '</p>
-                    <p><strong>Webform:</strong> ' . $form_label . '</p>
-                    <p>' . webforms_h($message) . '</p>
+                <div id="webforms-deploy-render-root"
+                     class="webforms-deploy-render-root"
+                     data-webforms-deploy-render-root="1">
+                    <div id="webforms-deploy-empty-state" class="well" data-webforms-panel="empty-deploy-view">
+                        <p><strong>Collection:</strong> ' . $collection_label . '</p>
+                        <p><strong>Webform:</strong> ' . $form_label . '</p>
+                        <p>Loading browser-session package renderer.</p>
+                    </div>
                 </div>
             </section>
         </div>
