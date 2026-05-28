@@ -82,7 +82,10 @@ function webforms_add_design_assets() {
     }
 
     if (function_exists('head_add_js')) {
-        head_add_js('/addon/webforms/view/js/webforms-design.js?v=public-access-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-state.js?v=split-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=split-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-properties.js?v=split-1');
+        head_add_js('/addon/webforms/view/js/webforms-design.js?v=split-1');
     }
 }
 
