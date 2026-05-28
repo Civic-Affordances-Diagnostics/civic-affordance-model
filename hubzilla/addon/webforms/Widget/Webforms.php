@@ -154,8 +154,7 @@ class Webforms {
                     <hr>
 
                     <div id="webforms-design-selection" data-webforms-panel="selection">
-                        <h5>Selected object</h5>
-                        <p>No object selected.</p>
+                        <p class="small mb-0">No object selected.</p>
                     </div>
                 </div>
             </div>
@@ -164,7 +163,7 @@ class Webforms {
 
     private function toolbar_matrix($design_tab) {
         $tools = $this->toolbar_tools($design_tab);
-        $out = '<div class="webforms-toolbar-grid" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(5, auto); gap: 0.25rem;" role="group" aria-label="Webforms design toolbar">';
+        $out = '<div class="webforms-toolbar-grid" role="group" aria-label="Webforms design toolbar">';
 
         for ($i = 0; $i < 15; $i++) {
             if (isset($tools[$i])) {

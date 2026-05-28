@@ -77,8 +77,12 @@ function webforms_content() {
 }
 
 function webforms_add_design_assets() {
+    if (function_exists('head_add_css')) {
+        head_add_css('/addon/webforms/view/css/webforms.css?v=css-extract-1');
+    }
+
     if (function_exists('head_add_js')) {
-        head_add_js('/addon/webforms/view/js/webforms-design.js?v=property-editing-2');
+        head_add_js('/addon/webforms/view/js/webforms-design.js?v=property-editing-3');
     }
 }
 
@@ -191,11 +195,10 @@ function webforms_design_grid_tab() {
             <div id="webforms-design-grid"
                  class="webforms-design-grid"
                  data-webforms-container="root-form"
-                 data-webforms-grid-size="24"
-                 style="min-height: 420px; border: 1px solid #ccc; border-radius: 4px; padding: 1rem; background-image: linear-gradient(#e6e6e6 1px, transparent 1px), linear-gradient(90deg, #e6e6e6 1px, transparent 1px); background-size: 24px 24px; position: relative;">
+                 data-webforms-grid-size="24">
                 <div id="webforms-grid-origin"
-                     data-webforms-grid-origin="0,0"
-                     style="position: absolute; top: 8px; left: 8px; font-size: 0.85rem; opacity: 0.75;">
+                     class="webforms-grid-origin"
+                     data-webforms-grid-origin="0,0">
                     root container · 24px grid · browser-local draft
                 </div>
             </div>

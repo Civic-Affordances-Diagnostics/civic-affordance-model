@@ -109,16 +109,10 @@
         wrapper.dataset.webformsObjectId = object.id;
         wrapper.dataset.webformsObjectType = object.type;
 
-        wrapper.style.position = 'absolute';
         wrapper.style.left = (placement.x * gridSize) + 'px';
         wrapper.style.top = (placement.y * gridSize) + 'px';
         wrapper.style.width = (placement.width * gridSize) + 'px';
         wrapper.style.minHeight = (placement.height * gridSize) + 'px';
-        wrapper.style.border = '1px dashed #777';
-        wrapper.style.borderRadius = '4px';
-        wrapper.style.background = 'rgba(255,255,255,0.85)';
-        wrapper.style.padding = '0.5rem';
-        wrapper.style.cursor = 'pointer';
 
         wrapper.addEventListener('click', function (event) {
             event.stopPropagation();
@@ -158,17 +152,7 @@
     function updateGridSelection(objectId) {
         document.querySelectorAll('[data-webforms-generated-object="1"]').forEach(function (node) {
             const isSelected = node.dataset.webformsObjectId === objectId;
-
             node.classList.toggle(SELECTED_CLASS, isSelected);
-
-            if (isSelected) {
-                node.style.outline = '3px solid #0d6efd';
-                node.style.outlineOffset = '2px';
-            }
-            else {
-                node.style.outline = '';
-                node.style.outlineOffset = '';
-            }
         });
     }
 
@@ -217,7 +201,7 @@
         const id = 'webforms-prop-' + property.replace(/\./g, '-');
 
         return [
-            '<div class="webforms-property-row mb-1" style="display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); gap: 0.35rem; align-items: center;">',
+            '<div class="webforms-property-row mb-1">',
             '<label class="small mb-0" for="' + escapeHtml(id) + '">' + escapeHtml(label) + '</label>',
             '<input id="' + escapeHtml(id) + '" class="form-control form-control-sm" type="text" value="' + escapeHtml(value) + '" data-webforms-property="' + escapeHtml(property) + '"' + (readonly ? ' readonly="readonly"' : '') + '>',
             '</div>'
@@ -226,7 +210,7 @@
 
     function placementSelectRow(placement) {
         return [
-            '<div class="webforms-placement-row mb-1" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.25rem;">',
+            '<div class="webforms-placement-row mb-1">',
             placementSelect('X', 'placement.x', placement.x, 0, 99),
             placementSelect('Y', 'placement.y', placement.y, 0, 99),
             placementSelect('W', 'placement.width', placement.width, 1, 99),
