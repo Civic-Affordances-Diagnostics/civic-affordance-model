@@ -7,37 +7,53 @@
         return document.getElementById('webforms-runtime');
     }
 
-    function initToolbar(draft) {
+    function initToolbar(draft, runtime) {
         document.querySelectorAll('[data-webforms-tool]').forEach(function (button) {
             button.addEventListener('click', function () {
                 if (button.disabled) {
                     return;
                 }
 
-                handleToolClick(draft, button.dataset.webformsTool);
+                const nextDraft = handleToolClick(draft, runtime, button.dataset.webformsTool);
+
+                if (nextDraft) {
+                    draft = nextDraft;
+                }
             });
         });
     }
 
-    function handleToolClick(draft, tool) {
+    function handleToolClick(draft, runtime, tool) {
         if (tool === 'container') {
             ns.addObject(draft, ns.createContainerObject(draft));
-            return;
+            return draft;
         }
 
         if (tool === 'field') {
             ns.addObject(draft, ns.createTextFieldObject(draft));
-            return;
+            return draft;
+        }
+
+        if (tool === 'delete-selected') {
+            ns.deleteSelectedObject(draft);
+            return draft;
         }
 
         if (tool === 'copy-json' && typeof ns.copyPackageJson === 'function') {
             ns.copyPackageJson(draft);
-            return;
+            return draft;
         }
 
         if (tool === 'download-json' && typeof ns.downloadPackageJson === 'function') {
             ns.downloadPackageJson(draft);
+            return draft;
         }
+
+        if (tool === 'clear-json' && typeof ns.clearPackageJson === 'function') {
+            return ns.clearPackageJson(draft, runtime);
+        }
+
+        return draft;
     }
 
     function init() {
@@ -51,7 +67,7 @@
 
         window.webformsDesignDraft = draft;
 
-        initToolbar(draft);
+        initToolbar(draft, runtime);
         ns.renderGrid(draft);
         ns.renderSelectionPanel(draft, draft.design.selected_object_id);
         ns.renderJson(draft);

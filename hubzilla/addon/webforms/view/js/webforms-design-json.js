@@ -30,6 +30,18 @@
         URL.revokeObjectURL(url);
     };
 
+    ns.clearPackageJson = function (draft, runtime) {
+        const nextDraft = ns.resetDraft(runtime);
+
+        window.webformsDesignDraft = nextDraft;
+
+        ns.renderGrid(nextDraft);
+        ns.renderSelectionPanel(nextDraft, null);
+        ns.renderJson(nextDraft);
+
+        return nextDraft;
+    };
+
     function packageJson(draft) {
         ns.persistDraft(draft);
         return JSON.stringify(ns.buildPackage(draft), null, 2);

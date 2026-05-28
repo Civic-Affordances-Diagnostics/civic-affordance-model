@@ -205,7 +205,7 @@ class Webforms {
                 ['key' => 'import-json', 'label' => 'Import', 'title' => 'Import JSON into the designer'],
                 ['key' => 'validate-json', 'label' => 'Check', 'title' => 'Validate JSON structure'],
                 ['key' => 'format-json', 'label' => 'Format', 'title' => 'Format JSON for readability'],
-                ['key' => 'clear-json', 'label' => 'Clear', 'title' => 'Clear local draft JSON'],
+                ['key' => 'clear-json', 'label' => 'Clear', 'title' => 'Clear local draft', 'active' => true],
             ];
         }
 
@@ -252,7 +252,7 @@ class Webforms {
         return [
             ['key' => 'container', 'label' => 'Box', 'title' => 'Add container', 'active' => true],
             ['key' => 'field', 'label' => 'Field', 'title' => 'Add text field', 'active' => true],
-            ['key' => 'label', 'label' => 'Label', 'title' => 'Add label'],
+            ['key' => 'delete-selected', 'label' => 'Del', 'title' => 'Delete selected object', 'active' => true],
             ['key' => 'text', 'label' => 'Text', 'title' => 'Add text input'],
             ['key' => 'textarea', 'label' => 'Area', 'title' => 'Add textarea'],
             ['key' => 'select', 'label' => 'Select', 'title' => 'Add select list'],

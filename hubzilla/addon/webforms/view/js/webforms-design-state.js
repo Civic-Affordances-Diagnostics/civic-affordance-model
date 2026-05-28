@@ -20,6 +20,28 @@
         return draft;
     };
 
+    ns.resetDraft = function (runtime) {
+        const draft = ns.buildDraft(runtime);
+
+        ns.clearSessionDraft(draft.form.id);
+        ns.persistDraft(draft);
+
+        return draft;
+    };
+
+    ns.clearSessionDraft = function (formId) {
+        if (!window.sessionStorage) {
+            return;
+        }
+
+        try {
+            window.sessionStorage.removeItem(storageKeyForForm(formId));
+        }
+        catch (error) {
+            console.warn('Webforms session draft was not cleared.', error);
+        }
+    };
+
     ns.buildDraft = function (runtime) {
         const designForm = runtime.dataset.webformsDesignForm || '';
         const designTab = runtime.dataset.webformsDesignTab || 'grid';
@@ -342,6 +364,24 @@
 
         ns.renderGrid(draft);
         ns.renderSelectionPanel(draft, object.id);
+        ns.renderJson(draft);
+    };
+
+    ns.deleteSelectedObject = function (draft) {
+        const selectedId = draft.design.selected_object_id;
+
+        if (!selectedId) {
+            return;
+        }
+
+        draft.objects = draft.objects.filter(function (object) {
+            return object.id !== selectedId;
+        });
+
+        draft.design.selected_object_id = null;
+
+        ns.renderGrid(draft);
+        ns.renderSelectionPanel(draft, null);
         ns.renderJson(draft);
     };
 
