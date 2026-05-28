@@ -106,6 +106,21 @@
         return object;
     };
 
+    ns.createResultPanelObject = function (draft) {
+        const number = ns.nextObjectNumber(draft);
+
+        return createObject('result-' + number, 'result_panel', 'Result panel ' + number, '', 3 + number, 3 + number, 10, 4);
+    };
+
+    ns.createHelpTextObject = function (draft) {
+        const number = ns.nextObjectNumber(draft);
+        const object = createObject('help-' + number, 'help_text', 'Help text ' + number, '', 3 + number, 3 + number, 10, 3);
+
+        object.default = 'Helpful instructions or explanatory text.';
+
+        return object;
+    };
+
     function createObject(id, type, label, placeholder, x, y, width, height) {
         return {
             id: id,
@@ -154,7 +169,7 @@
     };
 
     function parseOptions(value) {
-        return String(value).split('\n').map(function (line) {
+        return String(value).split('\\n').map(function (line) {
             return line.trim();
         }).filter(Boolean).map(function (line) {
             const parts = line.split('|');
@@ -175,7 +190,7 @@
 
         return object.options.map(function (option) {
             return option.value + '|' + option.label;
-        }).join('\n');
+        }).join('\\n');
     };
 
     ns.addObject = function (draft, object) {

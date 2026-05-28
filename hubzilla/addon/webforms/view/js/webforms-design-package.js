@@ -81,7 +81,12 @@
     }
 
     function isPortableField(object) {
-        return object.type !== 'container' && object.type !== 'label';
+        return ![
+            'container',
+            'label',
+            'result_panel',
+            'help_text'
+        ].includes(object.type);
     }
 
     function buildPortableField(object) {
@@ -109,7 +114,7 @@
     }
 
     function buildPortableLayoutItem(object) {
-        return {
+        const item = {
             id: object.id,
             type: object.type,
             parent: object.parent,
@@ -119,6 +124,13 @@
             height: object.placement.height,
             unit: object.placement.unit
         };
+
+        if (object.type === 'result_panel' || object.type === 'help_text') {
+            item.label = object.label || object.id;
+            item.text = object.default || '';
+        }
+
+        return item;
     }
 
     function clonePlainObject(value) {

@@ -258,8 +258,8 @@ class Webforms {
             ['key' => 'checkbox', 'label' => 'Check', 'title' => 'Add checkbox', 'active' => true],
             ['key' => 'button', 'label' => 'Button', 'title' => 'Add button', 'active' => true],
             ['key' => 'select', 'label' => 'Select', 'title' => 'Add select list', 'active' => true],
-            ['key' => 'result-panel', 'label' => 'Result', 'title' => 'Add result panel'],
-            ['key' => 'help-text', 'label' => 'Help', 'title' => 'Add help text'],
+            ['key' => 'result-panel', 'label' => 'Result', 'title' => 'Add result panel', 'active' => true],
+            ['key' => 'help-text', 'label' => 'Help', 'title' => 'Add help text', 'active' => true],
         ];
     }
 

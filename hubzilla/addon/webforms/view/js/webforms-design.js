@@ -59,6 +59,16 @@
             return draft;
         }
 
+        if (tool === 'result-panel') {
+            ns.addObject(draft, ns.createResultPanelObject(draft));
+            return draft;
+        }
+
+        if (tool === 'help-text') {
+            ns.addObject(draft, ns.createHelpTextObject(draft));
+            return draft;
+        }
+
         if (tool === 'delete-selected') {
             ns.deleteSelectedObject(draft);
             return draft;

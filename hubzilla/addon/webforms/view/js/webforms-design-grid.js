@@ -111,6 +111,16 @@
             return;
         }
 
+        if (object.type === 'result_panel') {
+            renderResultPanelObject(wrapper, object);
+            return;
+        }
+
+        if (object.type === 'help_text') {
+            renderHelpTextObject(wrapper, object);
+            return;
+        }
+
         renderTextObject(wrapper, object);
     }
 
@@ -214,5 +224,31 @@
 
         wrapper.appendChild(label);
         wrapper.appendChild(select);
+    }
+
+    function renderResultPanelObject(wrapper, object) {
+        const label = document.createElement('div');
+        label.className = 'webforms-object-label';
+        label.textContent = object.label || object.id;
+
+        const panel = document.createElement('div');
+        panel.className = 'well well-sm mt-1 mb-0';
+        panel.textContent = object.default || 'Result output placeholder';
+
+        wrapper.appendChild(label);
+        wrapper.appendChild(panel);
+    }
+
+    function renderHelpTextObject(wrapper, object) {
+        const label = document.createElement('div');
+        label.className = 'webforms-object-label';
+        label.textContent = object.label || object.id;
+
+        const text = document.createElement('p');
+        text.className = 'small mb-0';
+        text.textContent = object.default || 'Helpful instructions or explanatory text.';
+
+        wrapper.appendChild(label);
+        wrapper.appendChild(text);
     }
 })();
