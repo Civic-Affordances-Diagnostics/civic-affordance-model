@@ -82,14 +82,14 @@ function webforms_add_design_assets() {
     }
 
     if (function_exists('head_add_js')) {
-        head_add_js('/addon/webforms/view/js/webforms-design-state.js?v=select-component-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-draft.js?v=select-component-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-session.js?v=select-component-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-package.js?v=select-component-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=select-component-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-properties.js?v=select-component-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-json.js?v=select-component-1');
-        head_add_js('/addon/webforms/view/js/webforms-design.js?v=select-component-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-state.js?v=select-component-2');
+        head_add_js('/addon/webforms/view/js/webforms-design-draft.js?v=select-component-2');
+        head_add_js('/addon/webforms/view/js/webforms-design-session.js?v=select-component-2');
+        head_add_js('/addon/webforms/view/js/webforms-design-package.js?v=select-component-2');
+        head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=select-component-2');
+        head_add_js('/addon/webforms/view/js/webforms-design-properties.js?v=select-component-2');
+        head_add_js('/addon/webforms/view/js/webforms-design-json.js?v=select-component-2');
+        head_add_js('/addon/webforms/view/js/webforms-design.js?v=select-component-2');
     }
 }
 

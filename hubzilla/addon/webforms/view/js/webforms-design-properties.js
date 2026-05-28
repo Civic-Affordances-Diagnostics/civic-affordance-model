@@ -39,7 +39,7 @@
 
         panel.querySelectorAll('[data-webforms-property]').forEach(function (input) {
             input.addEventListener('change', function () {
-                updateObjectFromInput(draft, object.id, input);
+                updateObjectFromInput(draft, object.id, input, true);
             });
 
             if (input.tagName.toLowerCase() === 'input' && input.type !== 'checkbox') {
@@ -49,9 +49,9 @@
             }
         });
 
-        panel.querySelectorAll('textarea[data-webforms-property]').forEach(function (textarea) {
+        panel.querySelectorAll('textarea[data-webforms-property="options"]').forEach(function (textarea) {
             textarea.addEventListener('input', function () {
-                updateObjectFromInput(draft, object.id, textarea);
+                updateObjectFromInput(draft, object.id, textarea, false);
             });
         });
     };
@@ -138,7 +138,7 @@
         ns.renderJson(draft);
     }
 
-    function updateObjectFromInput(draft, objectId, input) {
+    function updateObjectFromInput(draft, objectId, input, rerenderPanel) {
         const object = ns.findObject(draft, objectId);
 
         if (!object || input.readOnly) {
@@ -151,7 +151,14 @@
         ns.setObjectProperty(object, property, value);
 
         ns.renderGrid(draft);
-        ns.renderSelectionPanel(draft, objectId);
+
+        if (rerenderPanel) {
+            ns.renderSelectionPanel(draft, objectId);
+        }
+        else {
+            ns.updateGridSelection(objectId);
+        }
+
         ns.renderJson(draft);
     }
 })();

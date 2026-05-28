@@ -154,7 +154,7 @@
     };
 
     function parseOptions(value) {
-        return String(value).split('\\n').map(function (line) {
+        return String(value).split('\n').map(function (line) {
             return line.trim();
         }).filter(Boolean).map(function (line) {
             const parts = line.split('|');
@@ -175,7 +175,7 @@
 
         return object.options.map(function (option) {
             return option.value + '|' + option.label;
-        }).join('\\n');
+        }).join('\n');
     };
 
     ns.addObject = function (draft, object) {
