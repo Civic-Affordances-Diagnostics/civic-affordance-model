@@ -56,7 +56,7 @@ function webforms_h($value) {
 
 function webforms_content() {
     if (!local_channel()) {
-        return '<div id="webforms-runtime" class="webforms-content"><h2>Webforms</h2><p>Sign in to use Webforms.</p></div>';
+        return '<div id="webforms-runtime" class="webforms-content"><p>Sign in to use Webforms.</p></div>';
     }
 
     $mode = webforms_current_mode();
@@ -145,11 +145,6 @@ function webforms_design_placeholder($design_form = '', $design_tab = '') {
 
     return '
         <div id="webforms-runtime" class="webforms-content" data-webforms-mode="design" data-webforms-design-form="' . webforms_h($design_form) . '" data-webforms-design-tab="' . webforms_h($design_tab) . '">
-            <header id="webforms-runtime-header">
-                <h2>Webforms</h2>
-                <p>Mode: Design</p>
-            </header>
-
             <section id="webforms-design-workspace" class="webforms-design-workspace-placeholder" data-webforms-container="design-workspace">
                 <h3>Design workspace: ' . $label . '</h3>
                 <p>' . $description . '</p>
@@ -159,7 +154,7 @@ function webforms_design_placeholder($design_form = '', $design_tab = '') {
                 ' . webforms_design_tab_content($design_tab) . '
             </section>
         </div>
-        <script src="addon/webforms/view/js/webforms-design.js"></script>
+        <script src="addon/webforms/view/js/webforms-design.js?v=property-editing-1"></script>
     ';
 }
 
@@ -295,11 +290,6 @@ function webforms_deploy_placeholder($collection = '', $deploy_form = '') {
 
     return '
         <div id="webforms-runtime" class="webforms-content" data-webforms-mode="deploy" data-webforms-collection="' . webforms_h($collection) . '" data-webforms-deploy-form="' . webforms_h($deploy_form) . '">
-            <header id="webforms-runtime-header">
-                <h2>Webforms</h2>
-                <p>Mode: Deploy</p>
-            </header>
-
             <section id="webforms-deploy-view" class="webforms-deploy-view-placeholder" data-webforms-container="deploy-view">
                 <h3>Deploy preview</h3>
 
