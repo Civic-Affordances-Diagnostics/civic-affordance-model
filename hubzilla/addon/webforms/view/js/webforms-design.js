@@ -2,6 +2,7 @@
     'use strict';
 
     const GRID_SIZE = 24;
+    const SELECTED_CLASS = 'webforms-js-object-selected';
 
     function getRuntime() {
         return document.getElementById('webforms-runtime');
@@ -21,6 +22,7 @@
             },
             design: {
                 active_tab: designTab,
+                selected_object_id: null,
                 source: 'browser'
             },
             grid: {
@@ -84,6 +86,12 @@
 
             grid.appendChild(createObjectElement(object, draft.grid.size));
         });
+
+        grid.addEventListener('click', function (event) {
+            if (event.target === grid) {
+                selectObject(draft, null);
+            }
+        });
     }
 
     function removeGeneratedObjects(grid) {
@@ -111,6 +119,12 @@
         wrapper.style.borderRadius = '4px';
         wrapper.style.background = 'rgba(255,255,255,0.85)';
         wrapper.style.padding = '0.5rem';
+        wrapper.style.cursor = 'pointer';
+
+        wrapper.addEventListener('click', function (event) {
+            event.stopPropagation();
+            selectObject(window.webformsDesignDraft, object.id);
+        });
 
         const label = document.createElement('label');
         label.setAttribute('for', 'webforms-preview-' + object.id);
@@ -130,6 +144,78 @@
         return wrapper;
     }
 
+    function selectObject(draft, objectId) {
+        if (!draft) {
+            return;
+        }
+
+        draft.design.selected_object_id = objectId;
+
+        updateGridSelection(objectId);
+        renderSelectionPanel(draft, objectId);
+        renderJson(draft);
+    }
+
+    function updateGridSelection(objectId) {
+        document.querySelectorAll('[data-webforms-generated-object="1"]').forEach(function (node) {
+            const isSelected = node.dataset.webformsObjectId === objectId;
+
+            node.classList.toggle(SELECTED_CLASS, isSelected);
+
+            if (isSelected) {
+                node.style.outline = '3px solid #0d6efd';
+                node.style.outlineOffset = '2px';
+            }
+            else {
+                node.style.outline = '';
+                node.style.outlineOffset = '';
+            }
+        });
+    }
+
+    function renderSelectionPanel(draft, objectId) {
+        const panel = document.getElementById('webforms-design-selection');
+
+        if (!panel) {
+            return;
+        }
+
+        if (!objectId) {
+            panel.innerHTML = '<h5>Selected object</h5><p>No object selected.</p>';
+            return;
+        }
+
+        const object = findObject(draft, objectId);
+
+        if (!object) {
+            panel.innerHTML = '<h5>Selected object</h5><p>Selected object not found.</p>';
+            return;
+        }
+
+        const placement = object.placement || {};
+        const validation = object.validation || {};
+
+        panel.innerHTML = [
+            '<h5>Selected object</h5>',
+            '<dl class="small">',
+            '<dt>ID</dt><dd>' + escapeHtml(object.id) + '</dd>',
+            '<dt>Type</dt><dd>' + escapeHtml(object.type) + '</dd>',
+            '<dt>Parent</dt><dd>' + escapeHtml(object.parent) + '</dd>',
+            '<dt>Placement</dt><dd>x ' + escapeHtml(placement.x) + ', y ' + escapeHtml(placement.y) + '</dd>',
+            '<dt>Size</dt><dd>w ' + escapeHtml(placement.width) + ', h ' + escapeHtml(placement.height) + ' ' + escapeHtml(placement.unit || '') + '</dd>',
+            '<dt>Label</dt><dd>' + escapeHtml(object.label || '') + '</dd>',
+            '<dt>Default</dt><dd>' + escapeHtml(object.default || '') + '</dd>',
+            '<dt>Required</dt><dd>' + escapeHtml(Boolean(validation.required)) + '</dd>',
+            '</dl>'
+        ].join('');
+    }
+
+    function findObject(draft, objectId) {
+        return draft.objects.find(function (object) {
+            return object.id === objectId;
+        });
+    }
+
     function renderJson(draft) {
         const output = document.getElementById('webforms-json-output');
 
@@ -138,6 +224,15 @@
         }
 
         output.value = JSON.stringify(draft, null, 2);
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
     }
 
     function init() {
@@ -152,6 +247,7 @@
         window.webformsDesignDraft = draft;
 
         renderGrid(draft);
+        renderSelectionPanel(draft, null);
         renderJson(draft);
     }
 
