@@ -200,8 +200,8 @@ class Webforms {
     private function toolbar_tools($design_tab) {
         if ($design_tab === 'json') {
             return [
-                ['key' => 'copy-json', 'label' => 'Copy', 'title' => 'Copy generated JSON'],
-                ['key' => 'download-json', 'label' => 'Save', 'title' => 'Download generated JSON'],
+                ['key' => 'copy-json', 'label' => 'Copy', 'title' => 'Copy generated JSON', 'active' => true],
+                ['key' => 'download-json', 'label' => 'Save', 'title' => 'Download generated JSON', 'active' => true],
                 ['key' => 'import-json', 'label' => 'Import', 'title' => 'Import JSON into the designer'],
                 ['key' => 'validate-json', 'label' => 'Check', 'title' => 'Validate JSON structure'],
                 ['key' => 'format-json', 'label' => 'Format', 'title' => 'Format JSON for readability'],

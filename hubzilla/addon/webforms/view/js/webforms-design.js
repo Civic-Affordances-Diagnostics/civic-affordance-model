@@ -27,6 +27,16 @@
 
         if (tool === 'field') {
             ns.addObject(draft, ns.createTextFieldObject(draft));
+            return;
+        }
+
+        if (tool === 'copy-json' && typeof ns.copyPackageJson === 'function') {
+            ns.copyPackageJson(draft);
+            return;
+        }
+
+        if (tool === 'download-json' && typeof ns.downloadPackageJson === 'function') {
+            ns.downloadPackageJson(draft);
         }
     }
 
