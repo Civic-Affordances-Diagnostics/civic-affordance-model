@@ -168,10 +168,11 @@ class Webforms {
         for ($i = 0; $i < 15; $i++) {
             if (isset($tools[$i])) {
                 $tool = $tools[$i];
+                $disabled = !empty($tool['active']) ? '' : ' disabled="disabled"';
                 $out .= '
                     <button type="button"
                             class="btn btn-sm btn-outline-secondary"
-                            disabled="disabled"
+                            ' . $disabled . '
                             title="' . $this->h($tool['title']) . '"
                             data-webforms-tool="' . $this->h($tool['key']) . '"
                             data-webforms-tool-description="' . $this->h($tool['title']) . '">'
@@ -249,8 +250,8 @@ class Webforms {
         }
 
         return [
-            ['key' => 'container', 'label' => 'Box', 'title' => 'Add container'],
-            ['key' => 'field', 'label' => 'Field', 'title' => 'Add field'],
+            ['key' => 'container', 'label' => 'Box', 'title' => 'Add container', 'active' => true],
+            ['key' => 'field', 'label' => 'Field', 'title' => 'Add text field', 'active' => true],
             ['key' => 'label', 'label' => 'Label', 'title' => 'Add label'],
             ['key' => 'text', 'label' => 'Text', 'title' => 'Add text input'],
             ['key' => 'textarea', 'label' => 'Area', 'title' => 'Add textarea'],

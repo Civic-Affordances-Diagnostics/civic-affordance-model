@@ -28,7 +28,8 @@
             design: {
                 active_tab: designTab,
                 selected_object_id: null,
-                source: 'browser'
+                source: 'browser',
+                next_object_number: 2
             },
             grid: {
                 id: 'root-form',
@@ -40,7 +41,7 @@
             },
             objects: [
                 {
-                    id: 'sample-field',
+                    id: 'field-1',
                     type: 'text',
                     parent: 'root-form',
                     label: 'Sample field',
@@ -69,6 +70,91 @@
         return value.split('-').filter(Boolean).map(function (part) {
             return part.charAt(0).toUpperCase() + part.slice(1);
         }).join(' ');
+    }
+
+    function initToolbar(draft) {
+        document.querySelectorAll('[data-webforms-tool]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                if (button.disabled) {
+                    return;
+                }
+
+                handleToolClick(draft, button.dataset.webformsTool);
+            });
+        });
+    }
+
+    function handleToolClick(draft, tool) {
+        if (tool === 'container') {
+            addObject(draft, createContainerObject(draft));
+            return;
+        }
+
+        if (tool === 'field') {
+            addObject(draft, createTextFieldObject(draft));
+        }
+    }
+
+    function addObject(draft, object) {
+        draft.objects.push(object);
+        draft.design.selected_object_id = object.id;
+
+        renderGrid(draft);
+        renderSelectionPanel(draft, object.id);
+        renderJson(draft);
+    }
+
+    function createContainerObject(draft) {
+        const number = nextObjectNumber(draft);
+
+        return {
+            id: 'box-' + number,
+            type: 'container',
+            parent: 'root-form',
+            label: 'Box ' + number,
+            placeholder: '',
+            default: '',
+            placement: {
+                x: 2 + number,
+                y: 2 + number,
+                width: 10,
+                height: 5,
+                unit: 'grid'
+            },
+            validation: {
+                required: false
+            }
+        };
+    }
+
+    function createTextFieldObject(draft) {
+        const number = nextObjectNumber(draft);
+
+        return {
+            id: 'field-' + number,
+            type: 'text',
+            parent: 'root-form',
+            label: 'Field ' + number,
+            placeholder: '',
+            default: '',
+            placement: {
+                x: 3 + number,
+                y: 3 + number,
+                width: 9,
+                height: 3,
+                unit: 'grid'
+            },
+            validation: {
+                required: false
+            }
+        };
+    }
+
+    function nextObjectNumber(draft) {
+        const number = draft.design.next_object_number || 1;
+        draft.design.next_object_number = number + 1;
+
+        return number;
     }
 
     function renderGrid(draft) {
@@ -109,7 +195,7 @@
         const wrapper = document.createElement('div');
 
         wrapper.id = 'webforms-object-' + object.id;
-        wrapper.className = 'webforms-js-object';
+        wrapper.className = object.type === 'container' ? 'webforms-js-object webforms-js-container' : 'webforms-js-object';
         wrapper.dataset.webformsGeneratedObject = '1';
         wrapper.dataset.webformsObjectId = object.id;
         wrapper.dataset.webformsObjectType = object.type;
@@ -124,6 +210,25 @@
             selectObject(window.webformsDesignDraft, object.id);
         });
 
+        if (object.type === 'container') {
+            renderContainerObject(wrapper, object);
+        }
+        else {
+            renderTextObject(wrapper, object);
+        }
+
+        return wrapper;
+    }
+
+    function renderContainerObject(wrapper, object) {
+        const label = document.createElement('div');
+        label.className = 'webforms-object-label';
+        label.textContent = object.label || object.id;
+
+        wrapper.appendChild(label);
+    }
+
+    function renderTextObject(wrapper, object) {
         const label = document.createElement('label');
         label.setAttribute('for', 'webforms-preview-' + object.id);
         label.textContent = object.label || object.id;
@@ -138,8 +243,6 @@
 
         wrapper.appendChild(label);
         wrapper.appendChild(input);
-
-        return wrapper;
     }
 
     function selectObject(draft, objectId) {
@@ -295,6 +398,16 @@
             return;
         }
 
+        if (object.type === 'container') {
+            const label = wrapper.querySelector('.webforms-object-label');
+
+            if (label) {
+                label.textContent = object.label || object.id;
+            }
+
+            return;
+        }
+
         const label = wrapper.querySelector('label');
         const input = wrapper.querySelector('input');
 
@@ -367,6 +480,7 @@
 
         window.webformsDesignDraft = draft;
 
+        initToolbar(draft);
         renderGrid(draft);
         renderSelectionPanel(draft, null);
         renderJson(draft);
