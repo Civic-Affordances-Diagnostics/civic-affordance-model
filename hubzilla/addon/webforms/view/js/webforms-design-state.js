@@ -69,6 +69,103 @@
         };
     };
 
+    ns.buildPackage = function (draft) {
+        return {
+            schema: 'hubzilla.webforms.package',
+            version: '0.1',
+            meta: buildPackageMeta(draft),
+            design: buildDesignSection(draft),
+            form: buildPortableFormSection(draft),
+            runtime: buildRuntimeSection(draft)
+        };
+    };
+
+    function buildPackageMeta(draft) {
+        return {
+            id: draft.form.id,
+            title: draft.form.title,
+            status: draft.status,
+            access: draft.access,
+            generator: {
+                name: 'Hubzilla Webforms',
+                mode: 'browser-local',
+                version: '0.1'
+            }
+        };
+    }
+
+    function buildDesignSection(draft) {
+        return {
+            schema: 'hubzilla.webforms.design',
+            version: '0.1',
+            active_tab: draft.design.active_tab,
+            selected_object_id: draft.design.selected_object_id,
+            grid: clonePlainObject(draft.grid),
+            objects: clonePlainObject(draft.objects)
+        };
+    }
+
+    function buildPortableFormSection(draft) {
+        return {
+            schema: 'hubzilla.webforms.form',
+            version: '0.1',
+            id: draft.form.id,
+            title: draft.form.title,
+            fields: draft.objects
+                .filter(isPortableField)
+                .map(buildPortableField),
+            layout: draft.objects.map(buildPortableLayoutItem)
+        };
+    }
+
+    function buildRuntimeSection() {
+        return {
+            schema: 'hubzilla.webforms.runtime',
+            version: '0.1',
+            storage: {
+                mode: 'none'
+            },
+            services: [],
+            federation: [],
+            notes: [
+                'Runtime execution is not active.',
+                'No storage, service call, credential use, or federation action is performed by this package.'
+            ]
+        };
+    }
+
+    function isPortableField(object) {
+        return object.type !== 'container';
+    }
+
+    function buildPortableField(object) {
+        return {
+            id: object.id,
+            type: object.type,
+            label: object.label || object.id,
+            placeholder: object.placeholder || '',
+            default: object.default || '',
+            required: Boolean(object.validation && object.validation.required)
+        };
+    }
+
+    function buildPortableLayoutItem(object) {
+        return {
+            id: object.id,
+            type: object.type,
+            parent: object.parent,
+            x: object.placement.x,
+            y: object.placement.y,
+            width: object.placement.width,
+            height: object.placement.height,
+            unit: object.placement.unit
+        };
+    }
+
+    function clonePlainObject(value) {
+        return JSON.parse(JSON.stringify(value));
+    }
+
     ns.nextObjectNumber = function (draft) {
         const number = draft.design.next_object_number || 1;
         draft.design.next_object_number = number + 1;
@@ -171,7 +268,7 @@
             return;
         }
 
-        output.value = JSON.stringify(draft, null, 2);
+        output.value = JSON.stringify(ns.buildPackage(draft), null, 2);
     };
 
     ns.cssEscape = function (value) {
