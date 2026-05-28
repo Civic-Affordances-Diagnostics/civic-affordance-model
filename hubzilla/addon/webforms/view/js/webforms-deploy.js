@@ -17,42 +17,34 @@
         }
 
         const formId = runtime.dataset.webformsDeployForm || '';
+        const pkg = loadPackage(formId);
 
-        if (!formId) {
-            renderMessage(root, 'No webform selected.');
+        if (!pkg) {
+            renderMessage(root, 'No loaded Webforms package JSON found. Save or Import a package on the JSON tab first.');
             return;
         }
-
-        const draft = loadDraft(formId);
-
-        if (!draft) {
-            renderMessage(root, 'No browser-session draft found for "' + formId + '". Design this form in the Grid first, then return to Deploy.');
-            return;
-        }
-
-        const pkg = buildPackage(draft);
 
         renderPackage(root, pkg);
     }
 
-    function loadDraft(formId) {
-        const activeDraft = loadStoredDraft(activeDraftKey());
+    function loadPackage(formId) {
+        const exactPackage = formId ? loadStoredPackage(packageKeyForForm(formId)) : null;
 
-        if (isValidDraft(activeDraft, formId)) {
-            return activeDraft;
+        if (isValidPackage(exactPackage)) {
+            return exactPackage;
         }
 
-        const exactDraft = loadStoredDraft(storageKeyForForm(formId));
+        const activePackage = loadStoredPackage(activePackageKey());
 
-        if (isValidDraft(exactDraft, formId)) {
-            return exactDraft;
+        if (isValidPackage(activePackage)) {
+            return activePackage;
         }
 
         return null;
     }
 
-    function loadStoredDraft(key) {
-        if (!window.sessionStorage) {
+    function loadStoredPackage(key) {
+        if (!window.sessionStorage || !key) {
             return null;
         }
 
@@ -66,131 +58,37 @@
             return JSON.parse(raw);
         }
         catch (error) {
-            console.warn('Webforms deploy draft load failed.', error);
+            console.warn('Webforms package load failed.', error);
             return null;
         }
     }
 
-    function storageKeyForForm(formId) {
-        return 'hubzilla.webforms.designDraft.' + VERSION + '.' + formId;
+    function packageKeyForForm(formId) {
+        return 'hubzilla.webforms.package.' + VERSION + '.' + formId;
     }
 
-    function activeDraftKey() {
-        return 'hubzilla.webforms.activeDesignDraft.' + VERSION;
+    function activePackageKey() {
+        return 'hubzilla.webforms.activePackage.' + VERSION;
     }
 
-    function isValidDraft(draft, formId) {
-        return draft &&
-            draft.schema === 'hubzilla.webforms.designDraft' &&
-            draft.version === VERSION &&
-            draft.form &&
-            draft.form.id === formId &&
-            Array.isArray(draft.objects);
-    }
-
-    function buildPackage(draft) {
-        return {
-            schema: 'hubzilla.webforms.package',
-            version: VERSION,
-            meta: {
-                id: draft.form.id,
-                title: draft.form.title,
-                status: draft.status,
-                access: draft.access,
-                generator: {
-                    name: 'Hubzilla Webforms',
-                    mode: 'browser-local',
-                    version: VERSION
-                }
-            },
-            form: buildPortableFormSection(draft),
-            runtime: {
-                schema: 'hubzilla.webforms.runtime',
-                version: VERSION,
-                storage: {
-                    mode: 'none'
-                },
-                services: [],
-                federation: []
-            }
-        };
-    }
-
-    function buildPortableFormSection(draft) {
-        return {
-            schema: 'hubzilla.webforms.form',
-            version: VERSION,
-            id: draft.form.id,
-            title: draft.form.title,
-            fields: draft.objects
-                .filter(isPortableField)
-                .map(buildPortableField),
-            layout: draft.objects.map(buildPortableLayoutItem)
-        };
-    }
-
-    function isPortableField(object) {
-        return ![
-            'container',
-            'label',
-            'result_panel',
-            'help_text'
-        ].includes(object.type);
-    }
-
-    function buildPortableField(object) {
-        const field = {
-            id: object.id,
-            type: object.type,
-            label: object.label || object.id,
-            required: Boolean(object.validation && object.validation.required)
-        };
-
-        if (object.type !== 'checkbox' && object.type !== 'button') {
-            field.placeholder = object.placeholder || '';
-            field.default = object.default || '';
-        }
-
-        if (object.type === 'select') {
-            field.options = clonePlainObject(object.options || []);
-        }
-
-        if (object.type === 'button') {
-            field.action = 'none';
-        }
-
-        return field;
-    }
-
-    function buildPortableLayoutItem(object) {
-        const item = {
-            id: object.id,
-            type: object.type,
-            parent: object.parent,
-            x: object.placement.x,
-            y: object.placement.y,
-            width: object.placement.width,
-            height: object.placement.height,
-            unit: object.placement.unit
-        };
-
-        if (object.type === 'result_panel' || object.type === 'help_text') {
-            item.label = object.label || object.id;
-            item.text = object.default || '';
-        }
-
-        return item;
+    function isValidPackage(pkg) {
+        return pkg &&
+            pkg.schema === 'hubzilla.webforms.package' &&
+            pkg.version === VERSION &&
+            pkg.form &&
+            Array.isArray(pkg.form.fields) &&
+            Array.isArray(pkg.form.layout);
     }
 
     function renderPackage(root, pkg) {
         root.innerHTML = '';
 
         const heading = document.createElement('h4');
-        heading.textContent = pkg.form.title;
+        heading.textContent = pkg.form.title || pkg.meta.title || pkg.form.id || 'Webform';
 
         const notice = document.createElement('p');
         notice.className = 'small text-muted';
-        notice.textContent = 'Browser-session Deploy render. No submit, storage, service, or federation action is active.';
+        notice.textContent = 'Browser-local Deploy render from loaded package JSON. No submit, storage, service, or federation action is active.';
 
         const form = document.createElement('form');
         form.className = 'webforms-deploy-rendered-form';
@@ -227,7 +125,7 @@
         }
 
         if (layoutItem.type === 'label') {
-            return renderTextBlock(layoutItem, layoutItem.id);
+            return renderLabel(layoutItem);
         }
 
         if (layoutItem.type === 'result_panel') {
@@ -275,11 +173,11 @@
         return box;
     }
 
-    function renderTextBlock(layoutItem) {
+    function renderLabel(layoutItem) {
         const block = document.createElement('p');
         block.className = 'webforms-deploy-label';
         block.dataset.webformsLayoutId = layoutItem.id;
-        block.textContent = layoutItem.id;
+        block.textContent = layoutItem.label || layoutItem.id;
 
         return block;
     }
@@ -419,10 +317,6 @@
         empty.textContent = message;
 
         root.appendChild(empty);
-    }
-
-    function clonePlainObject(value) {
-        return JSON.parse(JSON.stringify(value));
     }
 
     if (document.readyState === 'loading') {

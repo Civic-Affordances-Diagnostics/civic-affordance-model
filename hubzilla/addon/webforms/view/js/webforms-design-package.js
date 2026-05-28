@@ -16,15 +16,112 @@
 
     ns.renderJson = function (draft) {
         const output = document.getElementById('webforms-json-output');
+        const pkg = ns.buildPackage(draft);
 
         ns.persistDraft(draft);
+        ns.persistPackage(pkg);
 
         if (!output) {
             return;
         }
 
-        output.value = JSON.stringify(ns.buildPackage(draft), null, 2);
+        output.value = JSON.stringify(pkg, null, 2);
     };
+
+    ns.persistPackage = function (pkg) {
+        if (!window.sessionStorage || !pkg || !pkg.meta || !pkg.meta.id) {
+            return;
+        }
+
+        try {
+            const payload = JSON.stringify(pkg);
+
+            window.sessionStorage.setItem(packageKeyForForm(pkg.meta.id), payload);
+            window.sessionStorage.setItem(activePackageKey(), payload);
+        }
+        catch (error) {
+            console.warn('Webforms package was not persisted to sessionStorage.', error);
+        }
+    };
+
+    ns.packageToDraft = function (pkg, runtime) {
+        if (!pkg || pkg.schema !== 'hubzilla.webforms.package') {
+            throw new Error('Not a hubzilla.webforms.package document.');
+        }
+
+        if (!pkg.design || !Array.isArray(pkg.design.objects)) {
+            throw new Error('Package does not contain design.objects.');
+        }
+
+        const access = runtime.dataset.webformsAccess || 'public';
+        const formId = packageFormId(pkg) || 'new-blank-form';
+        const formTitle = packageFormTitle(pkg) || ns.humanizeSlug(formId);
+
+        return {
+            schema: 'hubzilla.webforms.designDraft',
+            version: ns.VERSION,
+            status: 'browser-local',
+            access: {
+                mode: access,
+                public_local_only: access === 'public'
+            },
+            form: {
+                id: formId,
+                title: formTitle
+            },
+            design: {
+                active_tab: runtime.dataset.webformsDesignTab || 'grid',
+                selected_object_id: null,
+                source: 'package-json',
+                next_object_number: findNextObjectNumber(pkg.design.objects)
+            },
+            grid: pkg.design.grid || {
+                id: 'root-form',
+                unit: 'px',
+                size: ns.GRID_SIZE,
+                columns_observed: 22,
+                rows_observed: 17,
+                placement_scope: 'immediate-container'
+            },
+            objects: clonePlainObject(pkg.design.objects),
+            notes: [
+                'This draft was loaded from package JSON.',
+                'No server write, storage, API call, or federation action is performed.'
+            ]
+        };
+    };
+
+    function packageKeyForForm(formId) {
+        return 'hubzilla.webforms.package.' + ns.VERSION + '.' + formId;
+    }
+
+    function activePackageKey() {
+        return 'hubzilla.webforms.activePackage.' + ns.VERSION;
+    }
+
+    function packageFormId(pkg) {
+        if (pkg.meta && pkg.meta.id) {
+            return pkg.meta.id;
+        }
+
+        if (pkg.form && pkg.form.id) {
+            return pkg.form.id;
+        }
+
+        return '';
+    }
+
+    function packageFormTitle(pkg) {
+        if (pkg.meta && pkg.meta.title) {
+            return pkg.meta.title;
+        }
+
+        if (pkg.form && pkg.form.title) {
+            return pkg.form.title;
+        }
+
+        return '';
+    }
 
     function buildPackageMeta(draft) {
         return {
@@ -131,6 +228,18 @@
         }
 
         return item;
+    }
+
+    function findNextObjectNumber(objects) {
+        return objects.reduce(function (highest, object) {
+            const match = object.id.match(/-(\d+)$/);
+
+            if (!match) {
+                return highest;
+            }
+
+            return Math.max(highest, parseInt(match[1], 10) + 1);
+        }, 1);
     }
 
     function clonePlainObject(value) {

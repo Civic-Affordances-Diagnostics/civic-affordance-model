@@ -213,7 +213,7 @@ class Webforms {
             return [
                 ['key' => 'copy-json', 'label' => 'Copy', 'title' => 'Copy generated JSON', 'active' => true],
                 ['key' => 'download-json', 'label' => 'Save', 'title' => 'Download generated JSON', 'active' => true],
-                ['key' => 'import-json', 'label' => 'Import', 'title' => 'Import JSON into the designer'],
+                ['key' => 'import-json', 'label' => 'Import', 'title' => 'Load package JSON from file', 'active' => true],
                 ['key' => 'validate-json', 'label' => 'Check', 'title' => 'Validate JSON structure'],
                 ['key' => 'format-json', 'label' => 'Format', 'title' => 'Format JSON for readability'],
                 ['key' => 'clear-json', 'label' => 'Clear', 'title' => 'Clear local draft', 'active' => true],

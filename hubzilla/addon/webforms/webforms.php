@@ -84,14 +84,14 @@ function webforms_add_design_assets() {
     }
 
     if (function_exists('head_add_js')) {
-        head_add_js('/addon/webforms/view/js/webforms-design-state.js?v=deploy-render-2');
-        head_add_js('/addon/webforms/view/js/webforms-design-draft.js?v=deploy-render-2');
-        head_add_js('/addon/webforms/view/js/webforms-design-session.js?v=deploy-render-2');
-        head_add_js('/addon/webforms/view/js/webforms-design-package.js?v=deploy-render-2');
-        head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=deploy-render-2');
-        head_add_js('/addon/webforms/view/js/webforms-design-properties.js?v=deploy-render-2');
-        head_add_js('/addon/webforms/view/js/webforms-design-json.js?v=deploy-render-2');
-        head_add_js('/addon/webforms/view/js/webforms-design.js?v=deploy-render-2');
+        head_add_js('/addon/webforms/view/js/webforms-design-state.js?v=json-roundtrip-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-draft.js?v=json-roundtrip-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-session.js?v=json-roundtrip-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-package.js?v=json-roundtrip-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=json-roundtrip-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-properties.js?v=json-roundtrip-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-json.js?v=json-roundtrip-1');
+        head_add_js('/addon/webforms/view/js/webforms-design.js?v=json-roundtrip-1');
     }
 }
 
@@ -101,7 +101,7 @@ function webforms_add_deploy_assets() {
     }
 
     if (function_exists('head_add_js')) {
-        head_add_js('/addon/webforms/view/js/webforms-deploy.js?v=deploy-render-2');
+        head_add_js('/addon/webforms/view/js/webforms-deploy.js?v=json-roundtrip-1');
     }
 }
 
@@ -344,7 +344,7 @@ function webforms_deploy_placeholder($collection = '', $deploy_form = '') {
                     <div id="webforms-deploy-empty-state" class="well" data-webforms-panel="empty-deploy-view">
                         <p><strong>Collection:</strong> ' . $collection_label . '</p>
                         <p><strong>Webform:</strong> ' . $form_label . '</p>
-                        <p>Loading browser-session package renderer.</p>
+                        <p>Loading browser-local package renderer.</p>
                     </div>
                 </div>
             </section>

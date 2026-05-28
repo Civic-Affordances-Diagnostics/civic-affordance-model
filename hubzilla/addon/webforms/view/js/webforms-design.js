@@ -14,7 +14,9 @@
                     return;
                 }
 
-                const nextDraft = handleToolClick(draft, runtime, button.dataset.webformsTool);
+                const nextDraft = handleToolClick(draft, runtime, button.dataset.webformsTool, function (importedDraft) {
+                    draft = importedDraft;
+                });
 
                 if (nextDraft) {
                     draft = nextDraft;
@@ -23,7 +25,7 @@
         });
     }
 
-    function handleToolClick(draft, runtime, tool) {
+    function handleToolClick(draft, runtime, tool, onImported) {
         if (tool === 'container') {
             ns.addObject(draft, ns.createContainerObject(draft));
             return draft;
@@ -81,6 +83,11 @@
 
         if (tool === 'download-json' && typeof ns.downloadPackageJson === 'function') {
             ns.downloadPackageJson(draft);
+            return draft;
+        }
+
+        if (tool === 'import-json' && typeof ns.importPackageJson === 'function') {
+            ns.importPackageJson(runtime, onImported);
             return draft;
         }
 
