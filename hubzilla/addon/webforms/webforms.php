@@ -82,11 +82,14 @@ function webforms_add_design_assets() {
     }
 
     if (function_exists('head_add_js')) {
-        head_add_js('/addon/webforms/view/js/webforms-design-state.js?v=delete-clear-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=delete-clear-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-properties.js?v=delete-clear-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-json.js?v=delete-clear-1');
-        head_add_js('/addon/webforms/view/js/webforms-design.js?v=delete-clear-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-state.js?v=state-split-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-draft.js?v=state-split-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-session.js?v=state-split-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-package.js?v=state-split-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=state-split-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-properties.js?v=state-split-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-json.js?v=state-split-1');
+        head_add_js('/addon/webforms/view/js/webforms-design.js?v=state-split-1');
     }
 }
 
