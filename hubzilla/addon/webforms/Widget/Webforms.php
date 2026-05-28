@@ -148,11 +148,7 @@ class Webforms {
                     <hr>
 
                     <div id="webforms-design-toolbar" class="webforms-design-toolbar" data-webforms-panel="toolbar" data-webforms-toolbar-tab="' . $this->h($design_tab) . '">
-                        <h5>Toolbar: ' . $this->h($this->design_tabs()[$design_tab]) . '</h5>
                         ' . $this->toolbar_matrix($design_tab) . '
-                        <div id="webforms-tool-status" class="small text-muted mt-2" data-webforms-panel="tool-status">
-                            Select a tool to see details.
-                        </div>
                     </div>
 
                     <hr>
@@ -168,9 +164,9 @@ class Webforms {
 
     private function toolbar_matrix($design_tab) {
         $tools = $this->toolbar_tools($design_tab);
-        $out = '<div class="webforms-toolbar-grid" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.25rem;" role="group" aria-label="Webforms design toolbar">';
+        $out = '<div class="webforms-toolbar-grid" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(5, auto); gap: 0.25rem;" role="group" aria-label="Webforms design toolbar">';
 
-        for ($i = 0; $i < 30; $i++) {
+        for ($i = 0; $i < 15; $i++) {
             if (isset($tools[$i])) {
                 $tool = $tools[$i];
                 $out .= '
@@ -185,7 +181,14 @@ class Webforms {
                 ';
             }
             else {
-                $out .= '<span class="webforms-toolbar-empty" aria-hidden="true"></span>';
+                $out .= '
+                    <button type="button"
+                            class="btn btn-sm btn-outline-secondary"
+                            disabled="disabled"
+                            tabindex="-1"
+                            aria-hidden="true"
+                            title="">&nbsp;</button>
+                ';
             }
         }
 
