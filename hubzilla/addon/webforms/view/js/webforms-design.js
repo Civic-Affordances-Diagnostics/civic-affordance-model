@@ -180,61 +180,106 @@
         }
 
         if (!objectId) {
-            panel.innerHTML = '<h5>Selected object</h5><p>No object selected.</p>';
+            panel.innerHTML = '<p class="small mb-0">No object selected.</p>';
             return;
         }
 
         const object = findObject(draft, objectId);
 
         if (!object) {
-            panel.innerHTML = '<h5>Selected object</h5><p>Selected object not found.</p>';
+            panel.innerHTML = '<p class="small mb-0">Selected object not found.</p>';
             return;
         }
 
         panel.innerHTML = [
-            '<h5>Selected object</h5>',
-            propertyInput('ID', 'id', object.id, 'text', true),
-            propertyInput('Label', 'label', object.label || '', 'text', false),
-            propertyInput('Placeholder', 'placeholder', object.placeholder || '', 'text', false),
-            propertyInput('Default', 'default', object.default || '', 'text', false),
-            propertyInput('X', 'placement.x', object.placement.x, 'number', false),
-            propertyInput('Y', 'placement.y', object.placement.y, 'number', false),
-            propertyInput('Width', 'placement.width', object.placement.width, 'number', false),
-            propertyInput('Height', 'placement.height', object.placement.height, 'number', false),
-            checkboxInput('Required', 'validation.required', Boolean(object.validation.required))
+            compactInputRow('ID', 'id', object.id, true),
+            compactInputRow('Label', 'label', object.label || '', false),
+            compactInputRow('Hint', 'placeholder', object.placeholder || '', false),
+            compactInputRow('Default', 'default', object.default || '', false),
+            placementSelectRow(object.placement),
+            requiredRow(Boolean(object.validation.required))
         ].join('');
 
         panel.querySelectorAll('[data-webforms-property]').forEach(function (input) {
-            input.addEventListener('input', function () {
-                updateObjectFromInput(draft, object.id, input);
-            });
-
             input.addEventListener('change', function () {
                 updateObjectFromInput(draft, object.id, input);
             });
+
+            if (input.tagName.toLowerCase() === 'input' && input.type !== 'checkbox') {
+                input.addEventListener('input', function () {
+                    updateObjectTextProperty(draft, object.id, input);
+                });
+            }
         });
     }
 
-    function propertyInput(label, property, value, type, readonly) {
+    function compactInputRow(label, property, value, readonly) {
         const id = 'webforms-prop-' + property.replace(/\./g, '-');
 
         return [
-            '<div class="mb-2">',
-            '<label class="small" for="' + escapeHtml(id) + '">' + escapeHtml(label) + '</label>',
-            '<input id="' + escapeHtml(id) + '" class="form-control form-control-sm" type="' + escapeHtml(type) + '" value="' + escapeHtml(value) + '" data-webforms-property="' + escapeHtml(property) + '"' + (readonly ? ' readonly="readonly"' : '') + '>',
+            '<div class="webforms-property-row mb-1" style="display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); gap: 0.35rem; align-items: center;">',
+            '<label class="small mb-0" for="' + escapeHtml(id) + '">' + escapeHtml(label) + '</label>',
+            '<input id="' + escapeHtml(id) + '" class="form-control form-control-sm" type="text" value="' + escapeHtml(value) + '" data-webforms-property="' + escapeHtml(property) + '"' + (readonly ? ' readonly="readonly"' : '') + '>',
             '</div>'
         ].join('');
     }
 
-    function checkboxInput(label, property, checked) {
+    function placementSelectRow(placement) {
+        return [
+            '<div class="webforms-placement-row mb-1" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.25rem;">',
+            placementSelect('X', 'placement.x', placement.x, 0, 99),
+            placementSelect('Y', 'placement.y', placement.y, 0, 99),
+            placementSelect('W', 'placement.width', placement.width, 1, 99),
+            placementSelect('H', 'placement.height', placement.height, 1, 99),
+            '</div>'
+        ].join('');
+    }
+
+    function placementSelect(label, property, value, min, max) {
         const id = 'webforms-prop-' + property.replace(/\./g, '-');
 
         return [
-            '<div class="form-check mb-2">',
-            '<input id="' + escapeHtml(id) + '" class="form-check-input" type="checkbox" data-webforms-property="' + escapeHtml(property) + '"' + (checked ? ' checked="checked"' : '') + '>',
-            '<label class="form-check-label small" for="' + escapeHtml(id) + '">' + escapeHtml(label) + '</label>',
+            '<label class="small mb-0" for="' + escapeHtml(id) + '">' + escapeHtml(label) + '</label>',
+            '<select id="' + escapeHtml(id) + '" class="form-control form-control-sm" data-webforms-property="' + escapeHtml(property) + '">',
+            numberOptions(value, min, max),
+            '</select>'
+        ].join('');
+    }
+
+    function numberOptions(current, min, max) {
+        let out = '';
+        const selectedValue = parseInt(current, 10);
+
+        for (let i = min; i <= max; i++) {
+            out += '<option value="' + i + '"' + (i === selectedValue ? ' selected="selected"' : '') + '>' + i + '</option>';
+        }
+
+        return out;
+    }
+
+    function requiredRow(checked) {
+        const id = 'webforms-prop-validation-required';
+
+        return [
+            '<div class="form-check mt-1 mb-0">',
+            '<input id="' + id + '" class="form-check-input" type="checkbox" data-webforms-property="validation.required"' + (checked ? ' checked="checked"' : '') + '>',
+            '<label class="form-check-label small" for="' + id + '">Required</label>',
             '</div>'
         ].join('');
+    }
+
+    function updateObjectTextProperty(draft, objectId, input) {
+        const object = findObject(draft, objectId);
+
+        if (!object || input.readOnly) {
+            return;
+        }
+
+        const property = input.dataset.webformsProperty;
+        object[property] = input.value;
+
+        updateGridObjectPreview(object);
+        renderJson(draft);
     }
 
     function updateObjectFromInput(draft, objectId, input) {
@@ -254,10 +299,30 @@
         renderJson(draft);
     }
 
+    function updateGridObjectPreview(object) {
+        const wrapper = document.querySelector('[data-webforms-object-id="' + cssEscape(object.id) + '"]');
+
+        if (!wrapper) {
+            return;
+        }
+
+        const label = wrapper.querySelector('label');
+        const input = wrapper.querySelector('input');
+
+        if (label) {
+            label.textContent = object.label || object.id;
+        }
+
+        if (input) {
+            input.value = object.default || '';
+            input.placeholder = object.placeholder || '';
+        }
+    }
+
     function setObjectProperty(object, property, value) {
         if (property.indexOf('placement.') === 0) {
             const key = property.split('.')[1];
-            object.placement[key] = normalizePositiveNumber(value, object.placement[key]);
+            object.placement[key] = parseInt(value, 10);
             return;
         }
 
@@ -267,16 +332,6 @@
         }
 
         object[property] = value;
-    }
-
-    function normalizePositiveNumber(value, fallback) {
-        const number = parseInt(value, 10);
-
-        if (Number.isNaN(number) || number < 0) {
-            return fallback;
-        }
-
-        return number;
     }
 
     function findObject(draft, objectId) {
@@ -293,6 +348,14 @@
         }
 
         output.value = JSON.stringify(draft, null, 2);
+    }
+
+    function cssEscape(value) {
+        if (window.CSS && typeof window.CSS.escape === 'function') {
+            return window.CSS.escape(value);
+        }
+
+        return String(value).replace(/"/g, '\\"');
     }
 
     function escapeHtml(value) {
