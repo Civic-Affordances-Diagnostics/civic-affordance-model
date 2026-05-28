@@ -257,7 +257,7 @@ class Webforms {
             ['key' => 'textarea', 'label' => 'Area', 'title' => 'Add textarea', 'active' => true],
             ['key' => 'checkbox', 'label' => 'Check', 'title' => 'Add checkbox', 'active' => true],
             ['key' => 'button', 'label' => 'Button', 'title' => 'Add button', 'active' => true],
-            ['key' => 'select', 'label' => 'Select', 'title' => 'Add select list'],
+            ['key' => 'select', 'label' => 'Select', 'title' => 'Add select list', 'active' => true],
             ['key' => 'result-panel', 'label' => 'Result', 'title' => 'Add result panel'],
             ['key' => 'help-text', 'label' => 'Help', 'title' => 'Add help text'],
         ];

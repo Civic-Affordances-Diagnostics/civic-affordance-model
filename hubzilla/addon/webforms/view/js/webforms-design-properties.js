@@ -22,14 +22,20 @@
             return;
         }
 
-        panel.innerHTML = [
+        const rows = [
             compactInputRow('ID', 'id', object.id, true),
             compactInputRow('Label', 'label', object.label || '', false),
             compactInputRow('Hint', 'placeholder', object.placeholder || '', false),
             compactInputRow('Default', 'default', object.default || '', false),
             placementSelectRow(object.placement),
             requiredRow(Boolean(object.validation.required))
-        ].join('');
+        ];
+
+        if (object.type === 'select') {
+            rows.push(optionsRow(object));
+        }
+
+        panel.innerHTML = rows.join('');
 
         panel.querySelectorAll('[data-webforms-property]').forEach(function (input) {
             input.addEventListener('change', function () {
@@ -41,6 +47,12 @@
                     updateObjectTextProperty(draft, object.id, input);
                 });
             }
+        });
+
+        panel.querySelectorAll('textarea[data-webforms-property]').forEach(function (textarea) {
+            textarea.addEventListener('input', function () {
+                updateObjectFromInput(draft, object.id, textarea);
+            });
         });
     };
 
@@ -95,6 +107,19 @@
             '<div class="form-check mt-1 mb-0">',
             '<input id="' + id + '" class="form-check-input" type="checkbox" data-webforms-property="validation.required"' + (checked ? ' checked="checked"' : '') + '>',
             '<label class="form-check-label small" for="' + id + '">Required</label>',
+            '</div>'
+        ].join('');
+    }
+
+    function optionsRow(object) {
+        const id = 'webforms-prop-options';
+
+        return [
+            '<div class="mt-2">',
+            '<label class="small mb-1" for="' + id + '">Options value|label, one per line</label>',
+            '<textarea id="' + id + '" class="form-control form-control-sm" rows="4" data-webforms-property="options">',
+            ns.escapeHtml(ns.optionsToText(object)),
+            '</textarea>',
             '</div>'
         ].join('');
     }
