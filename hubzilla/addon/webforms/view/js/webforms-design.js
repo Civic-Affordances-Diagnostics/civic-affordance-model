@@ -37,13 +37,13 @@
             return;
         }
 
-        const draft = ns.buildDraft(runtime);
+        const draft = ns.loadDraft(runtime);
 
         window.webformsDesignDraft = draft;
 
         initToolbar(draft);
         ns.renderGrid(draft);
-        ns.renderSelectionPanel(draft, null);
+        ns.renderSelectionPanel(draft, draft.design.selected_object_id);
         ns.renderJson(draft);
     }
 
