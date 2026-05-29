@@ -18,8 +18,6 @@ return [
     'design_tabs' => [
         'grid' => 'Grid',
         'json' => 'JSON',
-        'services' => 'Services',
-        'federation' => 'Federation',
         'help' => 'Help',
     ],
 
