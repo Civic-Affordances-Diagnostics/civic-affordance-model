@@ -22,6 +22,8 @@ The package JSON is the authoritative boundary between Design and Deploy.
 
 Design creates and edits package state. JSON Save exports it. JSON Import restores it. Deploy renders from the loaded package JSON.
 
+Design package generation and Deploy rendering now share package/layout helper logic through `webforms-package-shared.js`.
+
 ## Current purpose
 
 The addon currently provides:
@@ -44,6 +46,7 @@ browser-session draft persistence
 browser-session package persistence
 public local-only Design mode
 browser-local Deploy render from loaded package JSON
+shared package/layout helper module
 ```
 
 The current Design mode can create simple browser-local objects and emit a structured JSON package. It does not write to Hubzilla storage or execute services.
@@ -70,7 +73,8 @@ addon/webforms/
 │       ├── webforms-design-properties.js
 │       ├── webforms-design-session.js
 │       ├── webforms-design-state.js
-│       └── webforms-design.js
+│       ├── webforms-design.js
+│       └── webforms-package-shared.js
 ├── webforms.apd
 └── webforms.php
 ```
@@ -151,11 +155,11 @@ Clear returns to an empty draft. It does not create a default sample field.
 
 ## JavaScript module layout
 
-The Design JavaScript is split by responsibility:
+The JavaScript is split by responsibility:
 
 ```text
 webforms-design-state.js
-  shared namespace constants
+  shared Design namespace constants
 
 webforms-design-draft.js
   draft construction
@@ -169,11 +173,25 @@ webforms-design-session.js
   runtime access/tab refresh
   draft counter repair
 
+webforms-package-shared.js
+  shared package version
+  shared package sessionStorage keys
+  package validation
+  portable field detection
+  portable field mapping
+  portable layout mapping
+  package form id/title helpers
+  grid size lookup
+  layout bounds calculation
+  fields-by-id mapping
+  object counter repair
+  plain object cloning
+
 webforms-design-package.js
   hubzilla.webforms.package generation
   package persistence
   package-to-draft restoration
-  meta/design/form/runtime sections
+  meta/design/runtime sections
   JSON textarea rendering
 
 webforms-design-grid.js
@@ -206,6 +224,8 @@ webforms-deploy.js
 ```
 
 The files are loaded in dependency order by `webforms.php`.
+
+`webforms-package-shared.js` is loaded before `webforms-design-package.js` in Design mode and before `webforms-deploy.js` in Deploy mode. This keeps Design JSON generation and Deploy rendering aligned around the same package assumptions.
 
 ## Grid components
 
@@ -272,6 +292,8 @@ hubzilla.webforms.package
 ```
 
 At this checkpoint, the package JSON is the unit of truth for round-tripping Design and Deploy.
+
+Shared package/layout behavior is centralized in `webforms-package-shared.js` so the same assumptions are used when Design produces package JSON and when Deploy renders it.
 
 ## Deploy rendering
 
@@ -343,6 +365,7 @@ asset registration
 public/local Design behavior
 file organization
 browser-local package JSON boundary
+shared package/layout helper approach
 Deploy rendering approach
 whether this should continue as an addon in this form
 ```
