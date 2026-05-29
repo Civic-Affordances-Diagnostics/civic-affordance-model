@@ -110,10 +110,10 @@ function webforms_add_design_assets() {
 
 	if (function_exists('head_add_js')) {
 		head_add_js('/addon/webforms/view/js/webforms-design-state.js?v=hard-recovery-1');
-		head_add_js('/addon/webforms/view/js/webforms-design-draft.js?v=hard-recovery-1');
-		head_add_js('/addon/webforms/view/js/webforms-design-session.js?v=hard-recovery-1');
+		head_add_js('/addon/webforms/view/js/webforms-design-draft.js?v=import-route-1');
+		head_add_js('/addon/webforms/view/js/webforms-design-session.js?v=import-route-1');
 		head_add_js('/addon/webforms/view/js/webforms-package-shared.js?v=hard-recovery-1');
-		head_add_js('/addon/webforms/view/js/webforms-design-package.js?v=hard-recovery-1');
+		head_add_js('/addon/webforms/view/js/webforms-design-package.js?v=import-route-1');
 		head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=textarea-1');
 		head_add_js('/addon/webforms/view/js/webforms-design-properties.js?v=textarea-default-1');
 		head_add_js('/addon/webforms/view/js/webforms-design-json.js?v=hard-recovery-1');
