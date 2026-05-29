@@ -22,7 +22,20 @@ The package JSON is the authoritative boundary between Design and Deploy.
 
 Design creates and edits package state. JSON Save exports it. JSON Import restores it. Deploy renders from the loaded package JSON.
 
-Design package generation and Deploy rendering now share package/layout helper logic through `webforms-package-shared.js`.
+Design package generation and Deploy rendering share package/layout helper logic through `webforms-package-shared.js`.
+
+PHP-side option and render responsibilities are also separated:
+
+```text
+include/webforms-config.php
+  static options, labels, tabs, and toolbar definitions
+
+include/webforms-render.php
+  center-panel page rendering for Design and Deploy
+
+webforms.php
+  addon hooks, module dispatch, config access, request helpers, and asset loading
+```
 
 ## Current purpose
 
@@ -47,6 +60,8 @@ browser-session package persistence
 public local-only Design mode
 browser-local Deploy render from loaded package JSON
 shared package/layout helper module
+shared PHP config source
+separated PHP center-panel renderer
 ```
 
 The current Design mode can create simple browser-local objects and emit a structured JSON package. It does not write to Hubzilla storage or execute services.
@@ -60,6 +75,9 @@ addon/webforms/
 ├── README.md
 ├── Widget/
 │   └── Webforms.php
+├── include/
+│   ├── webforms-config.php
+│   └── webforms-render.php
 ├── mod_webforms.pdl
 ├── view/
 │   ├── css/
@@ -78,6 +96,46 @@ addon/webforms/
 ├── webforms.apd
 └── webforms.php
 ```
+
+## PHP module layout
+
+The PHP code is split by responsibility:
+
+```text
+webforms.php
+  addon entry point
+  module declaration
+  hook registration
+  PDL loading
+  shared config access
+  request sanitization helpers
+  Design / Deploy dispatch
+  CSS and JavaScript asset registration
+
+include/webforms-config.php
+  Design form options
+  Design descriptions
+  Design tabs
+  Deploy collection options
+  Deploy form options
+  toolbar definitions
+
+include/webforms-render.php
+  public/local access notices
+  Design center-panel rendering
+  Design tab navigation
+  Design tab content rendering
+  Deploy center-panel rendering
+
+Widget/Webforms.php
+  registered Zotlabs\Widget sidebar widget
+  sidebar mode selector
+  Design selector
+  Deploy selector
+  toolbar button matrix
+```
+
+`webforms.php` and `Widget/Webforms.php` both consume `include/webforms-config.php`, so sidebar and center-panel labels are no longer maintained in separate hard-coded arrays.
 
 ## Hubzilla conventions used
 
@@ -366,6 +424,7 @@ public/local Design behavior
 file organization
 browser-local package JSON boundary
 shared package/layout helper approach
+shared PHP config/render split
 Deploy rendering approach
 whether this should continue as an addon in this form
 ```
