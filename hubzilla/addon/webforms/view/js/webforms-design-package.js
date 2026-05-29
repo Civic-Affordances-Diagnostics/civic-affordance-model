@@ -2,14 +2,15 @@
     'use strict';
 
     const ns = window.WebformsDesign = window.WebformsDesign || {};
+    const pkgApi = window.WebformsPackage;
 
     ns.buildPackage = function (draft) {
         return {
             schema: 'hubzilla.webforms.package',
-            version: ns.VERSION,
+            version: pkgApi.VERSION,
             meta: buildPackageMeta(draft),
             design: buildDesignSection(draft),
-            form: buildPortableFormSection(draft),
+            form: pkgApi.buildPortableFormSection(draft),
             runtime: buildRuntimeSection()
         };
     };
@@ -36,8 +37,8 @@
         try {
             const payload = JSON.stringify(pkg);
 
-            window.sessionStorage.setItem(packageKeyForForm(pkg.meta.id), payload);
-            window.sessionStorage.setItem(activePackageKey(), payload);
+            window.sessionStorage.setItem(pkgApi.packageKeyForForm(pkg.meta.id), payload);
+            window.sessionStorage.setItem(pkgApi.activePackageKey(), payload);
         }
         catch (error) {
             console.warn('Webforms package was not persisted to sessionStorage.', error);
@@ -54,12 +55,12 @@
         }
 
         const access = runtime.dataset.webformsAccess || 'public';
-        const formId = packageFormId(pkg) || 'new-blank-form';
-        const formTitle = packageFormTitle(pkg) || ns.humanizeSlug(formId);
+        const formId = pkgApi.packageFormId(pkg) || 'new-blank-form';
+        const formTitle = pkgApi.packageFormTitle(pkg) || ns.humanizeSlug(formId);
 
         return {
             schema: 'hubzilla.webforms.designDraft',
-            version: ns.VERSION,
+            version: pkgApi.VERSION,
             status: 'browser-local',
             access: {
                 mode: access,
@@ -73,7 +74,7 @@
                 active_tab: runtime.dataset.webformsDesignTab || 'grid',
                 selected_object_id: null,
                 source: 'package-json',
-                next_object_number: findNextObjectNumber(pkg.design.objects)
+                next_object_number: pkgApi.findNextObjectNumber(pkg.design.objects)
             },
             grid: pkg.design.grid || {
                 id: 'root-form',
@@ -83,45 +84,13 @@
                 rows_observed: 17,
                 placement_scope: 'immediate-container'
             },
-            objects: clonePlainObject(pkg.design.objects),
+            objects: pkgApi.clonePlainObject(pkg.design.objects),
             notes: [
                 'This draft was loaded from package JSON.',
                 'No server write, storage, API call, or federation action is performed.'
             ]
         };
     };
-
-    function packageKeyForForm(formId) {
-        return 'hubzilla.webforms.package.' + ns.VERSION + '.' + formId;
-    }
-
-    function activePackageKey() {
-        return 'hubzilla.webforms.activePackage.' + ns.VERSION;
-    }
-
-    function packageFormId(pkg) {
-        if (pkg.meta && pkg.meta.id) {
-            return pkg.meta.id;
-        }
-
-        if (pkg.form && pkg.form.id) {
-            return pkg.form.id;
-        }
-
-        return '';
-    }
-
-    function packageFormTitle(pkg) {
-        if (pkg.meta && pkg.meta.title) {
-            return pkg.meta.title;
-        }
-
-        if (pkg.form && pkg.form.title) {
-            return pkg.form.title;
-        }
-
-        return '';
-    }
 
     function buildPackageMeta(draft) {
         return {
@@ -132,7 +101,7 @@
             generator: {
                 name: 'Hubzilla Webforms',
                 mode: 'browser-local',
-                version: ns.VERSION
+                version: pkgApi.VERSION
             }
         };
     }
@@ -140,31 +109,18 @@
     function buildDesignSection(draft) {
         return {
             schema: 'hubzilla.webforms.design',
-            version: ns.VERSION,
+            version: pkgApi.VERSION,
             active_tab: draft.design.active_tab,
             selected_object_id: draft.design.selected_object_id,
-            grid: clonePlainObject(draft.grid),
-            objects: clonePlainObject(draft.objects)
-        };
-    }
-
-    function buildPortableFormSection(draft) {
-        return {
-            schema: 'hubzilla.webforms.form',
-            version: ns.VERSION,
-            id: draft.form.id,
-            title: draft.form.title,
-            fields: draft.objects
-                .filter(isPortableField)
-                .map(buildPortableField),
-            layout: draft.objects.map(buildPortableLayoutItem)
+            grid: pkgApi.clonePlainObject(draft.grid),
+            objects: pkgApi.clonePlainObject(draft.objects)
         };
     }
 
     function buildRuntimeSection() {
         return {
             schema: 'hubzilla.webforms.runtime',
-            version: ns.VERSION,
+            version: pkgApi.VERSION,
             storage: {
                 mode: 'none'
             },
@@ -175,74 +131,5 @@
                 'No storage, service call, credential use, or federation action is performed by this package.'
             ]
         };
-    }
-
-    function isPortableField(object) {
-        return ![
-            'container',
-            'label',
-            'result_panel',
-            'help_text'
-        ].includes(object.type);
-    }
-
-    function buildPortableField(object) {
-        const field = {
-            id: object.id,
-            type: object.type,
-            label: object.label || object.id,
-            required: Boolean(object.validation && object.validation.required)
-        };
-
-        if (object.type !== 'checkbox' && object.type !== 'button') {
-            field.placeholder = object.placeholder || '';
-            field.default = object.default || '';
-        }
-
-        if (object.type === 'select') {
-            field.options = clonePlainObject(object.options || []);
-        }
-
-        if (object.type === 'button') {
-            field.action = 'none';
-        }
-
-        return field;
-    }
-
-    function buildPortableLayoutItem(object) {
-        const item = {
-            id: object.id,
-            type: object.type,
-            parent: object.parent,
-            x: object.placement.x,
-            y: object.placement.y,
-            width: object.placement.width,
-            height: object.placement.height,
-            unit: object.placement.unit
-        };
-
-        if (object.type === 'result_panel' || object.type === 'help_text') {
-            item.label = object.label || object.id;
-            item.text = object.default || '';
-        }
-
-        return item;
-    }
-
-    function findNextObjectNumber(objects) {
-        return objects.reduce(function (highest, object) {
-            const match = object.id.match(/-(\d+)$/);
-
-            if (!match) {
-                return highest;
-            }
-
-            return Math.max(highest, parseInt(match[1], 10) + 1);
-        }, 1);
-    }
-
-    function clonePlainObject(value) {
-        return JSON.parse(JSON.stringify(value));
     }
 })();

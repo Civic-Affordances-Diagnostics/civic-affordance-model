@@ -1,8 +1,7 @@
 (function () {
     'use strict';
 
-    const VERSION = '0.1';
-    const DEFAULT_GRID_SIZE = 24;
+    const pkgApi = window.WebformsPackage;
 
     function init() {
         const runtime = document.getElementById('webforms-runtime');
@@ -29,15 +28,15 @@
     }
 
     function loadPackage(formId) {
-        const exactPackage = formId ? loadStoredPackage(packageKeyForForm(formId)) : null;
+        const exactPackage = formId ? loadStoredPackage(pkgApi.packageKeyForForm(formId)) : null;
 
-        if (isValidPackage(exactPackage)) {
+        if (pkgApi.isValidPackage(exactPackage)) {
             return exactPackage;
         }
 
-        const activePackage = loadStoredPackage(activePackageKey());
+        const activePackage = loadStoredPackage(pkgApi.activePackageKey());
 
-        if (isValidPackage(activePackage)) {
+        if (pkgApi.isValidPackage(activePackage)) {
             return activePackage;
         }
 
@@ -64,28 +63,11 @@
         }
     }
 
-    function packageKeyForForm(formId) {
-        return 'hubzilla.webforms.package.' + VERSION + '.' + formId;
-    }
-
-    function activePackageKey() {
-        return 'hubzilla.webforms.activePackage.' + VERSION;
-    }
-
-    function isValidPackage(pkg) {
-        return pkg &&
-            pkg.schema === 'hubzilla.webforms.package' &&
-            pkg.version === VERSION &&
-            pkg.form &&
-            Array.isArray(pkg.form.fields) &&
-            Array.isArray(pkg.form.layout);
-    }
-
     function renderPackage(root, pkg) {
         root.innerHTML = '';
 
         const heading = document.createElement('h4');
-        heading.textContent = pkg.form.title || (pkg.meta && pkg.meta.title) || pkg.form.id || 'Webform';
+        heading.textContent = pkg.form.title || pkgApi.packageFormTitle(pkg) || pkg.form.id || 'Webform';
 
         const notice = document.createElement('p');
         notice.className = 'small text-muted';
@@ -104,9 +86,9 @@
         origin.dataset.webformsGridOrigin = '0,0';
         origin.textContent = 'root container · Deploy render · browser-local package';
 
-        const gridSize = packageGridSize(pkg);
-        const bounds = layoutBounds(pkg.form.layout, gridSize);
-        const fieldsById = fieldsMap(pkg.form.fields);
+        const gridSize = pkgApi.packageGridSize(pkg);
+        const bounds = pkgApi.layoutBounds(pkg.form.layout, gridSize);
+        const fieldsById = pkgApi.fieldsMap(pkg.form.fields);
 
         grid.style.position = 'relative';
         grid.style.width = bounds.width + 'px';
@@ -126,38 +108,6 @@
         root.appendChild(heading);
         root.appendChild(notice);
         root.appendChild(grid);
-    }
-
-    function packageGridSize(pkg) {
-        if (pkg.design && pkg.design.grid && pkg.design.grid.size) {
-            return parseInt(pkg.design.grid.size, 10) || DEFAULT_GRID_SIZE;
-        }
-
-        return DEFAULT_GRID_SIZE;
-    }
-
-    function layoutBounds(layout, gridSize) {
-        const extents = layout.reduce(function (bounds, item) {
-            const right = (parseInt(item.x, 10) || 0) + (parseInt(item.width, 10) || 1);
-            const bottom = (parseInt(item.y, 10) || 0) + (parseInt(item.height, 10) || 1);
-
-            return {
-                columns: Math.max(bounds.columns, right),
-                rows: Math.max(bounds.rows, bottom)
-            };
-        }, { columns: 22, rows: 17 });
-
-        return {
-            width: extents.columns * gridSize,
-            height: extents.rows * gridSize
-        };
-    }
-
-    function fieldsMap(fields) {
-        return fields.reduce(function (map, field) {
-            map[field.id] = field;
-            return map;
-        }, {});
     }
 
     function renderLayoutItem(layoutItem, field, gridSize) {
