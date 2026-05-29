@@ -2,9 +2,9 @@
 
 `webforms` is a Hubzilla addon for browser-local JSON-composed webform design and render testing.
 
-This repository state is a working browser-local checkpoint. The addon can design a form on a grid, emit a portable Webforms package JSON document, save/import that JSON, and render the imported package in Deploy mode on the same grid-style canvas.
+This repository state is a working browser-local checkpoint. The addon can design a form on a grid, emit a portable Webforms package JSON document, save/import that JSON, load a browser-session package back into Design by form id, and render the loaded package in Deploy mode on the same grid-style canvas.
 
-The current implementation is intentionally limited. It proves the Design -> JSON package -> Import -> Deploy cycle without adding server-side storage, submitted form processing, services, database writes, or federation behavior.
+The current implementation is intentionally limited. It proves the Design -> JSON package -> Import/Load -> Deploy cycle without adding server-side storage, submitted form processing, services, database writes, or federation behavior.
 
 ## Current working cycle
 
@@ -15,12 +15,13 @@ Design Grid
 -> Clear
 -> Import package JSON
 -> restored Design Grid
+-> Load Design by form id
 -> Deploy grid render
 ```
 
 The package JSON is the authoritative boundary between Design and Deploy.
 
-Design creates and edits package state. JSON Save exports it. JSON Import restores it. Deploy renders from the loaded package JSON.
+Design creates and edits package state. JSON Save exports it. JSON Import restores it. Load Design now loads a known browser-session package for the selected `design_form` when one exists. Deploy renders from the loaded package JSON.
 
 Design package generation and Deploy rendering share package/layout helper logic through `webforms-package-shared.js`.
 
@@ -35,6 +36,150 @@ include/webforms-render.php
 
 webforms.php
   addon hooks, module dispatch, config access, request helpers, and asset loading
+```
+
+## Current coding target
+
+The current target is routing correctness around package JSON:
+
+```text
+design_form
+  names the package/form being edited
+
+Load Design
+  loads an existing browser-session package for design_form when available
+  otherwise opens a blank browser-local draft for that form id
+
+Deploy
+  renders an existing loaded package
+  does not reconstruct state from Design widgets
+```
+
+This is still browser-local. It intentionally avoids premature server storage while making the route names and package identity meaningful.
+
+## Storage and service roadmap
+
+The planned architecture is package-first. A Webforms package is the unit that can be designed, saved, loaded, deployed, shared, and versioned.
+
+### Stage 0: browser-local package proof
+
+Current state:
+
+```text
+package JSON generated in browser
+package JSON saved/downloaded by browser
+package JSON imported by browser
+browser-session package cache
+Design loads browser-session package by form id
+Deploy renders loaded package JSON
+```
+
+No server write occurs.
+
+### Stage 1: addon-bundled versioned packages
+
+The addon can later include read-only package catalogs such as:
+
+```text
+addon/webforms/packages/<collection>/<webform>/<version>.json
+addon/webforms/services/<service-type>/<version>.json
+```
+
+These files would be shipped templates/defaults, not user data.
+
+Examples:
+
+```text
+packages/ipfs/ipfs-publish/0.1.json
+packages/email/email-compose/0.1.json
+packages/placekey/verify-address/0.1.json
+services/git/0.1.json
+services/gitea/0.1.json
+services/github/0.1.json
+services/ipfs/0.1.json
+services/email/0.1.json
+services/mariadb/0.1.json
+services/slapd/0.1.json
+services/placekey/0.1.json
+```
+
+Addon-bundled packages should remain content-neutral examples unless a user/admin intentionally selects a specific collection.
+
+### Stage 2: user/admin package storage
+
+Persistent user or admin package storage should store package JSON by stable identity:
+
+```text
+collection id
+webform id
+version
+owner/channel or site scope
+package JSON
+created/updated metadata
+```
+
+The storage backend is intentionally undecided at this checkpoint. Candidate backends include Hubzilla cloud/file storage, addon-managed database tables, or an addon-managed JSON/SQLite catalog. The design should keep the package JSON portable so the backend can change without rewriting the package schema.
+
+### Stage 3: service definitions
+
+Service definitions standardize connection types and runtime expectations.
+
+Examples:
+
+```text
+Git
+Gitea
+GitHub
+IPFS publish/pin
+email server
+MariaDB
+slapd/LDAP
+Placekey
+```
+
+The package may define required service types, fields, and actions. Secrets should not be embedded in package JSON. Credentials should be stored separately in a future channel/site service profile layer.
+
+The intended split is:
+
+```text
+package JSON
+  says what service type is needed
+  says what action is requested
+  says what fields map into the action
+
+service profile
+  stores endpoint/account/credential binding
+  is owned by channel or site admin
+  is not exported casually with form design JSON
+```
+
+### Stage 4: Deploy runtime
+
+A future Deploy runtime should combine:
+
+```text
+loaded package JSON
+selected service profile(s)
+permission/access checks
+runtime action dispatcher
+result mapping
+optional federation/publication behavior
+```
+
+This is not implemented yet.
+
+### Stage 5: federation and publication
+
+Federation should occur only after package identity, service profiles, access behavior, and result records are stable.
+
+The likely future output is:
+
+```text
+form/service result
+human-readable summary
+optional Fediverse post
+optional stored JSON record
+optional external publication result
 ```
 
 ## Current purpose
@@ -57,6 +202,7 @@ package JSON download
 package JSON import
 browser-session draft persistence
 browser-session package persistence
+Load Design from browser-session package by form id
 public local-only Design mode
 browser-local Deploy render from loaded package JSON
 shared package/layout helper module
@@ -204,6 +350,7 @@ package JSON copy
 package JSON download
 package JSON import
 package-to-draft restoration
+Design load from browser-session package by form id
 Deploy rendering from loaded package JSON
 ```
 
@@ -249,6 +396,7 @@ webforms-design-package.js
   hubzilla.webforms.package generation
   package persistence
   package-to-draft restoration
+  browser-session package loading for design_form
   meta/design/runtime sections
   JSON textarea rendering
 
@@ -274,6 +422,7 @@ webforms-design.js
   initialization
   toolbar dispatch
   high-level Design orchestration
+  initial package load for design_form
 
 webforms-deploy.js
   browser-local Deploy rendering from loaded package JSON
@@ -425,6 +574,8 @@ file organization
 browser-local package JSON boundary
 shared package/layout helper approach
 shared PHP config/render split
+Load Design browser-local routing
+storage and service roadmap
 Deploy rendering approach
 whether this should continue as an addon in this form
 ```

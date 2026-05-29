@@ -112,15 +112,15 @@ function webforms_add_design_assets() {
     }
 
     if (function_exists('head_add_js')) {
-        head_add_js('/addon/webforms/view/js/webforms-design-state.js?v=render-extract-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-draft.js?v=render-extract-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-session.js?v=render-extract-1');
-        head_add_js('/addon/webforms/view/js/webforms-package-shared.js?v=render-extract-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-package.js?v=render-extract-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=render-extract-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-properties.js?v=render-extract-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-json.js?v=render-extract-1');
-        head_add_js('/addon/webforms/view/js/webforms-design.js?v=render-extract-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-state.js?v=load-design-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-draft.js?v=load-design-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-session.js?v=load-design-1');
+        head_add_js('/addon/webforms/view/js/webforms-package-shared.js?v=load-design-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-package.js?v=load-design-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=load-design-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-properties.js?v=load-design-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-json.js?v=load-design-1');
+        head_add_js('/addon/webforms/view/js/webforms-design.js?v=load-design-1');
     }
 }
 
@@ -130,7 +130,7 @@ function webforms_add_deploy_assets() {
     }
 
     if (function_exists('head_add_js')) {
-        head_add_js('/addon/webforms/view/js/webforms-package-shared.js?v=render-extract-1');
-        head_add_js('/addon/webforms/view/js/webforms-deploy.js?v=render-extract-1');
+        head_add_js('/addon/webforms/view/js/webforms-package-shared.js?v=load-design-1');
+        head_add_js('/addon/webforms/view/js/webforms-deploy.js?v=load-design-1');
     }
 }

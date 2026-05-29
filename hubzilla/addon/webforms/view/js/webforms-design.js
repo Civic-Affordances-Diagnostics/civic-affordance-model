@@ -98,6 +98,20 @@
         return draft;
     }
 
+    function loadInitialDraft(runtime) {
+        if (typeof ns.loadPackageDraftForRuntime === 'function') {
+            const packageDraft = ns.loadPackageDraftForRuntime(runtime);
+
+            if (packageDraft) {
+                ns.persistDraft(packageDraft);
+                ns.persistPackage(ns.buildPackage(packageDraft));
+                return packageDraft;
+            }
+        }
+
+        return ns.loadDraft(runtime);
+    }
+
     function init() {
         const runtime = getRuntime();
 
@@ -105,7 +119,7 @@
             return;
         }
 
-        const draft = ns.loadDraft(runtime);
+        const draft = loadInitialDraft(runtime);
 
         window.webformsDesignDraft = draft;
 
