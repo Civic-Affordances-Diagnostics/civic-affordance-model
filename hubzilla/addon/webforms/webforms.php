@@ -115,7 +115,7 @@ function webforms_add_design_assets() {
 		head_add_js('/addon/webforms/view/js/webforms-package-shared.js?v=hard-recovery-1');
 		head_add_js('/addon/webforms/view/js/webforms-design-package.js?v=hard-recovery-1');
 		head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=textarea-1');
-		head_add_js('/addon/webforms/view/js/webforms-design-properties.js?v=hard-recovery-1');
+		head_add_js('/addon/webforms/view/js/webforms-design-properties.js?v=textarea-default-1');
 		head_add_js('/addon/webforms/view/js/webforms-design-json.js?v=hard-recovery-1');
 		head_add_js('/addon/webforms/view/js/webforms-design.js?v=hard-recovery-1');
 	}
