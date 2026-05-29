@@ -1,0 +1,96 @@
+<?php
+
+return [
+    'design_options' => [
+        '' => 'New blank form',
+        'ipfs-publish' => 'IPFS Publish',
+        'placekey-verify-address' => 'Placekey Verify Address',
+        'email-compose' => 'Email Compose',
+    ],
+
+    'design_tabs' => [
+        'grid' => 'Grid',
+        'json' => 'JSON',
+        'services' => 'Services',
+        'federation' => 'Federation',
+        'help' => 'Help',
+    ],
+
+    'collection_options' => [
+        '' => 'Select collection',
+        'cid-mapping' => 'CID Mapping',
+        'placekey-address-validation' => 'Placekey Address Validation',
+        'bare-bones-email-client' => 'Bare-Bones Email Client',
+    ],
+
+    'deploy_form_options' => [
+        '' => 'Select webform',
+        'ipfs-publish' => 'IPFS Publish',
+        'ipfs-pin-request' => 'IPFS Pin Request',
+        'ipfs-schedule-pin' => 'IPFS Schedule Pin',
+        'ipfs-map-pin' => 'IPFS Map Pin',
+        'ipfs-gitea-browse' => 'IPFS Gitea Browse',
+        'placekey-verify-address' => 'Placekey Verify Address',
+        'email-inbox' => 'Email Recent Messages',
+        'email-compose' => 'Email Compose',
+        'email-forward' => 'Email Forward',
+    ],
+
+    'toolbars' => [
+        'grid' => [
+            ['key' => 'container', 'label' => 'Box', 'title' => 'Add container', 'active' => true],
+            ['key' => 'field', 'label' => 'Field', 'title' => 'Add text field', 'active' => true],
+            ['key' => 'delete-selected', 'label' => 'Del', 'title' => 'Delete selected object', 'active' => true],
+            ['key' => 'label', 'label' => 'Label', 'title' => 'Add label', 'active' => true],
+            ['key' => 'textarea', 'label' => 'Area', 'title' => 'Add textarea', 'active' => true],
+            ['key' => 'checkbox', 'label' => 'Check', 'title' => 'Add checkbox', 'active' => true],
+            ['key' => 'button', 'label' => 'Button', 'title' => 'Add button', 'active' => true],
+            ['key' => 'select', 'label' => 'Select', 'title' => 'Add select list', 'active' => true],
+            ['key' => 'result-panel', 'label' => 'Result', 'title' => 'Add result panel', 'active' => true],
+            ['key' => 'help-text', 'label' => 'Help', 'title' => 'Add help text', 'active' => true],
+        ],
+
+        'json' => [
+            ['key' => 'copy-json', 'label' => 'Copy', 'title' => 'Copy generated JSON', 'active' => true],
+            ['key' => 'download-json', 'label' => 'Save', 'title' => 'Download generated JSON', 'active' => true],
+            ['key' => 'import-json', 'label' => 'Import', 'title' => 'Load package JSON from file', 'active' => true],
+            ['key' => 'validate-json', 'label' => 'Check', 'title' => 'Validate JSON structure'],
+            ['key' => 'format-json', 'label' => 'Format', 'title' => 'Format JSON for readability'],
+            ['key' => 'clear-json', 'label' => 'Clear', 'title' => 'Clear local draft', 'active' => true],
+        ],
+
+        'services' => [
+            ['key' => 'service', 'label' => 'Svc', 'title' => 'Add service definition'],
+            ['key' => 'endpoint', 'label' => 'URL', 'title' => 'Add service endpoint'],
+            ['key' => 'auth', 'label' => 'Auth', 'title' => 'Add authentication method'],
+            ['key' => 'api-key', 'label' => 'Key', 'title' => 'Add API key setting'],
+            ['key' => 'login', 'label' => 'Login', 'title' => 'Add login setting'],
+            ['key' => 'local-only', 'label' => 'Local', 'title' => 'Set local-only mode'],
+            ['key' => 'result-map', 'label' => 'Result', 'title' => 'Add result mapping'],
+            ['key' => 'failure-map', 'label' => 'Fail', 'title' => 'Add failure mapping'],
+            ['key' => 'timeout', 'label' => 'Time', 'title' => 'Add timeout setting'],
+            ['key' => 'retry', 'label' => 'Retry', 'title' => 'Add retry policy'],
+        ],
+
+        'federation' => [
+            ['key' => 'channel-target', 'label' => 'Chan', 'title' => 'Add channel target'],
+            ['key' => 'group-target', 'label' => 'Group', 'title' => 'Add privacy group target'],
+            ['key' => 'public-visibility', 'label' => 'Public', 'title' => 'Add public visibility'],
+            ['key' => 'service-request', 'label' => 'Req', 'title' => 'Add service request'],
+            ['key' => 'service-offer', 'label' => 'Offer', 'title' => 'Add service offer'],
+            ['key' => 'service-result', 'label' => 'Result', 'title' => 'Add service result'],
+            ['key' => 'summary', 'label' => 'Sum', 'title' => 'Add public summary'],
+            ['key' => 'retention', 'label' => 'Retain', 'title' => 'Add retention hint'],
+            ['key' => 'permission', 'label' => 'Perm', 'title' => 'Add permission rule'],
+            ['key' => 'clone-note', 'label' => 'Clone', 'title' => 'Add clone or nomadic identity note'],
+        ],
+
+        'help' => [
+            ['key' => 'help-grid', 'label' => 'Grid', 'title' => 'Show grid help'],
+            ['key' => 'help-json', 'label' => 'JSON', 'title' => 'Show JSON help'],
+            ['key' => 'help-services', 'label' => 'Svc', 'title' => 'Show services help'],
+            ['key' => 'help-federation', 'label' => 'Fed', 'title' => 'Show federation help'],
+            ['key' => 'help-shortcuts', 'label' => 'Keys', 'title' => 'Show keyboard shortcut help'],
+        ],
+    ],
+];
