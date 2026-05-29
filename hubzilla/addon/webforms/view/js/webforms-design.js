@@ -98,32 +98,6 @@
         return draft;
     }
 
-    function loadInitialDraft(runtime) {
-        const sessionDraft = ns.loadDraft(runtime);
-
-        if (draftHasObjects(sessionDraft)) {
-            return sessionDraft;
-        }
-
-        if (typeof ns.loadPackageDraftForRuntime === 'function') {
-            const packageDraft = ns.loadPackageDraftForRuntime(runtime);
-
-            if (packageDraft) {
-                ns.persistDraft(packageDraft);
-                ns.persistPackage(ns.buildPackage(packageDraft));
-                return packageDraft;
-            }
-        }
-
-        return sessionDraft;
-    }
-
-    function draftHasObjects(draft) {
-        return draft &&
-            Array.isArray(draft.objects) &&
-            draft.objects.length > 0;
-    }
-
     function init() {
         const runtime = getRuntime();
 
@@ -131,7 +105,7 @@
             return;
         }
 
-        const draft = loadInitialDraft(runtime);
+        const draft = ns.loadDraft(runtime);
 
         window.webformsDesignDraft = draft;
 

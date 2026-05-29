@@ -45,23 +45,6 @@
         }
     };
 
-    ns.loadPackageDraftForRuntime = function (runtime) {
-        const formId = runtime.dataset.webformsDesignForm || 'new-blank-form';
-        const pkg = loadPackageForForm(formId);
-
-        if (!pkg) {
-            return null;
-        }
-
-        try {
-            return ns.packageToDraft(pkg, runtime);
-        }
-        catch (error) {
-            console.warn('Webforms package could not be loaded into Design.', error);
-            return null;
-        }
-    };
-
     ns.packageToDraft = function (pkg, runtime) {
         if (!pkg || pkg.schema !== 'hubzilla.webforms.package') {
             throw new Error('Not a hubzilla.webforms.package document.');
@@ -108,32 +91,6 @@
             ]
         };
     };
-
-    function loadPackageForForm(formId) {
-        if (!window.sessionStorage || !formId) {
-            return null;
-        }
-
-        try {
-            const raw = window.sessionStorage.getItem(pkgApi.packageKeyForForm(formId));
-
-            if (!raw) {
-                return null;
-            }
-
-            const pkg = JSON.parse(raw);
-
-            if (!pkgApi.isValidPackage(pkg)) {
-                return null;
-            }
-
-            return pkg;
-        }
-        catch (error) {
-            console.warn('Webforms stored package was ignored.', error);
-            return null;
-        }
-    }
 
     function buildPackageMeta(draft) {
         return {
