@@ -1,8 +1,26 @@
 # Webforms
 
-`webforms` is a Hubzilla addon for browser-local JSON-composed webform design.
+`webforms` is a Hubzilla addon for browser-local JSON-composed webform design and render testing.
 
-This repository state is intended as an early maintainer-review checkpoint. The addon is intentionally small and incomplete so Hubzilla developers can review the addon structure, routing, widget registration, PDL placement, asset loading, public/local behavior, and file organization before larger Deploy/runtime behavior is added.
+This repository state is a working browser-local checkpoint. The addon can design a form on a grid, emit a portable Webforms package JSON document, save/import that JSON, and render the imported package in Deploy mode on the same grid-style canvas.
+
+The current implementation is intentionally limited. It proves the Design -> JSON package -> Import -> Deploy cycle without adding server-side storage, submitted form processing, services, database writes, or federation behavior.
+
+## Current working cycle
+
+```text
+Design Grid
+-> package JSON
+-> Save package JSON
+-> Clear
+-> Import package JSON
+-> restored Design Grid
+-> Deploy grid render
+```
+
+The package JSON is the authoritative boundary between Design and Deploy.
+
+Design creates and edits package state. JSON Save exports it. JSON Import restores it. Deploy renders from the loaded package JSON.
 
 ## Current purpose
 
@@ -14,17 +32,23 @@ Design / Deploy mode switch
 registered left sidebar widget
 Hubzilla PDL page shell
 browser-local Design grid
+blank new/cleared drafts
 browser-local object creation
 browser-local object deletion
 browser-local object selection and property editing
 browser-local package JSON generation
-JSON copy and download from the browser
+package JSON copy
+package JSON download
+package JSON import
 browser-session draft persistence
-browser-session draft clear/reset
+browser-session package persistence
 public local-only Design mode
+browser-local Deploy render from loaded package JSON
 ```
 
 The current Design mode can create simple browser-local objects and emit a structured JSON package. It does not write to Hubzilla storage or execute services.
+
+The current Deploy mode renders loaded package JSON on a grid-style rectangular canvas. It does not submit form data, store results, call services, or federate.
 
 ## Current file structure
 
@@ -38,6 +62,7 @@ addon/webforms/
 │   ├── css/
 │   │   └── webforms.css
 │   └── js/
+│       ├── webforms-deploy.js
 │       ├── webforms-design-draft.js
 │       ├── webforms-design-grid.js
 │       ├── webforms-design-json.js
@@ -113,11 +138,16 @@ property editing
 session draft persistence
 session draft clear/reset
 package JSON generation
-JSON copy
-JSON download
+package JSON copy
+package JSON download
+package JSON import
+package-to-draft restoration
+Deploy rendering from loaded package JSON
 ```
 
-The browser uses `sessionStorage` only so work survives Grid / JSON tab navigation during the same browser session. This is not permanent save/publish behavior.
+The browser uses `sessionStorage` only so work survives Grid / JSON / Deploy navigation during the same browser session. This is not permanent save/publish behavior.
+
+Clear returns to an empty draft. It does not create a default sample field.
 
 ## JavaScript module layout
 
@@ -135,12 +165,14 @@ webforms-design-draft.js
   shared escape helpers
 
 webforms-design-session.js
-  sessionStorage load/persist/clear
+  sessionStorage load/persist/clear for design drafts
   runtime access/tab refresh
   draft counter repair
 
 webforms-design-package.js
   hubzilla.webforms.package generation
+  package persistence
+  package-to-draft restoration
   meta/design/form/runtime sections
   JSON textarea rendering
 
@@ -153,30 +185,67 @@ webforms-design-grid.js
 webforms-design-properties.js
   compact selected-object property editor
   placement dropdowns
+  select options editor
   property updates
 
 webforms-design-json.js
   copy package JSON
   download package JSON
+  import package JSON
   clear/reset current browser-session draft
 
 webforms-design.js
   initialization
   toolbar dispatch
-  high-level orchestration
+  high-level Design orchestration
+
+webforms-deploy.js
+  browser-local Deploy rendering from loaded package JSON
+  grid-style Deploy canvas
+  interactive inert controls
 ```
 
 The files are loaded in dependency order by `webforms.php`.
 
-## Public and logged-in access
+## Grid components
 
-The addon currently uses a simple Public / Logged-in separation.
+The current Grid toolbar supports these browser-local components:
 
-Public visitors can use Design mode as local-only browser behavior.
+```text
+Box
+  layout container
 
-Logged-in users are identified as logged-in in the browser-local package metadata, but no additional private storage, publishing, service, or federation behavior is active yet.
+Field
+  text input
 
-Public Design mode is intended to support open local authoring and JSON export without requiring server-side work.
+Label
+  display text
+
+Area
+  textarea
+
+Check
+  checkbox
+
+Button
+  inert button
+
+Select
+  select list with value|label options editor
+
+Result
+  display-only result panel
+
+Help
+  display-only help text
+
+Del
+  delete selected object
+```
+
+Input components are emitted in `form.fields`.
+
+Layout/display components such as Box, Label, Result, and Help are represented in `form.layout` and are not emitted as user-input fields.
 
 ## JSON package shape
 
@@ -190,7 +259,7 @@ design
   editor/grid state for the Hubzilla webforms designer
 
 form
-  portable form fields and layout for renderers outside Hubzilla
+  portable form fields and layout for Deploy rendering and external use
 
 runtime
   reserved space for future storage, services, and federation behavior
@@ -202,15 +271,33 @@ The current package schema name is:
 hubzilla.webforms.package
 ```
 
-This structure is intended to serve two audiences:
+At this checkpoint, the package JSON is the unit of truth for round-tripping Design and Deploy.
+
+## Deploy rendering
+
+Deploy mode renders from loaded package JSON.
+
+Deploy uses:
 
 ```text
-Hubzilla/webforms runtime
-  later Deploy mode, PHP/Python processing, storage, services, federation
-
-external developers
-  render or process the portable form section in other environments
+package.form.fields
+package.form.layout
+package.design.grid.size when available
 ```
+
+Deploy creates a grid-style rectangular canvas using the same placement coordinates saved by Design. The deployed controls are interactive in the browser, but no submit behavior is active.
+
+The Deploy renderer does not call services, write to storage, store submissions, or federate.
+
+## Public and logged-in access
+
+The addon currently uses a simple Public / Logged-in separation.
+
+Public visitors can use Design mode as local-only browser behavior.
+
+Logged-in users are identified as logged-in in the browser-local package metadata, but no additional private storage, publishing, service, or federation behavior is active yet.
+
+Public Design mode is intended to support open local authoring and JSON export without requiring server-side work.
 
 ## Current non-goals
 
@@ -220,9 +307,7 @@ This checkpoint intentionally does not implement:
 server-side save
 Hubzilla cloud storage writes
 database writes
-Deploy rendering
-drag/drop
-JSON import
+submitted form processing
 permanent localStorage
 service execution
 credential storage
@@ -247,7 +332,7 @@ This point is included here because client-side addon behavior is important for 
 
 ## Feedback requested
 
-At this checkpoint, feedback is requested on:
+At this checkpoint, feedback is useful on:
 
 ```text
 addon structure
@@ -257,13 +342,15 @@ PDL placement
 asset registration
 public/local Design behavior
 file organization
+browser-local package JSON boundary
+Deploy rendering approach
 whether this should continue as an addon in this form
 ```
 
-Feedback is not yet requested on a completed form runtime, Deploy mode, storage layer, services layer, or federation behavior because those pieces are intentionally not implemented yet.
+Feedback is not yet requested on a completed persistent storage layer, services layer, federation behavior, or submitted form workflow because those pieces are intentionally not implemented yet.
 
 ## Development principle
 
 Keep the addon conservative and reviewable.
 
-Prefer small files, clear responsibilities, Hubzilla conventions, and content-neutral behavior. Larger runtime features should wait until the base addon shape is acceptable to Hubzilla maintainers.
+Prefer small files, clear responsibilities, Hubzilla conventions, and content-neutral behavior. Larger runtime features should wait until the browser-local package boundary remains stable and boring.
