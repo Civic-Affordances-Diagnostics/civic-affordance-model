@@ -112,15 +112,15 @@ function webforms_add_design_assets() {
     }
 
     if (function_exists('head_add_js')) {
-        head_add_js('/addon/webforms/view/js/webforms-design-state.js?v=recovery-stable-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-draft.js?v=recovery-stable-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-session.js?v=recovery-stable-1');
-        head_add_js('/addon/webforms/view/js/webforms-package-shared.js?v=recovery-stable-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-package.js?v=recovery-stable-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=recovery-stable-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-properties.js?v=recovery-stable-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-json.js?v=recovery-stable-1');
-        head_add_js('/addon/webforms/view/js/webforms-design.js?v=recovery-stable-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-state.js?v=hard-recovery-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-draft.js?v=hard-recovery-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-session.js?v=hard-recovery-1');
+        head_add_js('/addon/webforms/view/js/webforms-package-shared.js?v=hard-recovery-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-package.js?v=hard-recovery-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=hard-recovery-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-properties.js?v=hard-recovery-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-json.js?v=hard-recovery-1');
+        head_add_js('/addon/webforms/view/js/webforms-design.js?v=hard-recovery-1');
     }
 }
 
@@ -130,7 +130,7 @@ function webforms_add_deploy_assets() {
     }
 
     if (function_exists('head_add_js')) {
-        head_add_js('/addon/webforms/view/js/webforms-package-shared.js?v=recovery-stable-1');
-        head_add_js('/addon/webforms/view/js/webforms-deploy.js?v=recovery-stable-1');
+        head_add_js('/addon/webforms/view/js/webforms-package-shared.js?v=hard-recovery-1');
+        head_add_js('/addon/webforms/view/js/webforms-deploy.js?v=hard-recovery-1');
     }
 }

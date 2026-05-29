@@ -98,6 +98,19 @@
         return draft;
     }
 
+    function renderJsonOrExplain(draft) {
+        const output = document.getElementById('webforms-json-output');
+
+        if (typeof ns.renderJson === 'function') {
+            ns.renderJson(draft);
+            return;
+        }
+
+        if (output) {
+            output.value = 'Webforms JSON renderer did not load.';
+        }
+    }
+
     function init() {
         const runtime = getRuntime();
 
@@ -112,7 +125,7 @@
         initToolbar(draft, runtime);
         ns.renderGrid(draft);
         ns.renderSelectionPanel(draft, draft.design.selected_object_id);
-        ns.renderJson(draft);
+        renderJsonOrExplain(draft);
     }
 
     if (document.readyState === 'loading') {
