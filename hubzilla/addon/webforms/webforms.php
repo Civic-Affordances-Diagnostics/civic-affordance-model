@@ -34,6 +34,32 @@ function webforms_load_pdl(&$b) {
     }
 }
 
+function webforms_config() {
+    static $config = null;
+
+    if ($config === null) {
+        $config = require __DIR__ . '/include/webforms-config.php';
+    }
+
+    return $config;
+}
+
+function webforms_config_section($name) {
+    $config = webforms_config();
+
+    return $config[$name] ?? [];
+}
+
+function webforms_config_label($section, $key, $fallback = '') {
+    $values = webforms_config_section($section);
+
+    if (array_key_exists($key, $values)) {
+        return $values[$key];
+    }
+
+    return $fallback;
+}
+
 function webforms_current_mode() {
     if (isset($_GET['mode']) && $_GET['mode'] === 'deploy') {
         return 'deploy';
@@ -84,15 +110,15 @@ function webforms_add_design_assets() {
     }
 
     if (function_exists('head_add_js')) {
-        head_add_js('/addon/webforms/view/js/webforms-design-state.js?v=shared-package-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-draft.js?v=shared-package-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-session.js?v=shared-package-1');
-        head_add_js('/addon/webforms/view/js/webforms-package-shared.js?v=shared-package-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-package.js?v=shared-package-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=shared-package-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-properties.js?v=shared-package-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-json.js?v=shared-package-1');
-        head_add_js('/addon/webforms/view/js/webforms-design.js?v=shared-package-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-state.js?v=config-shared-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-draft.js?v=config-shared-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-session.js?v=config-shared-1');
+        head_add_js('/addon/webforms/view/js/webforms-package-shared.js?v=config-shared-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-package.js?v=config-shared-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=config-shared-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-properties.js?v=config-shared-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-json.js?v=config-shared-1');
+        head_add_js('/addon/webforms/view/js/webforms-design.js?v=config-shared-1');
     }
 }
 
@@ -102,8 +128,8 @@ function webforms_add_deploy_assets() {
     }
 
     if (function_exists('head_add_js')) {
-        head_add_js('/addon/webforms/view/js/webforms-package-shared.js?v=shared-package-1');
-        head_add_js('/addon/webforms/view/js/webforms-deploy.js?v=shared-package-1');
+        head_add_js('/addon/webforms/view/js/webforms-package-shared.js?v=config-shared-1');
+        head_add_js('/addon/webforms/view/js/webforms-deploy.js?v=config-shared-1');
     }
 }
 
@@ -128,34 +154,11 @@ function webforms_access_notice($mode) {
 }
 
 function webforms_design_options() {
-    return [
-        '' => [
-            'label' => 'New blank form',
-            'description' => 'Start with an empty inert root form container.'
-        ],
-        'ipfs-publish' => [
-            'label' => 'IPFS Publish',
-            'description' => 'Placeholder for designing an inert IPFS Publish sub-form.'
-        ],
-        'placekey-verify-address' => [
-            'label' => 'Placekey Verify Address',
-            'description' => 'Placeholder for designing an inert Placekey address-verification sub-form.'
-        ],
-        'email-compose' => [
-            'label' => 'Email Compose',
-            'description' => 'Placeholder for designing an inert bare-bones email composition sub-form.'
-        ],
-    ];
+    return webforms_config_section('design_options');
 }
 
 function webforms_design_tabs() {
-    return [
-        'grid' => 'Grid',
-        'json' => 'JSON',
-        'services' => 'Services',
-        'federation' => 'Federation',
-        'help' => 'Help',
-    ];
+    return webforms_config_section('design_tabs');
 }
 
 function webforms_normalize_design_tab($design_tab) {
@@ -193,8 +196,8 @@ function webforms_design_placeholder($design_form = '', $design_tab = '') {
 
     $design_tab = webforms_normalize_design_tab($design_tab);
 
-    $label = webforms_h($forms[$design_form]['label']);
-    $description = webforms_h($forms[$design_form]['description']);
+    $label = webforms_h(webforms_config_label('design_options', $design_form, 'New blank form'));
+    $description = webforms_h(webforms_config_label('design_descriptions', $design_form, ''));
     $access_state = webforms_access_state();
 
     return '
@@ -301,25 +304,8 @@ function webforms_design_help_tab() {
 }
 
 function webforms_deploy_placeholder($collection = '', $deploy_form = '') {
-    $collections = [
-        '' => 'No collection selected',
-        'cid-mapping' => 'CID Mapping',
-        'placekey-address-validation' => 'Placekey Address Validation',
-        'bare-bones-email-client' => 'Bare-Bones Email Client',
-    ];
-
-    $forms = [
-        '' => 'No webform selected',
-        'ipfs-publish' => 'IPFS Publish',
-        'ipfs-pin-request' => 'IPFS Pin Request',
-        'ipfs-schedule-pin' => 'IPFS Schedule Pin',
-        'ipfs-map-pin' => 'IPFS Map Pin',
-        'ipfs-gitea-browse' => 'IPFS Gitea Browse',
-        'placekey-verify-address' => 'Placekey Verify Address',
-        'email-inbox' => 'Email Recent Messages',
-        'email-compose' => 'Email Compose',
-        'email-forward' => 'Email Forward',
-    ];
+    $collections = webforms_config_section('collection_options');
+    $forms = webforms_config_section('deploy_form_options');
 
     if (!array_key_exists($collection, $collections)) {
         $collection = '';
@@ -329,8 +315,8 @@ function webforms_deploy_placeholder($collection = '', $deploy_form = '') {
         $deploy_form = '';
     }
 
-    $collection_label = webforms_h($collections[$collection]);
-    $form_label = webforms_h($forms[$deploy_form]);
+    $collection_label = webforms_h(webforms_config_label('collection_display_labels', $collection, webforms_config_label('collection_options', $collection, 'No collection selected')));
+    $form_label = webforms_h(webforms_config_label('deploy_form_display_labels', $deploy_form, webforms_config_label('deploy_form_options', $deploy_form, 'No webform selected')));
     $access_state = webforms_access_state();
 
     return '

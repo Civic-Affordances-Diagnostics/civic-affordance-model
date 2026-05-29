@@ -8,6 +8,13 @@ return [
         'email-compose' => 'Email Compose',
     ],
 
+    'design_descriptions' => [
+        '' => 'Start with an empty inert root form container.',
+        'ipfs-publish' => 'Placeholder for designing an inert IPFS Publish sub-form.',
+        'placekey-verify-address' => 'Placeholder for designing an inert Placekey address-verification sub-form.',
+        'email-compose' => 'Placeholder for designing an inert bare-bones email composition sub-form.',
+    ],
+
     'design_tabs' => [
         'grid' => 'Grid',
         'json' => 'JSON',
@@ -23,8 +30,28 @@ return [
         'bare-bones-email-client' => 'Bare-Bones Email Client',
     ],
 
+    'collection_display_labels' => [
+        '' => 'No collection selected',
+        'cid-mapping' => 'CID Mapping',
+        'placekey-address-validation' => 'Placekey Address Validation',
+        'bare-bones-email-client' => 'Bare-Bones Email Client',
+    ],
+
     'deploy_form_options' => [
         '' => 'Select webform',
+        'ipfs-publish' => 'IPFS Publish',
+        'ipfs-pin-request' => 'IPFS Pin Request',
+        'ipfs-schedule-pin' => 'IPFS Schedule Pin',
+        'ipfs-map-pin' => 'IPFS Map Pin',
+        'ipfs-gitea-browse' => 'IPFS Gitea Browse',
+        'placekey-verify-address' => 'Placekey Verify Address',
+        'email-inbox' => 'Email Recent Messages',
+        'email-compose' => 'Email Compose',
+        'email-forward' => 'Email Forward',
+    ],
+
+    'deploy_form_display_labels' => [
+        '' => 'No webform selected',
         'ipfs-publish' => 'IPFS Publish',
         'ipfs-pin-request' => 'IPFS Pin Request',
         'ipfs-schedule-pin' => 'IPFS Schedule Pin',
