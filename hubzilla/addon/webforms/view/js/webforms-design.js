@@ -99,6 +99,12 @@
     }
 
     function loadInitialDraft(runtime) {
+        const sessionDraft = ns.loadDraft(runtime);
+
+        if (draftHasObjects(sessionDraft)) {
+            return sessionDraft;
+        }
+
         if (typeof ns.loadPackageDraftForRuntime === 'function') {
             const packageDraft = ns.loadPackageDraftForRuntime(runtime);
 
@@ -109,7 +115,13 @@
             }
         }
 
-        return ns.loadDraft(runtime);
+        return sessionDraft;
+    }
+
+    function draftHasObjects(draft) {
+        return draft &&
+            Array.isArray(draft.objects) &&
+            draft.objects.length > 0;
     }
 
     function init() {
