@@ -85,13 +85,41 @@ function webforms_h($value) {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
 
+function webforms_service_pack_for_deploy_form($deploy_form) {
+    $forms_by_service_pack = webforms_config_section('deploy_form_options_by_service_pack');
+
+    foreach ($forms_by_service_pack as $service_pack => $forms) {
+        if ($service_pack !== '' && array_key_exists($deploy_form, $forms)) {
+            return $service_pack;
+        }
+    }
+
+    return '';
+}
+
+function webforms_current_service_pack() {
+    $service_pack = webforms_safe_query_value('service_pack');
+
+    if ($service_pack !== '') {
+        return $service_pack;
+    }
+
+    $legacy_collection = webforms_safe_query_value('collection');
+
+    if ($legacy_collection !== '') {
+        return $legacy_collection;
+    }
+
+    return webforms_service_pack_for_deploy_form(webforms_safe_query_value('deploy_form'));
+}
+
 function webforms_content() {
     $mode = webforms_current_mode();
 
     if ($mode === 'deploy') {
         webforms_add_deploy_assets();
         return webforms_render_deploy_page(
-            webforms_safe_query_value('collection'),
+            webforms_current_service_pack(),
             webforms_safe_query_value('deploy_form')
         );
     }

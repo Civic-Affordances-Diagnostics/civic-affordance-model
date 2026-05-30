@@ -58,12 +58,41 @@ class Webforms {
     }
 
 
-    private function collection_options() {
-        return $this->config()['collection_options'];
+    private function service_pack_options() {
+        return $this->config()['service_pack_options'];
     }
 
-    private function deploy_form_options() {
-        return $this->config()['deploy_form_options'];
+    private function deploy_form_options($service_pack) {
+        $forms_by_service_pack = $this->config()['deploy_form_options_by_service_pack'];
+        return $forms_by_service_pack[$service_pack] ?? ['' => 'Select webform'];
+    }
+
+    private function service_pack_for_deploy_form($deploy_form) {
+        $forms_by_service_pack = $this->config()['deploy_form_options_by_service_pack'];
+
+        foreach ($forms_by_service_pack as $service_pack => $forms) {
+            if ($service_pack !== '' && array_key_exists($deploy_form, $forms)) {
+                return $service_pack;
+            }
+        }
+
+        return '';
+    }
+
+    private function current_service_pack() {
+        $service_pack = $this->safe_query_value('service_pack');
+
+        if ($service_pack !== '') {
+            return $service_pack;
+        }
+
+        $legacy_collection = $this->safe_query_value('collection');
+
+        if ($legacy_collection !== '') {
+            return $legacy_collection;
+        }
+
+        return $this->service_pack_for_deploy_form($this->safe_query_value('deploy_form'));
     }
 
     private function toolbar_tools($design_tab) {
@@ -189,13 +218,16 @@ class Webforms {
     }
 
     private function deploy_widget() {
-        $collection = $this->safe_query_value('collection');
+        $service_pack = $this->current_service_pack();
         $deploy_form = $this->safe_query_value('deploy_form');
-        if (!array_key_exists($collection, $this->collection_options())) {
-            $collection = '';
+
+        if (!array_key_exists($service_pack, $this->service_pack_options())) {
+            $service_pack = '';
         }
 
-        if (!array_key_exists($deploy_form, $this->deploy_form_options())) {
+        $deploy_form_options = $this->deploy_form_options($service_pack);
+
+        if (!array_key_exists($deploy_form, $deploy_form_options)) {
             $deploy_form = '';
         }
 
@@ -207,13 +239,13 @@ class Webforms {
                 <h4>Deploy</h4>
                 <form id="webforms-deploy-selector" method="get" action="webforms">
                     <input type="hidden" name="mode" value="deploy">
-                    <label for="webforms-deploy-collection-select">Collection</label>
-                    <select id="webforms-deploy-collection-select" name="collection" class="form-control form-control-sm">'
-                        . $this->select_options($this->collection_options(), $collection) .
+                    <label for="webforms-deploy-service-pack-select">Service Pack</label>
+                    <select id="webforms-deploy-service-pack-select" name="service_pack" class="form-control form-control-sm" onchange="this.form.elements.deploy_form.value=&quot;&quot;; this.form.submit();">'
+                        . $this->select_options($this->service_pack_options(), $service_pack) .
                     '</select>
                     <label for="webforms-deploy-form-select" class="mt-2">Webform</label>
                     <select id="webforms-deploy-form-select" name="deploy_form" class="form-control form-control-sm">'
-                        . $this->select_options($this->deploy_form_options(), $deploy_form) .
+                        . $this->select_options($deploy_form_options, $deploy_form) .
                     '</select>
                     <button type="submit" class="btn btn-sm btn-secondary mt-2">Load deploy view</button>
                 </form>

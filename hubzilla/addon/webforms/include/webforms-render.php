@@ -115,31 +115,33 @@ function webforms_render_design_help_tab() {
         <ul>
             <li>Use Grid for visual placement.</li>
             <li>Use JSON to inspect, import, save, and reload the generated form definition.</li>
-            <li>Deploy mode uses the Collection and Webform selectors to render deployment packages.</li>
+            <li>Deploy mode uses the Service Pack and Webform selectors to render deployment packages.</li>
             <li>Service execution, credentials, and federation behavior are not active.</li>
         </ul>
     </div>
     ';
 }
 
-function webforms_render_deploy_page($collection = '', $deploy_form = '') {
-    $collections = webforms_config_section('collection_options');
-    $forms = webforms_config_section('deploy_form_options');
+function webforms_render_deploy_page($service_pack = '', $deploy_form = '') {
+    $service_packs = webforms_config_section('service_pack_options');
+    $forms_by_service_pack = webforms_config_section('deploy_form_options_by_service_pack');
 
-    if (!array_key_exists($collection, $collections)) {
-        $collection = '';
+    if (!array_key_exists($service_pack, $service_packs)) {
+        $service_pack = '';
     }
+
+    $forms = $forms_by_service_pack[$service_pack] ?? ['' => 'Select webform'];
 
     if (!array_key_exists($deploy_form, $forms)) {
         $deploy_form = '';
     }
 
-    $collection_label = webforms_h(webforms_config_label('collection_display_labels', $collection, webforms_config_label('collection_options', $collection, 'No collection selected')));
-    $form_label = webforms_h(webforms_config_label('deploy_form_display_labels', $deploy_form, webforms_config_label('deploy_form_options', $deploy_form, 'No webform selected')));
+    $service_pack_label = webforms_h(webforms_config_label('service_pack_display_labels', $service_pack, webforms_config_label('service_pack_options', $service_pack, 'No service pack selected')));
+    $form_label = webforms_h(webforms_config_label('deploy_form_display_labels', $deploy_form, $forms[$deploy_form] ?? 'No webform selected'));
     $access_state = webforms_access_state();
 
     return '
-    <div id="webforms-runtime" class="webforms-content" data-webforms-mode="deploy" data-webforms-access="' . webforms_h($access_state) . '" data-webforms-collection="' . webforms_h($collection) . '" data-webforms-deploy-form="' . webforms_h($deploy_form) . '">
+    <div id="webforms-runtime" class="webforms-content" data-webforms-mode="deploy" data-webforms-access="' . webforms_h($access_state) . '" data-webforms-service-pack="' . webforms_h($service_pack) . '" data-webforms-deploy-form="' . webforms_h($deploy_form) . '">
         <section id="webforms-deploy-view" class="webforms-deploy-view-placeholder" data-webforms-container="deploy-view">
             ' . webforms_render_access_notice('deploy') . '
             <h3>Deploy preview</h3>
@@ -147,7 +149,7 @@ function webforms_render_deploy_page($collection = '', $deploy_form = '') {
                 class="webforms-deploy-render-root"
                 data-webforms-deploy-render-root="1">
                 <div id="webforms-deploy-empty-state" class="well" data-webforms-panel="empty-deploy-view">
-                    <p><strong>Collection:</strong> ' . $collection_label . '</p>
+                    <p><strong>Service Pack:</strong> ' . $service_pack_label . '</p>
                     <p><strong>Webform:</strong> ' . $form_label . '</p>
                     <p>Loading browser-local package renderer.</p>
                 </div>
