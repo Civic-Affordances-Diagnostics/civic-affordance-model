@@ -113,16 +113,6 @@ function webforms_current_service_pack() {
     return webforms_service_pack_for_deploy_form(webforms_safe_query_value('deploy_form'));
 }
 
-function webforms_current_design_service_pack() {
-    $service_pack = webforms_safe_query_value('service_pack');
-
-    if ($service_pack !== '') {
-        return $service_pack;
-    }
-
-    return webforms_service_pack_for_deploy_form(webforms_safe_query_value('design_form'));
-}
-
 function webforms_package_path_for_deploy_form($service_pack, $deploy_form) {
     $paths_by_service_pack = webforms_config_section('deploy_package_paths_by_service_pack');
 
@@ -139,87 +129,6 @@ function webforms_package_path_for_deploy_form($service_pack, $deploy_form) {
     return $path;
 }
 
-function webforms_package_file_for_deploy_form($service_pack, $deploy_form) {
-    $path = webforms_package_path_for_deploy_form($service_pack, $deploy_form);
-
-    if ($path === '') {
-        return '';
-    }
-
-    $base = realpath(__DIR__ . '/packages');
-    $file = realpath(__DIR__ . '/' . $path);
-
-    if ($base === false || $file === false) {
-        return '';
-    }
-
-    if (strpos($file, $base . DIRECTORY_SEPARATOR) !== 0) {
-        return '';
-    }
-
-    return $file;
-}
-
-function webforms_package_data_for_deploy_form($service_pack, $deploy_form) {
-    $file = webforms_package_file_for_deploy_form($service_pack, $deploy_form);
-
-    if ($file === '') {
-        return null;
-    }
-
-    $raw = @file_get_contents($file);
-
-    if ($raw === false) {
-        return null;
-    }
-
-    $data = json_decode($raw, true);
-
-    if (!is_array($data) || json_last_error() !== JSON_ERROR_NONE) {
-        return null;
-    }
-
-    return $data;
-}
-
-function webforms_bundled_package_map() {
-    $paths_by_service_pack = webforms_config_section('deploy_package_paths_by_service_pack');
-    $map = [];
-
-    foreach ($paths_by_service_pack as $service_pack => $forms) {
-        if ($service_pack === '' || !is_array($forms)) {
-            continue;
-        }
-
-        foreach ($forms as $deploy_form => $_path) {
-            if ($deploy_form === '') {
-                continue;
-            }
-
-            $package = webforms_package_data_for_deploy_form($service_pack, $deploy_form);
-
-            if ($package === null) {
-                continue;
-            }
-
-            if (!isset($map[$service_pack])) {
-                $map[$service_pack] = [];
-            }
-
-            $map[$service_pack][$deploy_form] = $package;
-        }
-    }
-
-    return $map;
-}
-
-function webforms_bundled_package_map_json() {
-    return json_encode(
-        webforms_bundled_package_map(),
-        JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
-    );
-}
-
 function webforms_package_url_for_deploy_form($service_pack, $deploy_form) {
     $path = webforms_package_path_for_deploy_form($service_pack, $deploy_form);
 
@@ -229,6 +138,7 @@ function webforms_package_url_for_deploy_form($service_pack, $deploy_form) {
 
     return '/addon/webforms/' . $path . '?v=0.1';
 }
+
 
 function webforms_package_url_for_design_form($design_form) {
     if ($design_form === '') {
@@ -257,7 +167,6 @@ function webforms_content() {
 
     webforms_add_design_assets();
     return webforms_render_design_page(
-        webforms_current_design_service_pack(),
         webforms_safe_query_value('design_form'),
         webforms_safe_query_value('design_tab')
     );
@@ -265,7 +174,7 @@ function webforms_content() {
 
 function webforms_add_design_assets() {
     if (function_exists('head_add_css')) {
-        head_add_css('/addon/webforms/view/css/webforms.css?v=css-extract-1');
+        head_add_css('/addon/webforms/view/css/webforms.css?v=selection-panel-1');
     }
 
     if (function_exists('head_add_js')) {
@@ -273,24 +182,24 @@ function webforms_add_design_assets() {
         head_add_js('/addon/webforms/view/js/webforms-design-draft.js?v=import-route-1');
         head_add_js('/addon/webforms/view/js/webforms-design-session.js?v=import-route-1');
         head_add_js('/addon/webforms/view/js/webforms-package-shared.js?v=hard-recovery-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-package.js?v=workflow-panel-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=workflow-panel-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-package.js?v=import-route-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=nested-container-1');
         head_add_js('/addon/webforms/view/js/webforms-design-properties.js?v=textarea-default-1');
         head_add_js('/addon/webforms/view/js/webforms-design-json.js?v=hard-recovery-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-bundled.js?v=workflow-panel-1');
-        head_add_js('/addon/webforms/view/js/webforms-design.js?v=workflow-panel-1');
-        head_add_js('/addon/webforms/view/js/webforms-selectors.js?v=workflow-panel-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-bundled.js?v=client-selector-1');
+        head_add_js('/addon/webforms/view/js/webforms-design.js?v=client-selector-1');
+        head_add_js('/addon/webforms/view/js/webforms-selectors.js?v=client-selector-1');
     }
 }
 
 function webforms_add_deploy_assets() {
     if (function_exists('head_add_css')) {
-        head_add_css('/addon/webforms/view/css/webforms.css?v=css-extract-1');
+        head_add_css('/addon/webforms/view/css/webforms.css?v=selection-panel-1');
     }
 
     if (function_exists('head_add_js')) {
         head_add_js('/addon/webforms/view/js/webforms-package-shared.js?v=hard-recovery-1');
-        head_add_js('/addon/webforms/view/js/webforms-deploy.js?v=workflow-panel-1');
-        head_add_js('/addon/webforms/view/js/webforms-selectors.js?v=workflow-panel-1');
+        head_add_js('/addon/webforms/view/js/webforms-deploy.js?v=client-selector-1');
+        head_add_js('/addon/webforms/view/js/webforms-selectors.js?v=client-selector-1');
     }
 }
