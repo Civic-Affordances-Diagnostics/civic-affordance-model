@@ -3,7 +3,7 @@
 
   const pkgApi = window.WebformsPackage;
 
-  function init() {
+  async function init() {
     const runtime = document.getElementById('webforms-runtime');
 
     if (!runtime || runtime.dataset.webformsMode !== 'deploy') {
@@ -17,7 +17,8 @@
     }
 
     const formId = runtime.dataset.webformsDeployForm || '';
-    const pkg = loadPackage(formId);
+    const packageUrl = runtime.dataset.webformsPackageUrl || '';
+    const pkg = await loadPackage(formId, packageUrl);
 
     if (!pkg) {
       renderMessage(root, 'No loaded Webforms package JSON found.\nSave or Import a package on the JSON tab first.');
@@ -27,20 +28,44 @@
     renderPackage(root, pkg);
   }
 
-  function loadPackage(formId) {
+  async function loadPackage(formId, packageUrl) {
     const exactPackage = formId ? loadStoredPackage(pkgApi.packageKeyForForm(formId)) : null;
 
     if (pkgApi.isValidPackage(exactPackage)) {
       return exactPackage;
     }
 
-    const activePackage = loadStoredPackage(pkgApi.activePackageKey());
+    const bundledPackage = packageUrl ? await fetchBundledPackage(packageUrl) : null;
 
-    if (pkgApi.isValidPackage(activePackage)) {
-      return activePackage;
+    if (pkgApi.isValidPackage(bundledPackage)) {
+      return bundledPackage;
+    }
+
+    if (!formId) {
+      const activePackage = loadStoredPackage(pkgApi.activePackageKey());
+
+      if (pkgApi.isValidPackage(activePackage)) {
+        return activePackage;
+      }
     }
 
     return null;
+  }
+
+  async function fetchBundledPackage(packageUrl) {
+    try {
+      const response = await fetch(packageUrl, { credentials: 'same-origin' });
+
+      if (!response.ok) {
+        return null;
+      }
+
+      return await response.json();
+    }
+    catch (error) {
+      console.warn('Webforms bundled package load failed.', error);
+      return null;
+    }
   }
 
   function loadStoredPackage(key) {
@@ -63,15 +88,18 @@
     }
   }
 
-  function renderPackage(root, pkg) {
+  function renderPackage(root, pkg, activeStep) {
     root.innerHTML = '';
+
+    const steps = workflowSteps(pkg);
+    const selectedStep = activeStep || (steps[0] && steps[0].id) || '';
 
     const heading = document.createElement('h4');
     heading.textContent = pkg.form.title || pkgApi.packageFormTitle(pkg) || pkg.form.id || 'Webform';
 
     const notice = document.createElement('p');
     notice.className = 'small text-muted';
-    notice.textContent = 'Browser-local Deploy render from loaded package JSON. Controls are interactive, but no submit, storage, service, or federation action is active.';
+    notice.textContent = 'Deploy render from selected or browser-local package JSON. Controls are interactive, but no submit, storage, service, or federation action is active.';
 
     const grid = document.createElement('form');
     grid.className = 'webforms-design-grid webforms-deploy-grid';
@@ -84,7 +112,7 @@
     origin.id = 'webforms-deploy-grid-origin';
     origin.className = 'webforms-grid-origin';
     origin.dataset.webformsGridOrigin = '0,0';
-    origin.textContent = 'root container · Deploy render · browser-local package';
+    origin.textContent = 'root container · Deploy render · selected package';
 
     const gridSize = pkgApi.packageGridSize(pkg);
     const bounds = pkgApi.layoutBounds(pkg.form.layout, gridSize);
@@ -96,11 +124,49 @@
     grid.style.minHeight = bounds.height + 'px';
     grid.appendChild(origin);
 
-    renderLayoutChildren(grid, 'root-form', layoutByParent, fieldsById, gridSize);
+    renderLayoutChildren(grid, 'root-form', layoutByParent, fieldsById, gridSize, selectedStep);
 
     root.appendChild(heading);
     root.appendChild(notice);
+    renderWorkflow(root, pkg, selectedStep);
     root.appendChild(grid);
+  }
+
+  function workflowSteps(pkg) {
+    return pkg && pkg.deploy && pkg.deploy.workflow && Array.isArray(pkg.deploy.workflow.steps)
+      ? pkg.deploy.workflow.steps
+      : [];
+  }
+
+  function renderWorkflow(root, pkg, activeStep) {
+    const steps = workflowSteps(pkg);
+
+    if (!steps.length) {
+      return;
+    }
+
+    const nav = document.createElement('ul');
+
+    nav.className = 'nav nav-pills mb-3 webforms-deploy-workflow';
+
+    steps.forEach(function (step) {
+      const item = document.createElement('li');
+      const button = document.createElement('button');
+
+      item.className = 'nav-item';
+      button.type = 'button';
+      button.className = step.id === activeStep ? 'nav-link active' : 'nav-link';
+      button.textContent = step.label || step.id || 'Step';
+      button.dataset.webformsDeployStep = step.id || '';
+      button.addEventListener('click', function () {
+        renderPackage(root, pkg, step.id || '');
+      });
+
+      item.appendChild(button);
+      nav.appendChild(item);
+    });
+
+    root.appendChild(nav);
   }
 
   function groupLayoutByParent(layout) {
@@ -116,8 +182,12 @@
     }, {});
   }
 
-  function renderLayoutChildren(parentNode, parentId, layoutByParent, fieldsById, gridSize) {
+  function renderLayoutChildren(parentNode, parentId, layoutByParent, fieldsById, gridSize, activeStep) {
     (layoutByParent[parentId] || []).forEach(function (layoutItem) {
+      if (parentId === 'root-form' && activeStep && layoutItem.step && layoutItem.step !== activeStep) {
+        return;
+      }
+
       const field = fieldsById[layoutItem.id] || null;
       const rendered = renderLayoutItem(layoutItem, field, gridSize);
 
@@ -128,7 +198,7 @@
       parentNode.appendChild(rendered);
 
       if (layoutItem.type === 'container') {
-        renderLayoutChildren(rendered, layoutItem.id, layoutByParent, fieldsById, gridSize);
+        renderLayoutChildren(rendered, layoutItem.id, layoutByParent, fieldsById, gridSize, activeStep);
       }
     });
   }

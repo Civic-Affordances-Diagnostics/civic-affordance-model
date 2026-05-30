@@ -3,13 +3,25 @@
 return [
     'design_options' => [
         '' => 'New blank form',
-        'ipfs-publish' => 'IPFS Publish',
+        'ipfs-publish' => 'IPFS Publish CID',
+        'ipfs-pin-cid' => 'IPFS Pin CID',
+        'ipfs-remove-pin' => 'IPFS Remove Pin',
+        'ipfs-add-posix-path' => 'IPFS Add POSIX Path',
+        'ldap-bind' => 'LDAP Bind',
+        'ldap-search' => 'LDAP Search',
+        'ldap-add-sase' => 'LDAP Add SASE',
         'placekey-verify-address' => 'Placekey Verify Address',
         'email-compose' => 'Email Compose',
     ],
     'design_descriptions' => [
         '' => 'Start with an empty inert root form container.',
-        'ipfs-publish' => 'Placeholder for designing an inert IPFS Publish sub-form.',
+        'ipfs-publish' => 'Browser-local copy of the IPFS Publish CID Webform.',
+        'ipfs-pin-cid' => 'Browser-local copy of the IPFS Pin CID Webform.',
+        'ipfs-remove-pin' => 'Browser-local copy of the IPFS Remove Pin Webform.',
+        'ipfs-add-posix-path' => 'Browser-local copy of the IPFS Add POSIX Path Webform.',
+        'ldap-bind' => 'Placeholder for designing an LDAP Bind Webform.',
+        'ldap-search' => 'Placeholder for designing an LDAP Search Webform.',
+        'ldap-add-sase' => 'Placeholder for designing an LDAP Add SASE Webform.',
         'placekey-verify-address' => 'Placeholder for designing an inert Placekey address-verification sub-form.',
         'email-compose' => 'Placeholder for designing an inert bare-bones email composition sub-form.',
     ],
@@ -27,6 +39,14 @@ return [
         '' => 'No service pack selected',
         'ipfs' => 'IPFS Service Pack',
         'ldap' => 'LDAP Service Pack',
+    ],
+    'deploy_package_paths_by_service_pack' => [
+        'ipfs' => [
+            'ipfs-publish' => 'packages/ipfs/publish-cid.json',
+            'ipfs-pin-cid' => 'packages/ipfs/pin-cid.json',
+            'ipfs-remove-pin' => 'packages/ipfs/remove-pin.json',
+            'ipfs-add-posix-path' => 'packages/ipfs/add-posix-path.json',
+        ],
     ],
     'deploy_form_options_by_service_pack' => [
         '' => [

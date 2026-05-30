@@ -138,10 +138,11 @@ function webforms_render_deploy_page($service_pack = '', $deploy_form = '') {
 
     $service_pack_label = webforms_h(webforms_config_label('service_pack_display_labels', $service_pack, webforms_config_label('service_pack_options', $service_pack, 'No service pack selected')));
     $form_label = webforms_h(webforms_config_label('deploy_form_display_labels', $deploy_form, $forms[$deploy_form] ?? 'No webform selected'));
+    $package_url = webforms_package_url_for_deploy_form($service_pack, $deploy_form);
     $access_state = webforms_access_state();
 
     return '
-    <div id="webforms-runtime" class="webforms-content" data-webforms-mode="deploy" data-webforms-access="' . webforms_h($access_state) . '" data-webforms-service-pack="' . webforms_h($service_pack) . '" data-webforms-deploy-form="' . webforms_h($deploy_form) . '">
+    <div id="webforms-runtime" class="webforms-content" data-webforms-mode="deploy" data-webforms-access="' . webforms_h($access_state) . '" data-webforms-service-pack="' . webforms_h($service_pack) . '" data-webforms-deploy-form="' . webforms_h($deploy_form) . '" data-webforms-package-url="' . webforms_h($package_url) . '">
         <section id="webforms-deploy-view" class="webforms-deploy-view-placeholder" data-webforms-container="deploy-view">
             ' . webforms_render_access_notice('deploy') . '
             <h3>Deploy preview</h3>
@@ -151,7 +152,7 @@ function webforms_render_deploy_page($service_pack = '', $deploy_form = '') {
                 <div id="webforms-deploy-empty-state" class="well" data-webforms-panel="empty-deploy-view">
                     <p><strong>Service Pack:</strong> ' . $service_pack_label . '</p>
                     <p><strong>Webform:</strong> ' . $form_label . '</p>
-                    <p>Loading browser-local package renderer.</p>
+                    <p>Loading selected Webform package renderer.</p>
                 </div>
             </div>
         </section>

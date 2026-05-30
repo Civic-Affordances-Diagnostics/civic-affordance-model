@@ -1,0 +1,809 @@
+{
+  "schema": "hubzilla.webforms.package",
+  "version": "0.1",
+  "meta": {
+    "id": "ipfs-remove-pin",
+    "title": "IPFS Remove Pin",
+    "status": "addon-bundled",
+    "service_pack": "ipfs",
+    "webform": "ipfs-remove-pin",
+    "certification": {
+      "version": "0.1",
+      "signature": "NULL",
+      "signature_status": "not signed"
+    },
+    "access": {
+      "mode": "public",
+      "public_local_only": true
+    },
+    "generator": {
+      "name": "Hubzilla Webforms",
+      "mode": "addon-bundled",
+      "version": "0.1"
+    },
+    "purpose": "Create a policy-mediated request to unpin a CID."
+  },
+  "design": {
+    "schema": "hubzilla.webforms.design",
+    "version": "0.1",
+    "active_tab": "grid",
+    "selected_object_id": null,
+    "grid": {
+      "id": "root-form",
+      "unit": "px",
+      "size": 24,
+      "columns_observed": 22,
+      "rows_observed": 17,
+      "placement_scope": "immediate-container"
+    },
+    "objects": [
+      {
+        "id": "box-connect",
+        "type": "container",
+        "parent": "root-form",
+        "label": "Connect",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 20,
+          "height": 15,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        },
+        "step": "connect"
+      },
+      {
+        "id": "label-connect",
+        "type": "label",
+        "parent": "box-connect",
+        "label": "Connect",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "box-select-cid",
+        "type": "container",
+        "parent": "root-form",
+        "label": "Select CID",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 20,
+          "height": 15,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        },
+        "step": "select-cid"
+      },
+      {
+        "id": "label-select-cid",
+        "type": "label",
+        "parent": "box-select-cid",
+        "label": "Select CID",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "box-unpin",
+        "type": "container",
+        "parent": "root-form",
+        "label": "Unpin",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 20,
+          "height": 15,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        },
+        "step": "unpin"
+      },
+      {
+        "id": "label-unpin",
+        "type": "label",
+        "parent": "box-unpin",
+        "label": "Unpin",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "box-results",
+        "type": "container",
+        "parent": "root-form",
+        "label": "Results",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 20,
+          "height": 15,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        },
+        "step": "results"
+      },
+      {
+        "id": "label-results",
+        "type": "label",
+        "parent": "box-results",
+        "label": "Results",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "operation_id",
+        "type": "text",
+        "parent": "box-connect",
+        "label": "Operation ID",
+        "placeholder": "client/request operation id",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 3,
+          "width": 8,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "node_connection_profile",
+        "type": "text",
+        "parent": "box-connect",
+        "label": "Node connection profile",
+        "placeholder": "profile label or selected connection",
+        "default": "",
+        "placement": {
+          "x": 10,
+          "y": 3,
+          "width": 8,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "endpoint_label",
+        "type": "text",
+        "parent": "box-connect",
+        "label": "Endpoint label",
+        "placeholder": "human-readable backend label",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 6,
+          "width": 8,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "help-connect",
+        "type": "help_text",
+        "parent": "box-connect",
+        "label": "Connection boundary",
+        "placeholder": "",
+        "default": "Webforms targets orchestrator1 and does not expose Kubo RPC, git write tokens, or pinset mutation authority.",
+        "placement": {
+          "x": 1,
+          "y": 9,
+          "width": 17,
+          "height": 3,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "cid",
+        "type": "text",
+        "parent": "box-select-cid",
+        "label": "CID",
+        "placeholder": "bafy...",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 3,
+          "width": 16,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "unpin_reason",
+        "type": "textarea",
+        "parent": "box-unpin",
+        "label": "Unpin reason",
+        "placeholder": "policy-mediated reason for unpin request",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 3,
+          "width": 16,
+          "height": 4,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "retention_policy_check",
+        "type": "checkbox",
+        "parent": "box-unpin",
+        "label": "Retention policy check",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 8,
+          "width": 7,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "force_unpin",
+        "type": "checkbox",
+        "parent": "box-unpin",
+        "label": "Force unpin",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 9,
+          "y": 8,
+          "width": 5,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "pin_name",
+        "type": "text",
+        "parent": "box-unpin",
+        "label": "Pin name",
+        "placeholder": "optional pin name",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 10,
+          "width": 8,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "path_reference_check",
+        "type": "checkbox",
+        "parent": "box-unpin",
+        "label": "Path reference check",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 10,
+          "y": 10,
+          "width": 8,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "policy_reason",
+        "type": "textarea",
+        "parent": "box-unpin",
+        "label": "Policy reason",
+        "placeholder": "optional policy reason",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 12,
+          "width": 16,
+          "height": 3,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "submit_unpin",
+        "type": "button",
+        "parent": "box-unpin",
+        "label": "Prepare unpin request",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 16,
+          "width": 8,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "result-unpin",
+        "type": "result_panel",
+        "parent": "box-results",
+        "label": "Unpin result",
+        "placeholder": "",
+        "default": "operation_id\nstatus\ncid\npin_status\nretention_check_status\nreferencing_paths_count\npolicy_status\ncompleted_at\nerror_code\nerror_message",
+        "placement": {
+          "x": 1,
+          "y": 3,
+          "width": 18,
+          "height": 10,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      }
+    ]
+  },
+  "form": {
+    "schema": "hubzilla.webforms.form",
+    "version": "0.1",
+    "id": "ipfs-remove-pin",
+    "title": "IPFS Remove Pin",
+    "fields": [
+      {
+        "id": "operation_id",
+        "type": "text",
+        "label": "Operation ID",
+        "required": true,
+        "placeholder": "client/request operation id",
+        "default": ""
+      },
+      {
+        "id": "node_connection_profile",
+        "type": "text",
+        "label": "Node connection profile",
+        "required": true,
+        "placeholder": "profile label or selected connection",
+        "default": ""
+      },
+      {
+        "id": "endpoint_label",
+        "type": "text",
+        "label": "Endpoint label",
+        "required": false,
+        "placeholder": "human-readable backend label",
+        "default": ""
+      },
+      {
+        "id": "cid",
+        "type": "text",
+        "label": "CID",
+        "required": true,
+        "placeholder": "bafy...",
+        "default": ""
+      },
+      {
+        "id": "unpin_reason",
+        "type": "textarea",
+        "label": "Unpin reason",
+        "required": true,
+        "placeholder": "policy-mediated reason for unpin request",
+        "default": ""
+      },
+      {
+        "id": "retention_policy_check",
+        "type": "checkbox",
+        "label": "Retention policy check",
+        "required": true
+      },
+      {
+        "id": "force_unpin",
+        "type": "checkbox",
+        "label": "Force unpin",
+        "required": true
+      },
+      {
+        "id": "pin_name",
+        "type": "text",
+        "label": "Pin name",
+        "required": false,
+        "placeholder": "optional pin name",
+        "default": ""
+      },
+      {
+        "id": "path_reference_check",
+        "type": "checkbox",
+        "label": "Path reference check",
+        "required": false
+      },
+      {
+        "id": "policy_reason",
+        "type": "textarea",
+        "label": "Policy reason",
+        "required": false,
+        "placeholder": "optional policy reason",
+        "default": ""
+      },
+      {
+        "id": "submit_unpin",
+        "type": "button",
+        "label": "Prepare unpin request",
+        "required": false,
+        "action": "none"
+      }
+    ],
+    "layout": [
+      {
+        "id": "box-connect",
+        "type": "container",
+        "parent": "root-form",
+        "x": 1,
+        "y": 1,
+        "width": 20,
+        "height": 15,
+        "unit": "grid",
+        "label": "Connect",
+        "step": "connect"
+      },
+      {
+        "id": "label-connect",
+        "type": "label",
+        "parent": "box-connect",
+        "x": 1,
+        "y": 1,
+        "width": 12,
+        "height": 1,
+        "unit": "grid",
+        "label": "Connect"
+      },
+      {
+        "id": "box-select-cid",
+        "type": "container",
+        "parent": "root-form",
+        "x": 1,
+        "y": 1,
+        "width": 20,
+        "height": 15,
+        "unit": "grid",
+        "label": "Select CID",
+        "step": "select-cid"
+      },
+      {
+        "id": "label-select-cid",
+        "type": "label",
+        "parent": "box-select-cid",
+        "x": 1,
+        "y": 1,
+        "width": 12,
+        "height": 1,
+        "unit": "grid",
+        "label": "Select CID"
+      },
+      {
+        "id": "box-unpin",
+        "type": "container",
+        "parent": "root-form",
+        "x": 1,
+        "y": 1,
+        "width": 20,
+        "height": 15,
+        "unit": "grid",
+        "label": "Unpin",
+        "step": "unpin"
+      },
+      {
+        "id": "label-unpin",
+        "type": "label",
+        "parent": "box-unpin",
+        "x": 1,
+        "y": 1,
+        "width": 12,
+        "height": 1,
+        "unit": "grid",
+        "label": "Unpin"
+      },
+      {
+        "id": "box-results",
+        "type": "container",
+        "parent": "root-form",
+        "x": 1,
+        "y": 1,
+        "width": 20,
+        "height": 15,
+        "unit": "grid",
+        "label": "Results",
+        "step": "results"
+      },
+      {
+        "id": "label-results",
+        "type": "label",
+        "parent": "box-results",
+        "x": 1,
+        "y": 1,
+        "width": 12,
+        "height": 1,
+        "unit": "grid",
+        "label": "Results"
+      },
+      {
+        "id": "operation_id",
+        "type": "text",
+        "parent": "box-connect",
+        "x": 1,
+        "y": 3,
+        "width": 8,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "node_connection_profile",
+        "type": "text",
+        "parent": "box-connect",
+        "x": 10,
+        "y": 3,
+        "width": 8,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "endpoint_label",
+        "type": "text",
+        "parent": "box-connect",
+        "x": 1,
+        "y": 6,
+        "width": 8,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "help-connect",
+        "type": "help_text",
+        "parent": "box-connect",
+        "x": 1,
+        "y": 9,
+        "width": 17,
+        "height": 3,
+        "unit": "grid",
+        "label": "Connection boundary",
+        "text": "Webforms targets orchestrator1 and does not expose Kubo RPC, git write tokens, or pinset mutation authority."
+      },
+      {
+        "id": "cid",
+        "type": "text",
+        "parent": "box-select-cid",
+        "x": 1,
+        "y": 3,
+        "width": 16,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "unpin_reason",
+        "type": "textarea",
+        "parent": "box-unpin",
+        "x": 1,
+        "y": 3,
+        "width": 16,
+        "height": 4,
+        "unit": "grid"
+      },
+      {
+        "id": "retention_policy_check",
+        "type": "checkbox",
+        "parent": "box-unpin",
+        "x": 1,
+        "y": 8,
+        "width": 7,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "force_unpin",
+        "type": "checkbox",
+        "parent": "box-unpin",
+        "x": 9,
+        "y": 8,
+        "width": 5,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "pin_name",
+        "type": "text",
+        "parent": "box-unpin",
+        "x": 1,
+        "y": 10,
+        "width": 8,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "path_reference_check",
+        "type": "checkbox",
+        "parent": "box-unpin",
+        "x": 10,
+        "y": 10,
+        "width": 8,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "policy_reason",
+        "type": "textarea",
+        "parent": "box-unpin",
+        "x": 1,
+        "y": 12,
+        "width": 16,
+        "height": 3,
+        "unit": "grid"
+      },
+      {
+        "id": "submit_unpin",
+        "type": "button",
+        "parent": "box-unpin",
+        "x": 1,
+        "y": 16,
+        "width": 8,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "result-unpin",
+        "type": "result_panel",
+        "parent": "box-results",
+        "x": 1,
+        "y": 3,
+        "width": 18,
+        "height": 10,
+        "unit": "grid",
+        "label": "Unpin result",
+        "text": "operation_id\nstatus\ncid\npin_status\nretention_check_status\nreferencing_paths_count\npolicy_status\ncompleted_at\nerror_code\nerror_message"
+      }
+    ]
+  },
+  "deploy": {
+    "schema": "hubzilla.webforms.deploy",
+    "version": "0.1",
+    "workflow": {
+      "steps": [
+        {
+          "id": "connect",
+          "label": "Connect"
+        },
+        {
+          "id": "select-cid",
+          "label": "Select CID"
+        },
+        {
+          "id": "unpin",
+          "label": "Unpin"
+        },
+        {
+          "id": "results",
+          "label": "Results"
+        }
+      ]
+    },
+    "operation": {
+      "name": "ipfs.cid.request_unpin",
+      "target": "orchestrator1",
+      "backend_role": "ipfs_publication",
+      "execution_active": false
+    },
+    "result_fields": [
+      "operation_id",
+      "status",
+      "cid",
+      "pin_status",
+      "retention_check_status",
+      "referencing_paths_count",
+      "policy_status",
+      "completed_at",
+      "error_code",
+      "error_message"
+    ]
+  },
+  "runtime": {
+    "schema": "hubzilla.webforms.runtime",
+    "version": "0.1",
+    "storage": {
+      "mode": "none"
+    },
+    "services": [
+      {
+        "id": "service-ipfs-remove-pin",
+        "type": "ipfs",
+        "action": "ipfs.cid.request_unpin",
+        "execution": {
+          "active": false,
+          "reason": "Service execution is not active in Webforms."
+        },
+        "target": "orchestrator1",
+        "backend_role": "ipfs_publication"
+      }
+    ],
+    "federation": [],
+    "notes": [
+      "This addon-bundled package is declarative only.",
+      "No Kubo RPC, git/POSIX write, credential use, service call, server write, database write, or federation action is performed by this package.",
+      "The package targets orchestrator1 conceptually; raw ipfs1/Kubo/git mutation endpoints are not embedded."
+    ]
+  }
+}

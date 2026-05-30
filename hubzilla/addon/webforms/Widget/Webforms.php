@@ -244,7 +244,7 @@ class Webforms {
                         . $this->select_options($this->service_pack_options(), $service_pack) .
                     '</select>
                     <label for="webforms-deploy-form-select" class="mt-2">Webform</label>
-                    <select id="webforms-deploy-form-select" name="deploy_form" class="form-control form-control-sm">'
+                    <select id="webforms-deploy-form-select" name="deploy_form" class="form-control form-control-sm" onchange="this.form.submit();">'
                         . $this->select_options($deploy_form_options, $deploy_form) .
                     '</select>
                     <button type="submit" class="btn btn-sm btn-secondary mt-2">Load deploy view</button>

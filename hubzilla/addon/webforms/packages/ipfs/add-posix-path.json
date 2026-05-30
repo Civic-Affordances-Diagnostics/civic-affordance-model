@@ -1,0 +1,957 @@
+{
+  "schema": "hubzilla.webforms.package",
+  "version": "0.1",
+  "meta": {
+    "id": "ipfs-add-posix-path",
+    "title": "IPFS Add POSIX Path",
+    "status": "addon-bundled",
+    "service_pack": "ipfs",
+    "webform": "ipfs-add-posix-path",
+    "certification": {
+      "version": "0.1",
+      "signature": "NULL",
+      "signature_status": "not signed"
+    },
+    "access": {
+      "mode": "public",
+      "public_local_only": true
+    },
+    "generator": {
+      "name": "Hubzilla Webforms",
+      "mode": "addon-bundled",
+      "version": "0.1"
+    },
+    "purpose": "Create a git/POSIX path reference to an existing CID through the controlled backend."
+  },
+  "design": {
+    "schema": "hubzilla.webforms.design",
+    "version": "0.1",
+    "active_tab": "grid",
+    "selected_object_id": null,
+    "grid": {
+      "id": "root-form",
+      "unit": "px",
+      "size": 24,
+      "columns_observed": 22,
+      "rows_observed": 17,
+      "placement_scope": "immediate-container"
+    },
+    "objects": [
+      {
+        "id": "box-connect",
+        "type": "container",
+        "parent": "root-form",
+        "label": "Connect",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 20,
+          "height": 15,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        },
+        "step": "connect"
+      },
+      {
+        "id": "label-connect",
+        "type": "label",
+        "parent": "box-connect",
+        "label": "Connect",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "box-select-cid",
+        "type": "container",
+        "parent": "root-form",
+        "label": "Select CID",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 20,
+          "height": 15,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        },
+        "step": "select-cid"
+      },
+      {
+        "id": "label-select-cid",
+        "type": "label",
+        "parent": "box-select-cid",
+        "label": "Select CID",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "box-add-path",
+        "type": "container",
+        "parent": "root-form",
+        "label": "Add Path",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 20,
+          "height": 30,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        },
+        "step": "add-path"
+      },
+      {
+        "id": "label-add-path",
+        "type": "label",
+        "parent": "box-add-path",
+        "label": "Add Path",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "box-results",
+        "type": "container",
+        "parent": "root-form",
+        "label": "Results",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 20,
+          "height": 15,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        },
+        "step": "results"
+      },
+      {
+        "id": "label-results",
+        "type": "label",
+        "parent": "box-results",
+        "label": "Results",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "operation_id",
+        "type": "text",
+        "parent": "box-connect",
+        "label": "Operation ID",
+        "placeholder": "client/request operation id",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 3,
+          "width": 8,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "node_connection_profile",
+        "type": "text",
+        "parent": "box-connect",
+        "label": "Node connection profile",
+        "placeholder": "profile label or selected connection",
+        "default": "",
+        "placement": {
+          "x": 10,
+          "y": 3,
+          "width": 8,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "endpoint_label",
+        "type": "text",
+        "parent": "box-connect",
+        "label": "Endpoint label",
+        "placeholder": "human-readable backend label",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 6,
+          "width": 8,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "help-connect",
+        "type": "help_text",
+        "parent": "box-connect",
+        "label": "Connection boundary",
+        "placeholder": "",
+        "default": "Webforms targets orchestrator1 and does not expose Kubo RPC, git write tokens, or pinset mutation authority.",
+        "placement": {
+          "x": 1,
+          "y": 9,
+          "width": 17,
+          "height": 3,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "cid",
+        "type": "text",
+        "parent": "box-select-cid",
+        "label": "CID",
+        "placeholder": "bafy...",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 3,
+          "width": 16,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "posix_path",
+        "type": "text",
+        "parent": "box-add-path",
+        "label": "POSIX path",
+        "placeholder": "roots/example/path/manifest.json",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 3,
+          "width": 14,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "path_role",
+        "type": "select",
+        "parent": "box-add-path",
+        "label": "Path role",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 6,
+          "width": 7,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "manifest_title",
+        "type": "text",
+        "parent": "box-add-path",
+        "label": "Manifest title",
+        "placeholder": "human-readable title",
+        "default": "",
+        "placement": {
+          "x": 9,
+          "y": 6,
+          "width": 8,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "commit_message",
+        "type": "textarea",
+        "parent": "box-add-path",
+        "label": "Commit message",
+        "placeholder": "describe the path reference change",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 9,
+          "width": 16,
+          "height": 4,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "manifest_description",
+        "type": "textarea",
+        "parent": "box-add-path",
+        "label": "Manifest description",
+        "placeholder": "optional description",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 14,
+          "width": 16,
+          "height": 4,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "previous_path",
+        "type": "text",
+        "parent": "box-add-path",
+        "label": "Previous path",
+        "placeholder": "optional path superseded",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 19,
+          "width": 10,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "retention_policy",
+        "type": "select",
+        "parent": "box-add-path",
+        "label": "Retention policy",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 12,
+          "y": 19,
+          "width": 6,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "policy_reason",
+        "type": "textarea",
+        "parent": "box-add-path",
+        "label": "Policy reason",
+        "placeholder": "optional policy reason",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 21,
+          "width": 16,
+          "height": 3,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "same_cid_paths",
+        "type": "textarea",
+        "parent": "box-add-path",
+        "label": "Same-CID paths",
+        "placeholder": "optional existing path references",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 25,
+          "width": 16,
+          "height": 3,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "submit_path",
+        "type": "button",
+        "parent": "box-add-path",
+        "label": "Prepare path request",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 29,
+          "width": 8,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "result-path",
+        "type": "result_panel",
+        "parent": "box-results",
+        "label": "Path result",
+        "placeholder": "",
+        "default": "operation_id\nstatus\ncid\ngit_path\ncommit_sha\nmanifest_path\npath_status\nverification_status\npolicy_status\ncompleted_at\nerror_code\nerror_message",
+        "placement": {
+          "x": 1,
+          "y": 3,
+          "width": 18,
+          "height": 10,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      }
+    ]
+  },
+  "form": {
+    "schema": "hubzilla.webforms.form",
+    "version": "0.1",
+    "id": "ipfs-add-posix-path",
+    "title": "IPFS Add POSIX Path",
+    "fields": [
+      {
+        "id": "operation_id",
+        "type": "text",
+        "label": "Operation ID",
+        "required": true,
+        "placeholder": "client/request operation id",
+        "default": ""
+      },
+      {
+        "id": "node_connection_profile",
+        "type": "text",
+        "label": "Node connection profile",
+        "required": true,
+        "placeholder": "profile label or selected connection",
+        "default": ""
+      },
+      {
+        "id": "endpoint_label",
+        "type": "text",
+        "label": "Endpoint label",
+        "required": false,
+        "placeholder": "human-readable backend label",
+        "default": ""
+      },
+      {
+        "id": "cid",
+        "type": "text",
+        "label": "CID",
+        "required": true,
+        "placeholder": "bafy...",
+        "default": ""
+      },
+      {
+        "id": "posix_path",
+        "type": "text",
+        "label": "POSIX path",
+        "required": true,
+        "placeholder": "roots/example/path/manifest.json",
+        "default": ""
+      },
+      {
+        "id": "path_role",
+        "type": "select",
+        "label": "Path role",
+        "required": true,
+        "placeholder": "",
+        "default": "",
+        "options": [
+          {
+            "value": "manifest",
+            "label": "manifest"
+          },
+          {
+            "value": "index",
+            "label": "index"
+          },
+          {
+            "value": "evidence",
+            "label": "evidence"
+          },
+          {
+            "value": "reference",
+            "label": "reference"
+          }
+        ]
+      },
+      {
+        "id": "commit_message",
+        "type": "textarea",
+        "label": "Commit message",
+        "required": true,
+        "placeholder": "describe the path reference change",
+        "default": ""
+      },
+      {
+        "id": "manifest_title",
+        "type": "text",
+        "label": "Manifest title",
+        "required": false,
+        "placeholder": "human-readable title",
+        "default": ""
+      },
+      {
+        "id": "manifest_description",
+        "type": "textarea",
+        "label": "Manifest description",
+        "required": false,
+        "placeholder": "optional description",
+        "default": ""
+      },
+      {
+        "id": "previous_path",
+        "type": "text",
+        "label": "Previous path",
+        "required": false,
+        "placeholder": "optional path superseded",
+        "default": ""
+      },
+      {
+        "id": "retention_policy",
+        "type": "select",
+        "label": "Retention policy",
+        "required": false,
+        "placeholder": "",
+        "default": "",
+        "options": [
+          {
+            "value": "standard",
+            "label": "standard"
+          },
+          {
+            "value": "retained",
+            "label": "retained"
+          },
+          {
+            "value": "requires_review",
+            "label": "requires review"
+          }
+        ]
+      },
+      {
+        "id": "policy_reason",
+        "type": "textarea",
+        "label": "Policy reason",
+        "required": false,
+        "placeholder": "optional policy reason",
+        "default": ""
+      },
+      {
+        "id": "same_cid_paths",
+        "type": "textarea",
+        "label": "Same-CID paths",
+        "required": false,
+        "placeholder": "optional existing path references",
+        "default": ""
+      },
+      {
+        "id": "submit_path",
+        "type": "button",
+        "label": "Prepare path request",
+        "required": false,
+        "action": "none"
+      }
+    ],
+    "layout": [
+      {
+        "id": "box-connect",
+        "type": "container",
+        "parent": "root-form",
+        "x": 1,
+        "y": 1,
+        "width": 20,
+        "height": 15,
+        "unit": "grid",
+        "label": "Connect",
+        "step": "connect"
+      },
+      {
+        "id": "label-connect",
+        "type": "label",
+        "parent": "box-connect",
+        "x": 1,
+        "y": 1,
+        "width": 12,
+        "height": 1,
+        "unit": "grid",
+        "label": "Connect"
+      },
+      {
+        "id": "box-select-cid",
+        "type": "container",
+        "parent": "root-form",
+        "x": 1,
+        "y": 1,
+        "width": 20,
+        "height": 15,
+        "unit": "grid",
+        "label": "Select CID",
+        "step": "select-cid"
+      },
+      {
+        "id": "label-select-cid",
+        "type": "label",
+        "parent": "box-select-cid",
+        "x": 1,
+        "y": 1,
+        "width": 12,
+        "height": 1,
+        "unit": "grid",
+        "label": "Select CID"
+      },
+      {
+        "id": "box-add-path",
+        "type": "container",
+        "parent": "root-form",
+        "x": 1,
+        "y": 1,
+        "width": 20,
+        "height": 30,
+        "unit": "grid",
+        "label": "Add Path",
+        "step": "add-path"
+      },
+      {
+        "id": "label-add-path",
+        "type": "label",
+        "parent": "box-add-path",
+        "x": 1,
+        "y": 1,
+        "width": 12,
+        "height": 1,
+        "unit": "grid",
+        "label": "Add Path"
+      },
+      {
+        "id": "box-results",
+        "type": "container",
+        "parent": "root-form",
+        "x": 1,
+        "y": 1,
+        "width": 20,
+        "height": 15,
+        "unit": "grid",
+        "label": "Results",
+        "step": "results"
+      },
+      {
+        "id": "label-results",
+        "type": "label",
+        "parent": "box-results",
+        "x": 1,
+        "y": 1,
+        "width": 12,
+        "height": 1,
+        "unit": "grid",
+        "label": "Results"
+      },
+      {
+        "id": "operation_id",
+        "type": "text",
+        "parent": "box-connect",
+        "x": 1,
+        "y": 3,
+        "width": 8,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "node_connection_profile",
+        "type": "text",
+        "parent": "box-connect",
+        "x": 10,
+        "y": 3,
+        "width": 8,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "endpoint_label",
+        "type": "text",
+        "parent": "box-connect",
+        "x": 1,
+        "y": 6,
+        "width": 8,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "help-connect",
+        "type": "help_text",
+        "parent": "box-connect",
+        "x": 1,
+        "y": 9,
+        "width": 17,
+        "height": 3,
+        "unit": "grid",
+        "label": "Connection boundary",
+        "text": "Webforms targets orchestrator1 and does not expose Kubo RPC, git write tokens, or pinset mutation authority."
+      },
+      {
+        "id": "cid",
+        "type": "text",
+        "parent": "box-select-cid",
+        "x": 1,
+        "y": 3,
+        "width": 16,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "posix_path",
+        "type": "text",
+        "parent": "box-add-path",
+        "x": 1,
+        "y": 3,
+        "width": 14,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "path_role",
+        "type": "select",
+        "parent": "box-add-path",
+        "x": 1,
+        "y": 6,
+        "width": 7,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "manifest_title",
+        "type": "text",
+        "parent": "box-add-path",
+        "x": 9,
+        "y": 6,
+        "width": 8,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "commit_message",
+        "type": "textarea",
+        "parent": "box-add-path",
+        "x": 1,
+        "y": 9,
+        "width": 16,
+        "height": 4,
+        "unit": "grid"
+      },
+      {
+        "id": "manifest_description",
+        "type": "textarea",
+        "parent": "box-add-path",
+        "x": 1,
+        "y": 14,
+        "width": 16,
+        "height": 4,
+        "unit": "grid"
+      },
+      {
+        "id": "previous_path",
+        "type": "text",
+        "parent": "box-add-path",
+        "x": 1,
+        "y": 19,
+        "width": 10,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "retention_policy",
+        "type": "select",
+        "parent": "box-add-path",
+        "x": 12,
+        "y": 19,
+        "width": 6,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "policy_reason",
+        "type": "textarea",
+        "parent": "box-add-path",
+        "x": 1,
+        "y": 21,
+        "width": 16,
+        "height": 3,
+        "unit": "grid"
+      },
+      {
+        "id": "same_cid_paths",
+        "type": "textarea",
+        "parent": "box-add-path",
+        "x": 1,
+        "y": 25,
+        "width": 16,
+        "height": 3,
+        "unit": "grid"
+      },
+      {
+        "id": "submit_path",
+        "type": "button",
+        "parent": "box-add-path",
+        "x": 1,
+        "y": 29,
+        "width": 8,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "result-path",
+        "type": "result_panel",
+        "parent": "box-results",
+        "x": 1,
+        "y": 3,
+        "width": 18,
+        "height": 10,
+        "unit": "grid",
+        "label": "Path result",
+        "text": "operation_id\nstatus\ncid\ngit_path\ncommit_sha\nmanifest_path\npath_status\nverification_status\npolicy_status\ncompleted_at\nerror_code\nerror_message"
+      }
+    ]
+  },
+  "deploy": {
+    "schema": "hubzilla.webforms.deploy",
+    "version": "0.1",
+    "workflow": {
+      "steps": [
+        {
+          "id": "connect",
+          "label": "Connect"
+        },
+        {
+          "id": "select-cid",
+          "label": "Select CID"
+        },
+        {
+          "id": "add-path",
+          "label": "Add Path"
+        },
+        {
+          "id": "results",
+          "label": "Results"
+        }
+      ]
+    },
+    "operation": {
+      "name": "git_posix.path_reference.create",
+      "target": "orchestrator1",
+      "backend_role": "ipfs_publication",
+      "execution_active": false
+    },
+    "result_fields": [
+      "operation_id",
+      "status",
+      "cid",
+      "git_path",
+      "commit_sha",
+      "manifest_path",
+      "path_status",
+      "verification_status",
+      "policy_status",
+      "completed_at",
+      "error_code",
+      "error_message"
+    ]
+  },
+  "runtime": {
+    "schema": "hubzilla.webforms.runtime",
+    "version": "0.1",
+    "storage": {
+      "mode": "none"
+    },
+    "services": [
+      {
+        "id": "service-ipfs-add-posix-path",
+        "type": "ipfs",
+        "action": "git_posix.path_reference.create",
+        "execution": {
+          "active": false,
+          "reason": "Service execution is not active in Webforms."
+        },
+        "target": "orchestrator1",
+        "backend_role": "ipfs_publication"
+      }
+    ],
+    "federation": [],
+    "notes": [
+      "This addon-bundled package is declarative only.",
+      "No Kubo RPC, git/POSIX write, credential use, service call, server write, database write, or federation action is performed by this package.",
+      "The package targets orchestrator1 conceptually; raw ipfs1/Kubo/git mutation endpoints are not embedded."
+    ]
+  }
+}

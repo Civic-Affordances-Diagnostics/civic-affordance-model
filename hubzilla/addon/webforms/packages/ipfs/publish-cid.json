@@ -1,0 +1,985 @@
+{
+  "schema": "hubzilla.webforms.package",
+  "version": "0.1",
+  "meta": {
+    "id": "ipfs-publish",
+    "title": "IPFS Publish CID",
+    "status": "addon-bundled",
+    "service_pack": "ipfs",
+    "webform": "ipfs-publish",
+    "certification": {
+      "version": "0.1",
+      "signature": "NULL",
+      "signature_status": "not signed"
+    },
+    "access": {
+      "mode": "public",
+      "public_local_only": true
+    },
+    "generator": {
+      "name": "Hubzilla Webforms",
+      "mode": "addon-bundled",
+      "version": "0.1"
+    },
+    "purpose": "Create a CID through the controlled backend and optionally request pinning."
+  },
+  "design": {
+    "schema": "hubzilla.webforms.design",
+    "version": "0.1",
+    "active_tab": "grid",
+    "selected_object_id": null,
+    "grid": {
+      "id": "root-form",
+      "unit": "px",
+      "size": 24,
+      "columns_observed": 22,
+      "rows_observed": 17,
+      "placement_scope": "immediate-container"
+    },
+    "objects": [
+      {
+        "id": "box-connect",
+        "type": "container",
+        "parent": "root-form",
+        "label": "Connect",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 20,
+          "height": 15,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        },
+        "step": "connect"
+      },
+      {
+        "id": "label-connect",
+        "type": "label",
+        "parent": "box-connect",
+        "label": "Connect",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "box-prepare-content",
+        "type": "container",
+        "parent": "root-form",
+        "label": "Prepare Content",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 20,
+          "height": 15,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        },
+        "step": "prepare-content"
+      },
+      {
+        "id": "label-prepare-content",
+        "type": "label",
+        "parent": "box-prepare-content",
+        "label": "Prepare Content",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "box-publish",
+        "type": "container",
+        "parent": "root-form",
+        "label": "Publish",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 20,
+          "height": 15,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        },
+        "step": "publish"
+      },
+      {
+        "id": "label-publish",
+        "type": "label",
+        "parent": "box-publish",
+        "label": "Publish",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "box-results",
+        "type": "container",
+        "parent": "root-form",
+        "label": "Results",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 20,
+          "height": 15,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        },
+        "step": "results"
+      },
+      {
+        "id": "label-results",
+        "type": "label",
+        "parent": "box-results",
+        "label": "Results",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "operation_id",
+        "type": "text",
+        "parent": "box-connect",
+        "label": "Operation ID",
+        "placeholder": "client/request operation id",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 3,
+          "width": 8,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "node_connection_profile",
+        "type": "text",
+        "parent": "box-connect",
+        "label": "Node connection profile",
+        "placeholder": "profile label or selected connection",
+        "default": "",
+        "placement": {
+          "x": 10,
+          "y": 3,
+          "width": 8,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "endpoint_label",
+        "type": "text",
+        "parent": "box-connect",
+        "label": "Endpoint label",
+        "placeholder": "human-readable backend label",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 6,
+          "width": 8,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "help-connect",
+        "type": "help_text",
+        "parent": "box-connect",
+        "label": "Connection boundary",
+        "placeholder": "",
+        "default": "Webforms targets orchestrator1 and does not expose Kubo RPC, git write tokens, or pinset mutation authority.",
+        "placement": {
+          "x": 1,
+          "y": 9,
+          "width": 17,
+          "height": 3,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "content_source",
+        "type": "textarea",
+        "parent": "box-prepare-content",
+        "label": "Content source",
+        "placeholder": "file path, manifest, or content descriptor",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 3,
+          "width": 10,
+          "height": 5,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "content_type",
+        "type": "text",
+        "parent": "box-prepare-content",
+        "label": "Content type",
+        "placeholder": "application/json",
+        "default": "application/json",
+        "placement": {
+          "x": 12,
+          "y": 3,
+          "width": 6,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "filename_or_path",
+        "type": "text",
+        "parent": "box-prepare-content",
+        "label": "Filename or path",
+        "placeholder": "record.json",
+        "default": "",
+        "placement": {
+          "x": 12,
+          "y": 6,
+          "width": 6,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "cid_version",
+        "type": "select",
+        "parent": "box-prepare-content",
+        "label": "CID version",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 10,
+          "width": 5,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "hash_algorithm",
+        "type": "select",
+        "parent": "box-prepare-content",
+        "label": "Hash algorithm",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 7,
+          "y": 10,
+          "width": 6,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "recursive",
+        "type": "checkbox",
+        "parent": "box-prepare-content",
+        "label": "Recursive add",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 14,
+          "y": 10,
+          "width": 5,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "pin_after_publish",
+        "type": "checkbox",
+        "parent": "box-publish",
+        "label": "Pin after publish",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 3,
+          "width": 7,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "wrap_with_directory",
+        "type": "checkbox",
+        "parent": "box-publish",
+        "label": "Wrap with directory",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 9,
+          "y": 3,
+          "width": 8,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "pin_name",
+        "type": "text",
+        "parent": "box-publish",
+        "label": "Pin name",
+        "placeholder": "optional pin name",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 6,
+          "width": 8,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "retention_policy",
+        "type": "select",
+        "parent": "box-publish",
+        "label": "Retention policy",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 10,
+          "y": 6,
+          "width": 7,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "policy_reason",
+        "type": "textarea",
+        "parent": "box-publish",
+        "label": "Policy reason",
+        "placeholder": "optional policy or retention reason",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 9,
+          "width": 16,
+          "height": 4,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "submit_publish",
+        "type": "button",
+        "parent": "box-publish",
+        "label": "Prepare publish request",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 14,
+          "width": 8,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "result-publish",
+        "type": "result_panel",
+        "parent": "box-results",
+        "label": "Publish result",
+        "placeholder": "",
+        "default": "operation_id\nstatus\ncid\nsize_bytes\ncontent_type\npin_status\nretrieval_status\nverification_status\npolicy_status\ncompleted_at\nerror_code\nerror_message",
+        "placement": {
+          "x": 1,
+          "y": 3,
+          "width": 18,
+          "height": 10,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      }
+    ]
+  },
+  "form": {
+    "schema": "hubzilla.webforms.form",
+    "version": "0.1",
+    "id": "ipfs-publish",
+    "title": "IPFS Publish CID",
+    "fields": [
+      {
+        "id": "operation_id",
+        "type": "text",
+        "label": "Operation ID",
+        "required": true,
+        "placeholder": "client/request operation id",
+        "default": ""
+      },
+      {
+        "id": "node_connection_profile",
+        "type": "text",
+        "label": "Node connection profile",
+        "required": true,
+        "placeholder": "profile label or selected connection",
+        "default": ""
+      },
+      {
+        "id": "endpoint_label",
+        "type": "text",
+        "label": "Endpoint label",
+        "required": false,
+        "placeholder": "human-readable backend label",
+        "default": ""
+      },
+      {
+        "id": "content_source",
+        "type": "textarea",
+        "label": "Content source",
+        "required": true,
+        "placeholder": "file path, manifest, or content descriptor",
+        "default": ""
+      },
+      {
+        "id": "content_type",
+        "type": "text",
+        "label": "Content type",
+        "required": true,
+        "placeholder": "application/json",
+        "default": "application/json"
+      },
+      {
+        "id": "filename_or_path",
+        "type": "text",
+        "label": "Filename or path",
+        "required": true,
+        "placeholder": "record.json",
+        "default": ""
+      },
+      {
+        "id": "cid_version",
+        "type": "select",
+        "label": "CID version",
+        "required": true,
+        "placeholder": "",
+        "default": "",
+        "options": [
+          {
+            "value": "1",
+            "label": "CIDv1"
+          },
+          {
+            "value": "0",
+            "label": "CIDv0"
+          }
+        ]
+      },
+      {
+        "id": "hash_algorithm",
+        "type": "select",
+        "label": "Hash algorithm",
+        "required": true,
+        "placeholder": "",
+        "default": "",
+        "options": [
+          {
+            "value": "sha2-256",
+            "label": "sha2-256"
+          }
+        ]
+      },
+      {
+        "id": "pin_after_publish",
+        "type": "checkbox",
+        "label": "Pin after publish",
+        "required": true
+      },
+      {
+        "id": "recursive",
+        "type": "checkbox",
+        "label": "Recursive add",
+        "required": false
+      },
+      {
+        "id": "wrap_with_directory",
+        "type": "checkbox",
+        "label": "Wrap with directory",
+        "required": false
+      },
+      {
+        "id": "pin_name",
+        "type": "text",
+        "label": "Pin name",
+        "required": false,
+        "placeholder": "optional pin name",
+        "default": ""
+      },
+      {
+        "id": "retention_policy",
+        "type": "select",
+        "label": "Retention policy",
+        "required": false,
+        "placeholder": "",
+        "default": "",
+        "options": [
+          {
+            "value": "standard",
+            "label": "standard"
+          },
+          {
+            "value": "retained",
+            "label": "retained"
+          },
+          {
+            "value": "requires_review",
+            "label": "requires review"
+          }
+        ]
+      },
+      {
+        "id": "policy_reason",
+        "type": "textarea",
+        "label": "Policy reason",
+        "required": false,
+        "placeholder": "optional policy or retention reason",
+        "default": ""
+      },
+      {
+        "id": "submit_publish",
+        "type": "button",
+        "label": "Prepare publish request",
+        "required": false,
+        "action": "none"
+      }
+    ],
+    "layout": [
+      {
+        "id": "box-connect",
+        "type": "container",
+        "parent": "root-form",
+        "x": 1,
+        "y": 1,
+        "width": 20,
+        "height": 15,
+        "unit": "grid",
+        "label": "Connect",
+        "step": "connect"
+      },
+      {
+        "id": "label-connect",
+        "type": "label",
+        "parent": "box-connect",
+        "x": 1,
+        "y": 1,
+        "width": 12,
+        "height": 1,
+        "unit": "grid",
+        "label": "Connect"
+      },
+      {
+        "id": "box-prepare-content",
+        "type": "container",
+        "parent": "root-form",
+        "x": 1,
+        "y": 1,
+        "width": 20,
+        "height": 15,
+        "unit": "grid",
+        "label": "Prepare Content",
+        "step": "prepare-content"
+      },
+      {
+        "id": "label-prepare-content",
+        "type": "label",
+        "parent": "box-prepare-content",
+        "x": 1,
+        "y": 1,
+        "width": 12,
+        "height": 1,
+        "unit": "grid",
+        "label": "Prepare Content"
+      },
+      {
+        "id": "box-publish",
+        "type": "container",
+        "parent": "root-form",
+        "x": 1,
+        "y": 1,
+        "width": 20,
+        "height": 15,
+        "unit": "grid",
+        "label": "Publish",
+        "step": "publish"
+      },
+      {
+        "id": "label-publish",
+        "type": "label",
+        "parent": "box-publish",
+        "x": 1,
+        "y": 1,
+        "width": 12,
+        "height": 1,
+        "unit": "grid",
+        "label": "Publish"
+      },
+      {
+        "id": "box-results",
+        "type": "container",
+        "parent": "root-form",
+        "x": 1,
+        "y": 1,
+        "width": 20,
+        "height": 15,
+        "unit": "grid",
+        "label": "Results",
+        "step": "results"
+      },
+      {
+        "id": "label-results",
+        "type": "label",
+        "parent": "box-results",
+        "x": 1,
+        "y": 1,
+        "width": 12,
+        "height": 1,
+        "unit": "grid",
+        "label": "Results"
+      },
+      {
+        "id": "operation_id",
+        "type": "text",
+        "parent": "box-connect",
+        "x": 1,
+        "y": 3,
+        "width": 8,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "node_connection_profile",
+        "type": "text",
+        "parent": "box-connect",
+        "x": 10,
+        "y": 3,
+        "width": 8,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "endpoint_label",
+        "type": "text",
+        "parent": "box-connect",
+        "x": 1,
+        "y": 6,
+        "width": 8,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "help-connect",
+        "type": "help_text",
+        "parent": "box-connect",
+        "x": 1,
+        "y": 9,
+        "width": 17,
+        "height": 3,
+        "unit": "grid",
+        "label": "Connection boundary",
+        "text": "Webforms targets orchestrator1 and does not expose Kubo RPC, git write tokens, or pinset mutation authority."
+      },
+      {
+        "id": "content_source",
+        "type": "textarea",
+        "parent": "box-prepare-content",
+        "x": 1,
+        "y": 3,
+        "width": 10,
+        "height": 5,
+        "unit": "grid"
+      },
+      {
+        "id": "content_type",
+        "type": "text",
+        "parent": "box-prepare-content",
+        "x": 12,
+        "y": 3,
+        "width": 6,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "filename_or_path",
+        "type": "text",
+        "parent": "box-prepare-content",
+        "x": 12,
+        "y": 6,
+        "width": 6,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "cid_version",
+        "type": "select",
+        "parent": "box-prepare-content",
+        "x": 1,
+        "y": 10,
+        "width": 5,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "hash_algorithm",
+        "type": "select",
+        "parent": "box-prepare-content",
+        "x": 7,
+        "y": 10,
+        "width": 6,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "recursive",
+        "type": "checkbox",
+        "parent": "box-prepare-content",
+        "x": 14,
+        "y": 10,
+        "width": 5,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "pin_after_publish",
+        "type": "checkbox",
+        "parent": "box-publish",
+        "x": 1,
+        "y": 3,
+        "width": 7,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "wrap_with_directory",
+        "type": "checkbox",
+        "parent": "box-publish",
+        "x": 9,
+        "y": 3,
+        "width": 8,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "pin_name",
+        "type": "text",
+        "parent": "box-publish",
+        "x": 1,
+        "y": 6,
+        "width": 8,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "retention_policy",
+        "type": "select",
+        "parent": "box-publish",
+        "x": 10,
+        "y": 6,
+        "width": 7,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "policy_reason",
+        "type": "textarea",
+        "parent": "box-publish",
+        "x": 1,
+        "y": 9,
+        "width": 16,
+        "height": 4,
+        "unit": "grid"
+      },
+      {
+        "id": "submit_publish",
+        "type": "button",
+        "parent": "box-publish",
+        "x": 1,
+        "y": 14,
+        "width": 8,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "result-publish",
+        "type": "result_panel",
+        "parent": "box-results",
+        "x": 1,
+        "y": 3,
+        "width": 18,
+        "height": 10,
+        "unit": "grid",
+        "label": "Publish result",
+        "text": "operation_id\nstatus\ncid\nsize_bytes\ncontent_type\npin_status\nretrieval_status\nverification_status\npolicy_status\ncompleted_at\nerror_code\nerror_message"
+      }
+    ]
+  },
+  "deploy": {
+    "schema": "hubzilla.webforms.deploy",
+    "version": "0.1",
+    "workflow": {
+      "steps": [
+        {
+          "id": "connect",
+          "label": "Connect"
+        },
+        {
+          "id": "prepare-content",
+          "label": "Prepare Content"
+        },
+        {
+          "id": "publish",
+          "label": "Publish"
+        },
+        {
+          "id": "results",
+          "label": "Results"
+        }
+      ]
+    },
+    "operation": {
+      "name": "ipfs.cid.publish",
+      "target": "orchestrator1",
+      "backend_role": "ipfs_publication",
+      "execution_active": false
+    },
+    "result_fields": [
+      "operation_id",
+      "status",
+      "cid",
+      "size_bytes",
+      "content_type",
+      "pin_status",
+      "retrieval_status",
+      "verification_status",
+      "policy_status",
+      "completed_at",
+      "error_code",
+      "error_message"
+    ]
+  },
+  "runtime": {
+    "schema": "hubzilla.webforms.runtime",
+    "version": "0.1",
+    "storage": {
+      "mode": "none"
+    },
+    "services": [
+      {
+        "id": "service-ipfs-publish",
+        "type": "ipfs",
+        "action": "ipfs.cid.publish",
+        "execution": {
+          "active": false,
+          "reason": "Service execution is not active in Webforms."
+        },
+        "target": "orchestrator1",
+        "backend_role": "ipfs_publication"
+      }
+    ],
+    "federation": [],
+    "notes": [
+      "This addon-bundled package is declarative only.",
+      "No Kubo RPC, git/POSIX write, credential use, service call, server write, database write, or federation action is performed by this package.",
+      "The package targets orchestrator1 conceptually; raw ipfs1/Kubo/git mutation endpoints are not embedded."
+    ]
+  }
+}
