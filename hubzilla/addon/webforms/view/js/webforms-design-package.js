@@ -19,6 +19,7 @@
   ns.renderJson = function (draft) {
     const output = document.getElementById('webforms-json-output');
     const pkg = ns.buildPackage(draft);
+
     ns.persistDraft(draft);
     ns.persistPackage(pkg);
 
@@ -38,7 +39,8 @@
       const payload = JSON.stringify(pkg);
       window.sessionStorage.setItem(packageKeyForForm(pkg.meta.id), payload);
       window.sessionStorage.setItem(activePackageKey(), payload);
-    } catch (error) {
+    }
+    catch (error) {
       console.warn('Webforms package was not persisted to sessionStorage.', error);
     }
   };
@@ -61,10 +63,30 @@
       schema: 'hubzilla.webforms.designDraft',
       version: VERSION,
       status: 'browser-local',
-      access: { mode: access, public_local_only: access === 'public' },
-      form: { id: formId, title: formTitle },
-      design: { active_tab: runtime.dataset.webformsDesignTab || 'grid', selected_object_id: null, source: 'package-json', route_form_id: routeFormId, next_object_number: findNextObjectNumber(pkg.design.objects) },
-      grid: pkg.design.grid || { id: 'root-form', unit: 'px', size: GRID_SIZE, columns_observed: 22, rows_observed: 17, placement_scope: 'immediate-container' },
+      access: {
+        mode: access,
+        public_local_only: access === 'public'
+      },
+      form: {
+        id: formId,
+        title: formTitle
+      },
+      design: {
+        active_tab: runtime.dataset.webformsDesignTab || 'grid',
+        active_step: packageActiveStep(pkg),
+        selected_object_id: null,
+        source: 'package-json',
+        route_form_id: routeFormId,
+        next_object_number: findNextObjectNumber(pkg.design.objects)
+      },
+      grid: pkg.design.grid || {
+        id: 'root-form',
+        unit: 'px',
+        size: GRID_SIZE,
+        columns_observed: 22,
+        rows_observed: 17,
+        placement_scope: 'immediate-container'
+      },
       objects: clonePlainObject(pkg.design.objects),
       notes: [
         'This draft was loaded from package JSON.',
@@ -109,13 +131,29 @@
     return '';
   }
 
+  function packageActiveStep(pkg) {
+    if (pkg.design && pkg.design.active_step) {
+      return pkg.design.active_step;
+    }
+
+    if (pkg.deploy && pkg.deploy.workflow && Array.isArray(pkg.deploy.workflow.steps) && pkg.deploy.workflow.steps.length) {
+      return pkg.deploy.workflow.steps[0].id || '';
+    }
+
+    return '';
+  }
+
   function buildPackageMeta(draft) {
     return {
       id: draft.form.id,
       title: draft.form.title,
       status: draft.status,
       access: draft.access,
-      generator: { name: 'Hubzilla Webforms', mode: 'browser-local', version: VERSION }
+      generator: {
+        name: 'Hubzilla Webforms',
+        mode: 'browser-local',
+        version: VERSION
+      }
     };
   }
 
@@ -124,6 +162,7 @@
       schema: 'hubzilla.webforms.design',
       version: VERSION,
       active_tab: draft.design.active_tab,
+      active_step: draft.design.active_step || '',
       selected_object_id: draft.design.selected_object_id,
       grid: clonePlainObject(draft.grid),
       objects: clonePlainObject(draft.objects)
@@ -147,7 +186,9 @@
     return {
       schema: 'hubzilla.webforms.runtime',
       version: VERSION,
-      storage: { mode: 'none' },
+      storage: {
+        mode: 'none'
+      },
       services: [],
       federation: [],
       notes: [
@@ -158,7 +199,12 @@
   }
 
   function isPortableField(object) {
-    return ![ 'container', 'label', 'result_panel', 'help_text' ].includes(object.type);
+    return ![
+      'container',
+      'label',
+      'result_panel',
+      'help_text'
+    ].includes(object.type);
   }
 
   function buildPortableField(object) {
@@ -197,6 +243,10 @@
       unit: object.placement.unit
     };
 
+    if (object.step) {
+      item.step = object.step;
+    }
+
     if (object.type === 'result_panel' || object.type === 'help_text') {
       item.label = object.label || object.id;
       item.text = object.default || '';
@@ -212,6 +262,7 @@
   function findNextObjectNumber(objects) {
     return objects.reduce(function (highest, object) {
       const match = object.id.match(/-(\d+)$/);
+
       if (!match) {
         return highest;
       }
@@ -233,4 +284,4 @@
   function clonePlainObject(value) {
     return JSON.parse(JSON.stringify(value));
   }
-})();
+}());

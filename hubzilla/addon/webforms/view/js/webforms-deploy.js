@@ -10,19 +10,24 @@
       return;
     }
 
+    const formId = runtime.dataset.webformsDeployForm || '';
+    const servicePack = runtime.dataset.webformsServicePack || '';
+    const packageUrl = runtime.dataset.webformsPackageUrl || '';
+
+    await loadAndRender(packageUrl, formId, servicePack);
+  }
+
+  async function loadAndRender(packageUrl, formId, servicePack) {
     const root = document.getElementById('webforms-deploy-render-root');
 
     if (!root) {
       return;
     }
 
-    const formId = runtime.dataset.webformsDeployForm || '';
-    const packageUrl = runtime.dataset.webformsPackageUrl || '';
-    const servicePack = runtime.dataset.webformsServicePack || '';
     const pkg = await loadPackage(formId, packageUrl, servicePack);
 
     if (!pkg) {
-      renderMessage(root, 'No loaded Webforms package JSON found.\nSave or Import a package on the JSON tab first.');
+      renderMessage(root, 'No selected bundled Webforms package JSON is available for this Service Pack/Webform.');
       return;
     }
 
@@ -30,16 +35,16 @@
   }
 
   async function loadPackage(formId, packageUrl, servicePack) {
-    const embeddedPackage = loadEmbeddedPackage(servicePack || '', formId || '');
-
-    if (pkgApi.isValidPackage(embeddedPackage)) {
-      return embeddedPackage;
-    }
-
-    const bundledPackage = packageUrl ? await fetchBundledPackage(packageUrl) : null;
+    const bundledPackage = packageFromEmbeddedMap(servicePack, formId);
 
     if (pkgApi.isValidPackage(bundledPackage)) {
       return bundledPackage;
+    }
+
+    const fetchedPackage = packageUrl ? await fetchBundledPackage(packageUrl) : null;
+
+    if (pkgApi.isValidPackage(fetchedPackage)) {
+      return fetchedPackage;
     }
 
     const exactPackage = formId ? loadStoredPackage(pkgApi.packageKeyForForm(formId)) : null;
@@ -59,30 +64,21 @@
     return null;
   }
 
+  function packageFromEmbeddedMap(servicePack, formId) {
+    const node = document.getElementById('webforms-bundled-package-map');
 
-  function loadEmbeddedPackage(servicePack, formId) {
-    if (!servicePack || !formId) {
-      return null;
-    }
-
-    const script = document.getElementById('webforms-bundled-package-map');
-
-    if (!script) {
+    if (!node || !node.textContent || !servicePack || !formId) {
       return null;
     }
 
     try {
-      const map = JSON.parse(script.textContent || '{}');
-
-      if (map[servicePack] && map[servicePack][formId]) {
-        return map[servicePack][formId];
-      }
+      const map = JSON.parse(node.textContent);
+      return map && map[servicePack] && map[servicePack][formId] ? map[servicePack][formId] : null;
     }
     catch (error) {
-      console.warn('Webforms embedded package map could not be parsed.', error);
+      console.warn('Webforms bundled package map could not be parsed.', error);
+      return null;
     }
-
-    return null;
   }
 
   async function fetchBundledPackage(packageUrl) {
@@ -486,30 +482,6 @@
     empty.className = 'well';
     empty.textContent = message;
     root.appendChild(empty);
-  }
-
-
-
-  async function loadAndRender(packageUrl, formId, servicePack) {
-    const runtime = document.getElementById('webforms-runtime');
-    const root = document.getElementById('webforms-deploy-render-root');
-
-    if (!runtime || !root || runtime.dataset.webformsMode !== 'deploy') {
-      return;
-    }
-
-    runtime.dataset.webformsPackageUrl = packageUrl || '';
-    runtime.dataset.webformsDeployForm = formId || '';
-    runtime.dataset.webformsServicePack = servicePack || '';
-
-    const pkg = await loadPackage(formId || '', packageUrl || '', servicePack || '');
-
-    if (!pkg) {
-      renderMessage(root, 'Package JSON was not loaded for the selected Service Pack and Webform.');
-      return;
-    }
-
-    renderPackage(root, pkg);
   }
 
   window.WebformsDeploy = window.WebformsDeploy || {};

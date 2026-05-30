@@ -11,8 +11,11 @@
       return;
     }
 
+    const activeStep = activeWorkflowStep(draft);
+
+    renderWorkflowSelector(draft, activeStep);
     removeGeneratedObjects(grid);
-    renderChildObjects(grid, draft, draft.grid.id, draft.grid.size);
+    renderChildObjects(grid, draft, draft.grid.id, draft.grid.size, activeStep);
 
     if (!grid.dataset.webformsSelectionHandler) {
       grid.addEventListener('click', function (event) {
@@ -49,9 +52,87 @@
     renderObjectContent(wrapper, object, ns.GRID_SIZE || 24);
   };
 
-  function renderChildObjects(parentNode, draft, parentId, gridSize) {
+  function workflowSteps(draft) {
+    const preserved = draft && draft.package && draft.package.deploy ? draft.package.deploy : null;
+
+    if (preserved && preserved.workflow && Array.isArray(preserved.workflow.steps)) {
+      return preserved.workflow.steps;
+    }
+
+    return [];
+  }
+
+  function activeWorkflowStep(draft) {
+    const steps = workflowSteps(draft);
+    const active = draft && draft.design ? draft.design.active_step || '' : '';
+
+    if (!steps.length) {
+      return '';
+    }
+
+    if (steps.some(function (step) { return step.id === active; })) {
+      return active;
+    }
+
+    draft.design.active_step = steps[0].id || '';
+    return draft.design.active_step;
+  }
+
+  function renderWorkflowSelector(draft, activeStep) {
+    const host = document.getElementById('webforms-design-workflow');
+    const steps = workflowSteps(draft);
+
+    if (!host) {
+      return;
+    }
+
+    host.innerHTML = '';
+
+    if (!steps.length) {
+      return;
+    }
+
+    const label = document.createElement('div');
+    label.className = 'small text-muted mb-1';
+    label.textContent = 'Workflow panel';
+    host.appendChild(label);
+
+    const nav = document.createElement('ul');
+    nav.className = 'nav nav-pills webforms-design-workflow-tabs';
+
+    steps.forEach(function (step) {
+      const item = document.createElement('li');
+      const button = document.createElement('button');
+
+      item.className = 'nav-item';
+      button.type = 'button';
+      button.className = step.id === activeStep ? 'nav-link active' : 'nav-link';
+      button.textContent = step.label || step.id || 'Step';
+      button.dataset.webformsDesignStep = step.id || '';
+      button.addEventListener('click', function () {
+        draft.design.active_step = step.id || '';
+        draft.design.selected_object_id = null;
+        ns.persistDraft(draft);
+        ns.persistPackage(ns.buildPackage(draft));
+        ns.renderGrid(draft);
+        ns.renderSelectionPanel(draft, null);
+        ns.renderJson(draft);
+      });
+
+      item.appendChild(button);
+      nav.appendChild(item);
+    });
+
+    host.appendChild(nav);
+  }
+
+  function renderChildObjects(parentNode, draft, parentId, gridSize, activeStep) {
     draft.objects.forEach(function (object) {
       if (object.parent !== parentId) {
+        return;
+      }
+
+      if (parentId === draft.grid.id && activeStep && object.step && object.step !== activeStep) {
         return;
       }
 
@@ -59,7 +140,7 @@
       parentNode.appendChild(element);
 
       if (object.type === 'container') {
-        renderChildObjects(element, draft, object.id, gridSize);
+        renderChildObjects(element, draft, object.id, gridSize, activeStep);
       }
     });
   }
@@ -94,7 +175,6 @@
     });
 
     renderObjectContent(wrapper, object, gridSize);
-
     return wrapper;
   }
 
@@ -144,31 +224,25 @@
 
   function renderContainerObject(wrapper, object) {
     const label = document.createElement('div');
-
     label.className = 'webforms-object-label';
     label.textContent = object.label || object.id;
-
     wrapper.appendChild(label);
   }
 
   function renderLabelObject(wrapper, object) {
     const label = document.createElement('div');
-
     label.className = 'webforms-object-label';
     label.style.fontWeight = '700';
     label.textContent = object.label || object.id;
-
     wrapper.appendChild(label);
   }
 
   function renderTextObject(wrapper, object) {
     const label = document.createElement('label');
-
     label.setAttribute('for', 'webforms-preview-' + object.id);
     label.textContent = object.label || object.id;
 
     const input = document.createElement('input');
-
     input.id = 'webforms-preview-' + object.id;
     input.className = 'form-control form-control-sm';
     input.type = 'text';
@@ -182,12 +256,10 @@
 
   function renderTextareaObject(wrapper, object, gridSize) {
     const label = document.createElement('label');
-
     label.setAttribute('for', 'webforms-preview-' + object.id);
     label.textContent = object.label || object.id;
 
     const textarea = document.createElement('textarea');
-
     textarea.id = 'webforms-preview-' + object.id;
     textarea.className = 'form-control form-control-sm';
     textarea.value = object.default || '';
@@ -206,18 +278,15 @@
 
   function renderCheckboxObject(wrapper, object) {
     const group = document.createElement('div');
-
     group.className = 'form-check';
 
     const input = document.createElement('input');
-
     input.id = 'webforms-preview-' + object.id;
     input.className = 'form-check-input';
     input.type = 'checkbox';
     input.disabled = true;
 
     const label = document.createElement('label');
-
     label.className = 'form-check-label';
     label.setAttribute('for', 'webforms-preview-' + object.id);
     label.style.fontWeight = '700';
@@ -230,24 +299,20 @@
 
   function renderButtonObject(wrapper, object) {
     const button = document.createElement('button');
-
     button.className = 'btn btn-sm btn-secondary';
     button.type = 'button';
     button.disabled = true;
     button.style.fontWeight = '700';
     button.textContent = object.label || object.id;
-
     wrapper.appendChild(button);
   }
 
   function renderSelectObject(wrapper, object) {
     const label = document.createElement('label');
-
     label.setAttribute('for', 'webforms-preview-' + object.id);
     label.textContent = object.label || object.id;
 
     const select = document.createElement('select');
-
     select.id = 'webforms-preview-' + object.id;
     select.className = 'form-control form-control-sm';
     select.disabled = true;
@@ -255,7 +320,6 @@
     if (Array.isArray(object.options)) {
       object.options.forEach(function (option) {
         const opt = document.createElement('option');
-
         opt.value = option.value;
         opt.textContent = option.label;
         select.appendChild(opt);
@@ -268,12 +332,10 @@
 
   function renderResultPanelObject(wrapper, object) {
     const label = document.createElement('div');
-
     label.className = 'webforms-object-label';
     label.textContent = object.label || object.id;
 
     const panel = document.createElement('div');
-
     panel.className = 'well well-sm mt-1 mb-0';
     panel.textContent = object.default || 'Result output placeholder';
     panel.style.whiteSpace = 'pre-wrap';
@@ -287,12 +349,10 @@
 
   function renderHelpTextObject(wrapper, object) {
     const label = document.createElement('div');
-
     label.className = 'webforms-object-label';
     label.textContent = object.label || object.id;
 
     const text = document.createElement('p');
-
     text.className = 'small mb-0';
     text.textContent = object.default || 'Helpful instructions or explanatory text.';
 

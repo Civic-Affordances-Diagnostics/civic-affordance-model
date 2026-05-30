@@ -113,6 +113,16 @@ function webforms_current_service_pack() {
     return webforms_service_pack_for_deploy_form(webforms_safe_query_value('deploy_form'));
 }
 
+function webforms_current_design_service_pack() {
+    $service_pack = webforms_safe_query_value('service_pack');
+
+    if ($service_pack !== '') {
+        return $service_pack;
+    }
+
+    return webforms_service_pack_for_deploy_form(webforms_safe_query_value('design_form'));
+}
+
 function webforms_package_path_for_deploy_form($service_pack, $deploy_form) {
     $paths_by_service_pack = webforms_config_section('deploy_package_paths_by_service_pack');
 
@@ -128,7 +138,6 @@ function webforms_package_path_for_deploy_form($service_pack, $deploy_form) {
 
     return $path;
 }
-
 
 function webforms_package_file_for_deploy_form($service_pack, $deploy_form) {
     $path = webforms_package_path_for_deploy_form($service_pack, $deploy_form);
@@ -221,7 +230,6 @@ function webforms_package_url_for_deploy_form($service_pack, $deploy_form) {
     return '/addon/webforms/' . $path . '?v=0.1';
 }
 
-
 function webforms_package_url_for_design_form($design_form) {
     if ($design_form === '') {
         return '';
@@ -249,6 +257,7 @@ function webforms_content() {
 
     webforms_add_design_assets();
     return webforms_render_design_page(
+        webforms_current_design_service_pack(),
         webforms_safe_query_value('design_form'),
         webforms_safe_query_value('design_tab')
     );
@@ -264,13 +273,13 @@ function webforms_add_design_assets() {
         head_add_js('/addon/webforms/view/js/webforms-design-draft.js?v=import-route-1');
         head_add_js('/addon/webforms/view/js/webforms-design-session.js?v=import-route-1');
         head_add_js('/addon/webforms/view/js/webforms-package-shared.js?v=hard-recovery-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-package.js?v=import-route-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=nested-container-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-package.js?v=workflow-panel-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=workflow-panel-1');
         head_add_js('/addon/webforms/view/js/webforms-design-properties.js?v=textarea-default-1');
         head_add_js('/addon/webforms/view/js/webforms-design-json.js?v=hard-recovery-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-bundled.js?v=embedded-package-1');
-        head_add_js('/addon/webforms/view/js/webforms-design.js?v=embedded-package-1');
-        head_add_js('/addon/webforms/view/js/webforms-selectors.js?v=embedded-package-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-bundled.js?v=workflow-panel-1');
+        head_add_js('/addon/webforms/view/js/webforms-design.js?v=workflow-panel-1');
+        head_add_js('/addon/webforms/view/js/webforms-selectors.js?v=workflow-panel-1');
     }
 }
 
@@ -281,7 +290,7 @@ function webforms_add_deploy_assets() {
 
     if (function_exists('head_add_js')) {
         head_add_js('/addon/webforms/view/js/webforms-package-shared.js?v=hard-recovery-1');
-        head_add_js('/addon/webforms/view/js/webforms-deploy.js?v=embedded-package-1');
-        head_add_js('/addon/webforms/view/js/webforms-selectors.js?v=embedded-package-1');
+        head_add_js('/addon/webforms/view/js/webforms-deploy.js?v=workflow-panel-1');
+        head_add_js('/addon/webforms/view/js/webforms-selectors.js?v=workflow-panel-1');
     }
 }

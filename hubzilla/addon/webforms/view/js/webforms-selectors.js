@@ -26,63 +26,23 @@
     window.history.replaceState({}, '', url.toString());
   }
 
-  function initDesignSelector() {
-    const select = document.getElementById('webforms-design-form-select');
+  function optionsMap(elementId, datasetName) {
+    const node = document.getElementById(elementId);
 
-    if (!select) {
-      return;
-    }
-
-    const wrapper = document.getElementById('webforms-design-selector');
-
-    if (wrapper && wrapper.tagName === 'FORM') {
-      wrapper.addEventListener('submit', function (event) {
-        event.preventDefault();
-      });
-    }
-
-    select.addEventListener('change', function () {
-      const option = selectedOption(select);
-      const formId = select.value || '';
-      const packageUrl = option ? (option.dataset.webformsPackageUrl || '') : '';
-      const runtime = document.getElementById('webforms-runtime');
-      const designTab = runtime && runtime.dataset.webformsDesignTab ? runtime.dataset.webformsDesignTab : 'grid';
-
-      updateUrl({
-        mode: 'design',
-        design_form: formId,
-        design_tab: designTab,
-        service_pack: null,
-        deploy_form: null,
-        collection: null
-      });
-
-      document.dispatchEvent(new CustomEvent('webforms:design-package-selected', {
-        detail: {
-          formId: formId,
-          packageUrl: packageUrl
-        }
-      }));
-    });
-  }
-
-  function deployOptionsMap() {
-    const nav = document.getElementById('webforms-deploy-navigation');
-
-    if (!nav || !nav.dataset.webformsDeployOptions) {
+    if (!node || !node.dataset[datasetName]) {
       return {};
     }
 
     try {
-      return JSON.parse(nav.dataset.webformsDeployOptions);
+      return JSON.parse(node.dataset[datasetName]);
     }
     catch (error) {
-      console.warn('Webforms deploy options could not be parsed.', error);
+      console.warn('Webforms options could not be parsed.', error);
       return {};
     }
   }
 
-  function populateDeployForms(select, options, selectedValue) {
+  function populateForms(select, options, selectedValue) {
     select.innerHTML = '';
 
     (options || []).forEach(function (item) {
@@ -100,11 +60,72 @@
     });
   }
 
+  function loadDesignSelection(servicePackSelect, formSelect) {
+    const servicePack = servicePackSelect ? (servicePackSelect.value || '') : '';
+    const option = selectedOption(formSelect);
+    const formId = formSelect ? (formSelect.value || '') : '';
+    const packageUrl = option ? (option.dataset.webformsPackageUrl || '') : '';
+    const runtime = document.getElementById('webforms-runtime');
+    const designTab = runtime && runtime.dataset.webformsDesignTab ? runtime.dataset.webformsDesignTab : 'grid';
+
+    if (runtime) {
+      runtime.dataset.webformsServicePack = servicePack;
+      runtime.dataset.webformsDesignForm = formId;
+      runtime.dataset.webformsPackageUrl = packageUrl;
+    }
+
+    updateUrl({
+      mode: 'design',
+      service_pack: servicePack,
+      design_form: formId,
+      design_tab: designTab,
+      deploy_form: null,
+      collection: null
+    });
+
+    document.dispatchEvent(new CustomEvent('webforms:design-package-selected', {
+      detail: {
+        servicePack: servicePack,
+        formId: formId,
+        packageUrl: packageUrl
+      }
+    }));
+  }
+
+  function initDesignSelector() {
+    const servicePackSelect = document.getElementById('webforms-design-service-pack-select');
+    const formSelect = document.getElementById('webforms-design-form-select');
+
+    if (!servicePackSelect || !formSelect) {
+      return;
+    }
+
+    const optionsByServicePack = optionsMap('webforms-design-selector', 'webformsDesignOptions');
+
+    servicePackSelect.addEventListener('change', function () {
+      const servicePack = servicePackSelect.value || '';
+
+      populateForms(formSelect, optionsByServicePack[servicePack] || optionsByServicePack[''] || [], '');
+      loadDesignSelection(servicePackSelect, formSelect);
+    });
+
+    formSelect.addEventListener('change', function () {
+      loadDesignSelection(servicePackSelect, formSelect);
+    });
+  }
+
   function loadDeploySelection(servicePackSelect, formSelect) {
     const servicePack = servicePackSelect ? (servicePackSelect.value || '') : '';
     const option = selectedOption(formSelect);
     const formId = formSelect ? (formSelect.value || '') : '';
     const packageUrl = option ? (option.dataset.webformsPackageUrl || '') : '';
+    const runtime = document.getElementById('webforms-runtime');
+
+    if (runtime) {
+      runtime.dataset.webformsServicePack = servicePack;
+      runtime.dataset.webformsDeployForm = formId;
+      runtime.dataset.webformsPackageUrl = packageUrl;
+    }
 
     updateUrl({
       mode: 'deploy',
@@ -128,20 +149,12 @@
       return;
     }
 
-    const wrapper = document.getElementById('webforms-deploy-selector');
-
-    if (wrapper && wrapper.tagName === 'FORM') {
-      wrapper.addEventListener('submit', function (event) {
-        event.preventDefault();
-      });
-    }
-
-    const optionsByServicePack = deployOptionsMap();
+    const optionsByServicePack = optionsMap('webforms-deploy-navigation', 'webformsDeployOptions');
 
     servicePackSelect.addEventListener('change', function () {
       const servicePack = servicePackSelect.value || '';
 
-      populateDeployForms(formSelect, optionsByServicePack[servicePack] || optionsByServicePack[''] || [], '');
+      populateForms(formSelect, optionsByServicePack[servicePack] || optionsByServicePack[''] || [], '');
       loadDeploySelection(servicePackSelect, formSelect);
     });
 

@@ -2,72 +2,82 @@
   'use strict';
 
   const ns = window.WebformsDesign = window.WebformsDesign || {};
+  let activeDraft = null;
+  let activeRuntime = null;
 
   function getRuntime() {
     return document.getElementById('webforms-runtime');
   }
 
-  function initToolbar(draft, runtime) {
+  function initToolbar(runtime) {
     document.querySelectorAll('[data-webforms-tool]').forEach(function (button) {
       button.addEventListener('click', function () {
-        if (button.disabled) {
+        if (button.disabled || !activeDraft) {
           return;
         }
 
-        const nextDraft = handleToolClick(draft, runtime, button.dataset.webformsTool, function (importedDraft) {
-          draft = importedDraft;
+        const nextDraft = handleToolClick(activeDraft, runtime, button.dataset.webformsTool, function (importedDraft) {
+          activeDraft = importedDraft;
         });
 
         if (nextDraft) {
-          draft = nextDraft;
+          activeDraft = nextDraft;
         }
       });
     });
   }
 
+  function addObjectToActiveStep(draft, object) {
+    if (draft && draft.design && draft.design.active_step && object && object.parent === draft.grid.id) {
+      object.step = draft.design.active_step;
+    }
+
+    ns.addObject(draft, object);
+  }
+
   function handleToolClick(draft, runtime, tool, onImported) {
     if (tool === 'container') {
-      ns.addObject(draft, ns.createContainerObject(draft));
+      addObjectToActiveStep(draft, ns.createContainerObject(draft));
       return draft;
     }
 
     if (tool === 'field') {
-      ns.addObject(draft, ns.createTextFieldObject(draft));
+      addObjectToActiveStep(draft, ns.createTextFieldObject(draft));
       return draft;
     }
 
     if (tool === 'label') {
-      ns.addObject(draft, ns.createLabelObject(draft));
+      addObjectToActiveStep(draft, ns.createLabelObject(draft));
       return draft;
     }
 
     if (tool === 'textarea') {
-      ns.addObject(draft, ns.createTextareaObject(draft));
+      addObjectToActiveStep(draft, ns.createTextareaObject(draft));
       return draft;
     }
 
     if (tool === 'checkbox') {
-      ns.addObject(draft, ns.createCheckboxObject(draft));
+      addObjectToActiveStep(draft, ns.createCheckboxObject(draft));
       return draft;
     }
 
     if (tool === 'button') {
-      ns.addObject(draft, ns.createButtonObject(draft));
+      addObjectToActiveStep(draft, ns.createButtonObject(draft));
       return draft;
     }
 
     if (tool === 'select') {
-      ns.addObject(draft, ns.createSelectObject(draft));
+      addObjectToActiveStep(draft, ns.createSelectObject(draft));
       return draft;
     }
 
     if (tool === 'result-panel') {
-      ns.addObject(draft, ns.createResultPanelObject(draft));
+      addObjectToActiveStep(draft, ns.createResultPanelObject(draft));
       return draft;
     }
 
     if (tool === 'help-text') {
-      ns.addObject(draft, ns.createHelpTextObject(draft));
+      addObjectToActiveStep(draft, ns.createHelpTextObject(draft));
       return draft;
     }
 
@@ -87,7 +97,12 @@
     }
 
     if (tool === 'import-json' && typeof ns.importPackageJson === 'function') {
-      ns.importPackageJson(runtime, onImported);
+      ns.importPackageJson(runtime, function (importedDraft) {
+        activeDraft = importedDraft;
+        if (typeof onImported === 'function') {
+          onImported(importedDraft);
+        }
+      });
       return draft;
     }
 
@@ -111,6 +126,43 @@
     }
   }
 
+  function renderAll(draft) {
+    if (!draft) {
+      return;
+    }
+
+    window.webformsDesignDraft = draft;
+    ns.renderGrid(draft);
+    ns.renderSelectionPanel(draft, draft.design.selected_object_id);
+    renderJsonOrExplain(draft);
+  }
+
+  async function loadSelectedPackage(detail) {
+    if (!activeRuntime || typeof ns.loadSelectedBundledPackage !== 'function') {
+      return;
+    }
+
+    const servicePack = detail && detail.servicePack ? detail.servicePack : '';
+    const formId = detail && detail.formId ? detail.formId : '';
+    const packageUrl = detail && detail.packageUrl ? detail.packageUrl : '';
+
+    if (!formId) {
+      activeRuntime.dataset.webformsServicePack = servicePack;
+      activeRuntime.dataset.webformsDesignForm = '';
+      activeRuntime.dataset.webformsPackageUrl = '';
+      activeDraft = ns.buildDraft(activeRuntime);
+      renderAll(activeDraft);
+      return;
+    }
+
+    const draft = await ns.loadSelectedBundledPackage(activeRuntime, servicePack, formId, packageUrl);
+
+    if (draft) {
+      activeDraft = draft;
+      renderAll(activeDraft);
+    }
+  }
+
   async function init() {
     const runtime = getRuntime();
 
@@ -118,49 +170,18 @@
       return;
     }
 
-    let draft = ns.loadDraft(runtime);
+    activeRuntime = runtime;
+    activeDraft = ns.loadDraft(runtime);
 
     if (typeof ns.loadBundledPackageDraft === 'function') {
-      draft = await ns.loadBundledPackageDraft(runtime, draft);
+      activeDraft = await ns.loadBundledPackageDraft(runtime, activeDraft);
     }
 
-    window.webformsDesignDraft = draft;
-    initToolbar(draft, runtime);
-    ns.renderGrid(draft);
-    ns.renderSelectionPanel(draft, draft.design.selected_object_id);
-    renderJsonOrExplain(draft);
+    initToolbar(runtime);
+    renderAll(activeDraft);
 
-    document.addEventListener('webforms:design-package-selected', async function (event) {
-      const detail = event.detail || {};
-
-      if (detail.formId !== undefined) {
-        runtime.dataset.webformsDesignForm = detail.formId || '';
-      }
-
-      if (detail.packageUrl) {
-        if (typeof ns.loadBundledPackageFromUrl !== 'function') {
-          return;
-        }
-
-        const nextDraft = await ns.loadBundledPackageFromUrl(runtime, detail.packageUrl, detail.formId || '');
-
-        if (!nextDraft) {
-          return;
-        }
-
-        draft = nextDraft;
-      }
-      else if (typeof ns.buildDraft === 'function') {
-        runtime.dataset.webformsPackageUrl = '';
-        draft = ns.buildDraft(runtime);
-        window.webformsDesignDraft = draft;
-        ns.persistDraft(draft);
-        ns.persistPackage(ns.buildPackage(draft));
-      }
-
-      ns.renderGrid(draft);
-      ns.renderSelectionPanel(draft, draft.design.selected_object_id);
-      renderJsonOrExplain(draft);
+    document.addEventListener('webforms:design-package-selected', function (event) {
+      loadSelectedPackage(event.detail || {});
     });
   }
 
