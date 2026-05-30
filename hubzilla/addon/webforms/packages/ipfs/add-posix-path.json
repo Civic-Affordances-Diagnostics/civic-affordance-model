@@ -438,24 +438,6 @@
         }
       },
       {
-        "id": "submit_path",
-        "type": "button",
-        "parent": "box-add-path",
-        "label": "Prepare path request",
-        "placeholder": "",
-        "default": "",
-        "placement": {
-          "x": 1,
-          "y": 29,
-          "width": 8,
-          "height": 1,
-          "unit": "grid"
-        },
-        "validation": {
-          "required": false
-        }
-      },
-      {
         "id": "result-path",
         "type": "result_panel",
         "parent": "box-results",
@@ -616,13 +598,6 @@
         "required": false,
         "placeholder": "optional existing path references",
         "default": ""
-      },
-      {
-        "id": "submit_path",
-        "type": "button",
-        "label": "Prepare path request",
-        "required": false,
-        "action": "none"
       }
     ],
     "layout": [
@@ -858,16 +833,6 @@
         "y": 25,
         "width": 16,
         "height": 3,
-        "unit": "grid"
-      },
-      {
-        "id": "submit_path",
-        "type": "button",
-        "parent": "box-add-path",
-        "x": 1,
-        "y": 29,
-        "width": 8,
-        "height": 1,
         "unit": "grid"
       },
       {

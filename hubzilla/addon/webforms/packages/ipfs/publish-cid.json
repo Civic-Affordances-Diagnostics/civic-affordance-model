@@ -2,11 +2,11 @@
   "schema": "hubzilla.webforms.package",
   "version": "0.1",
   "meta": {
-    "id": "ipfs-publish",
+    "id": "ipfs-publish-cid",
     "title": "IPFS Publish CID",
     "status": "addon-bundled",
     "service_pack": "ipfs",
-    "webform": "ipfs-publish",
+    "webform": "ipfs-publish-cid",
     "certification": {
       "version": "0.1",
       "signature": "NULL",
@@ -456,24 +456,6 @@
         }
       },
       {
-        "id": "submit_publish",
-        "type": "button",
-        "parent": "box-publish",
-        "label": "Prepare publish request",
-        "placeholder": "",
-        "default": "",
-        "placement": {
-          "x": 1,
-          "y": 14,
-          "width": 8,
-          "height": 1,
-          "unit": "grid"
-        },
-        "validation": {
-          "required": false
-        }
-      },
-      {
         "id": "result-publish",
         "type": "result_panel",
         "parent": "box-results",
@@ -496,7 +478,7 @@
   "form": {
     "schema": "hubzilla.webforms.form",
     "version": "0.1",
-    "id": "ipfs-publish",
+    "id": "ipfs-publish-cid",
     "title": "IPFS Publish CID",
     "fields": [
       {
@@ -634,13 +616,6 @@
         "required": false,
         "placeholder": "optional policy or retention reason",
         "default": ""
-      },
-      {
-        "id": "submit_publish",
-        "type": "button",
-        "label": "Prepare publish request",
-        "required": false,
-        "action": "none"
       }
     ],
     "layout": [
@@ -886,16 +861,6 @@
         "y": 9,
         "width": 16,
         "height": 4,
-        "unit": "grid"
-      },
-      {
-        "id": "submit_publish",
-        "type": "button",
-        "parent": "box-publish",
-        "x": 1,
-        "y": 14,
-        "width": 8,
-        "height": 1,
         "unit": "grid"
       },
       {

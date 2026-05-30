@@ -57,10 +57,26 @@
       return draft;
     }
 
+    const nextDraft = await ns.loadBundledPackageFromUrl(runtime, packageUrl, runtime.dataset.webformsDesignForm || '');
+
+    return nextDraft || draft;
+  };
+
+  ns.loadBundledPackageFromUrl = async function (runtime, packageUrl, formId) {
+    if (!packageUrl) {
+      return null;
+    }
+
+    if (formId) {
+      runtime.dataset.webformsDesignForm = formId;
+    }
+
+    runtime.dataset.webformsPackageUrl = packageUrl;
+
     const pkg = await fetchPackage(packageUrl);
 
     if (!pkgApi.isValidPackage(pkg) || !pkg.design || !Array.isArray(pkg.design.objects)) {
-      return draft;
+      return null;
     }
 
     const nextDraft = ns.packageToDraft(pkg, runtime);

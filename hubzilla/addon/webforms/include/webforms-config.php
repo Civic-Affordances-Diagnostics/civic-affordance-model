@@ -3,7 +3,7 @@
 return [
     'design_options' => [
         '' => 'New blank form',
-        'ipfs-publish' => 'IPFS Publish CID',
+        'ipfs-publish-cid' => 'IPFS Publish CID',
         'ipfs-pin-cid' => 'IPFS Pin CID',
         'ipfs-remove-pin' => 'IPFS Remove Pin',
         'ipfs-add-posix-path' => 'IPFS Add POSIX Path',
@@ -15,7 +15,7 @@ return [
     ],
     'design_descriptions' => [
         '' => 'Start with an empty inert root form container.',
-        'ipfs-publish' => 'Browser-local copy of the IPFS Publish CID Webform.',
+        'ipfs-publish-cid' => 'Browser-local copy of the IPFS Publish CID Webform.',
         'ipfs-pin-cid' => 'Browser-local copy of the IPFS Pin CID Webform.',
         'ipfs-remove-pin' => 'Browser-local copy of the IPFS Remove Pin Webform.',
         'ipfs-add-posix-path' => 'Browser-local copy of the IPFS Add POSIX Path Webform.',
@@ -42,7 +42,7 @@ return [
     ],
     'deploy_package_paths_by_service_pack' => [
         'ipfs' => [
-            'ipfs-publish' => 'packages/ipfs/publish-cid.json',
+            'ipfs-publish-cid' => 'packages/ipfs/publish-cid.json',
             'ipfs-pin-cid' => 'packages/ipfs/pin-cid.json',
             'ipfs-remove-pin' => 'packages/ipfs/remove-pin.json',
             'ipfs-add-posix-path' => 'packages/ipfs/add-posix-path.json',
@@ -54,7 +54,7 @@ return [
         ],
         'ipfs' => [
             '' => 'Select IPFS webform',
-            'ipfs-publish' => 'Publish CID',
+            'ipfs-publish-cid' => 'Publish CID',
             'ipfs-pin-cid' => 'Pin CID',
             'ipfs-remove-pin' => 'Remove Pin',
             'ipfs-add-posix-path' => 'Add POSIX Path',
@@ -68,7 +68,7 @@ return [
     ],
     'deploy_form_display_labels' => [
         '' => 'No webform selected',
-        'ipfs-publish' => 'Publish CID',
+        'ipfs-publish-cid' => 'Publish CID',
         'ipfs-pin-cid' => 'Pin CID',
         'ipfs-remove-pin' => 'Remove Pin',
         'ipfs-add-posix-path' => 'Add POSIX Path',

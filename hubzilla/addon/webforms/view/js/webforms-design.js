@@ -129,6 +129,39 @@
     ns.renderGrid(draft);
     ns.renderSelectionPanel(draft, draft.design.selected_object_id);
     renderJsonOrExplain(draft);
+
+    document.addEventListener('webforms:design-package-selected', async function (event) {
+      const detail = event.detail || {};
+
+      if (detail.formId !== undefined) {
+        runtime.dataset.webformsDesignForm = detail.formId || '';
+      }
+
+      if (detail.packageUrl) {
+        if (typeof ns.loadBundledPackageFromUrl !== 'function') {
+          return;
+        }
+
+        const nextDraft = await ns.loadBundledPackageFromUrl(runtime, detail.packageUrl, detail.formId || '');
+
+        if (!nextDraft) {
+          return;
+        }
+
+        draft = nextDraft;
+      }
+      else if (typeof ns.buildDraft === 'function') {
+        runtime.dataset.webformsPackageUrl = '';
+        draft = ns.buildDraft(runtime);
+        window.webformsDesignDraft = draft;
+        ns.persistDraft(draft);
+        ns.persistPackage(ns.buildPackage(draft));
+      }
+
+      ns.renderGrid(draft);
+      ns.renderSelectionPanel(draft, draft.design.selected_object_id);
+      renderJsonOrExplain(draft);
+    });
   }
 
   if (document.readyState === 'loading') {

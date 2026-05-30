@@ -101,12 +101,9 @@
     notice.className = 'small text-muted';
     notice.textContent = 'Deploy render from selected or browser-local package JSON. Controls are interactive, but no submit, storage, service, or federation action is active.';
 
-    const grid = document.createElement('form');
+    const grid = document.createElement('div');
     grid.className = 'webforms-design-grid webforms-deploy-grid';
     grid.dataset.webformsDeployGrid = '1';
-    grid.addEventListener('submit', function (event) {
-      event.preventDefault();
-    });
 
     const origin = document.createElement('div');
     origin.id = 'webforms-deploy-grid-origin';
@@ -457,6 +454,33 @@
     empty.textContent = message;
     root.appendChild(empty);
   }
+
+
+
+  async function loadAndRender(packageUrl, formId, servicePack) {
+    const runtime = document.getElementById('webforms-runtime');
+    const root = document.getElementById('webforms-deploy-render-root');
+
+    if (!runtime || !root || runtime.dataset.webformsMode !== 'deploy') {
+      return;
+    }
+
+    runtime.dataset.webformsPackageUrl = packageUrl || '';
+    runtime.dataset.webformsDeployForm = formId || '';
+    runtime.dataset.webformsServicePack = servicePack || '';
+
+    const pkg = await loadPackage(formId || '', packageUrl || '');
+
+    if (!pkg) {
+      renderMessage(root, 'Select a Service Pack and Webform to load its JSON interface.');
+      return;
+    }
+
+    renderPackage(root, pkg);
+  }
+
+  window.WebformsDeploy = window.WebformsDeploy || {};
+  window.WebformsDeploy.loadAndRender = loadAndRender;
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

@@ -49,6 +49,10 @@ class Webforms {
         return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
     }
 
+    private function json_attr($value) {
+        return $this->h(json_encode($value, JSON_UNESCAPED_SLASHES));
+    }
+
     private function design_options() {
         return $this->config()['design_options'];
     }
@@ -56,7 +60,6 @@ class Webforms {
     private function design_tabs() {
         return $this->config()['design_tabs'];
     }
-
 
     private function service_pack_options() {
         return $this->config()['service_pack_options'];
@@ -110,12 +113,91 @@ class Webforms {
         return $design_tab;
     }
 
+    private function package_path_for_deploy_form($service_pack, $deploy_form) {
+        $paths_by_service_pack = $this->config()['deploy_package_paths_by_service_pack'] ?? [];
+
+        if (!isset($paths_by_service_pack[$service_pack][$deploy_form])) {
+            return '';
+        }
+
+        $path = $paths_by_service_pack[$service_pack][$deploy_form];
+
+        if (!preg_match('/^[a-z0-9_\-\/]+\.json$/', $path)) {
+            return '';
+        }
+
+        return $path;
+    }
+
+    private function package_url_for_deploy_form($service_pack, $deploy_form) {
+        $path = $this->package_path_for_deploy_form($service_pack, $deploy_form);
+
+        if ($path === '') {
+            return '';
+        }
+
+        return '/addon/webforms/' . $path . '?v=0.1';
+    }
+
+    private function package_url_for_design_form($design_form) {
+        $service_pack = $this->service_pack_for_deploy_form($design_form);
+
+        if ($service_pack === '') {
+            return '';
+        }
+
+        return $this->package_url_for_deploy_form($service_pack, $design_form);
+    }
+
+    private function deploy_options_by_service_pack_for_client() {
+        $out = [];
+        $forms_by_service_pack = $this->config()['deploy_form_options_by_service_pack'];
+
+        foreach ($forms_by_service_pack as $service_pack => $forms) {
+            $out[$service_pack] = [];
+
+            foreach ($forms as $value => $label) {
+                $out[$service_pack][] = [
+                    'value' => $value,
+                    'label' => $label,
+                    'package_url' => $this->package_url_for_deploy_form($service_pack, $value),
+                ];
+            }
+        }
+
+        return $out;
+    }
+
     private function select_options($options, $current) {
         $out = '';
 
         foreach ($options as $value => $label) {
             $selected = ($current === $value) ? ' selected="selected"' : '';
             $out .= '<option value="' . $this->h($value) . '"' . $selected . '>' . $this->h($label) . '</option>';
+        }
+
+        return $out;
+    }
+
+    private function design_select_options($options, $current) {
+        $out = '';
+
+        foreach ($options as $value => $label) {
+            $selected = ($current === $value) ? ' selected="selected"' : '';
+            $package_url = $this->package_url_for_design_form($value);
+            $out .= '<option value="' . $this->h($value) . '" data-webforms-package-url="' . $this->h($package_url) . '"' . $selected . '>' . $this->h($label) . '</option>';
+        }
+
+        return $out;
+    }
+
+    private function deploy_form_select_options($service_pack, $options, $current) {
+        $out = '';
+
+        foreach ($options as $value => $label) {
+            $selected = ($current === $value) ? ' selected="selected"' : '';
+            $package_url = $this->package_url_for_deploy_form($service_pack, $value);
+            $out .= '<option value="' . $this->h($value) . '" data-webforms-package-url="' . $this->h($package_url) . '"' . $selected . '>' . $this->h($label) . '</option>';
         }
 
         return $out;
@@ -160,15 +242,13 @@ class Webforms {
             <h3>Webforms</h3>
             ' . $this->mode_selector('design', $design_form, '') . '
             <div id="webforms-design-tools" class="webforms-design-tools" data-webforms-panel="design-tools">
-                <form id="webforms-design-selector" method="get" action="webforms">
-                    <input type="hidden" name="mode" value="design">
-                    <input type="hidden" name="design_tab" value="' . $this->h($design_tab) . '">
+                <div id="webforms-design-selector" data-webforms-selector="design">
                     <label for="webforms-design-form-select">Select form to design</label>
                     <select id="webforms-design-form-select" name="design_form" class="form-control form-control-sm">'
-                        . $this->select_options($this->design_options(), $design_form) .
+                        . $this->design_select_options($this->design_options(), $design_form) .
                     '</select>
-                    <button type="submit" class="btn btn-sm btn-secondary mt-2">Load design</button>
-                </form>
+                    <p class="small text-muted mt-2 mb-0">Selecting a form loads a browser-local working copy. It does not submit or write to Hubzilla.</p>
+                </div>
                 <hr>
                 <div id="webforms-design-toolbar" class="webforms-design-toolbar" data-webforms-panel="toolbar" data-webforms-toolbar-tab="' . $this->h($design_tab) . '">
                     ' . $this->toolbar_matrix($design_tab) . '
@@ -235,20 +315,19 @@ class Webforms {
         <div id="webforms-aside" class="widget webforms-aside" data-webforms-mode="deploy">
             <h3>Webforms</h3>
             ' . $this->mode_selector('deploy', '', $deploy_form) . '
-            <div id="webforms-deploy-navigation" class="webforms-deploy-navigation" data-webforms-panel="deploy-navigation">
+            <div id="webforms-deploy-navigation" class="webforms-deploy-navigation" data-webforms-panel="deploy-navigation" data-webforms-deploy-options="' . $this->json_attr($this->deploy_options_by_service_pack_for_client()) . '">
                 <h4>Deploy</h4>
-                <form id="webforms-deploy-selector" method="get" action="webforms">
-                    <input type="hidden" name="mode" value="deploy">
+                <div id="webforms-deploy-selector" data-webforms-selector="deploy">
                     <label for="webforms-deploy-service-pack-select">Service Pack</label>
-                    <select id="webforms-deploy-service-pack-select" name="service_pack" class="form-control form-control-sm" onchange="this.form.elements.deploy_form.value=&quot;&quot;; this.form.submit();">'
+                    <select id="webforms-deploy-service-pack-select" name="service_pack" class="form-control form-control-sm">'
                         . $this->select_options($this->service_pack_options(), $service_pack) .
                     '</select>
                     <label for="webforms-deploy-form-select" class="mt-2">Webform</label>
-                    <select id="webforms-deploy-form-select" name="deploy_form" class="form-control form-control-sm" onchange="this.form.submit();">'
-                        . $this->select_options($deploy_form_options, $deploy_form) .
+                    <select id="webforms-deploy-form-select" name="deploy_form" class="form-control form-control-sm">'
+                        . $this->deploy_form_select_options($service_pack, $deploy_form_options, $deploy_form) .
                     '</select>
-                    <button type="submit" class="btn btn-sm btn-secondary mt-2">Load deploy view</button>
-                </form>
+                    <p class="small text-muted mt-2 mb-0">Selecting a Webform loads its JSON interface in this page. No submit or service execution is active.</p>
+                </div>
             </div>
         </div>
         ';

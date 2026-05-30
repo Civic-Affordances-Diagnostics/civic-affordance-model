@@ -366,24 +366,6 @@
         }
       },
       {
-        "id": "submit_pin",
-        "type": "button",
-        "parent": "box-pin",
-        "label": "Prepare pin request",
-        "placeholder": "",
-        "default": "",
-        "placement": {
-          "x": 1,
-          "y": 14,
-          "width": 8,
-          "height": 1,
-          "unit": "grid"
-        },
-        "validation": {
-          "required": false
-        }
-      },
-      {
         "id": "result-pin",
         "type": "result_panel",
         "parent": "box-results",
@@ -506,13 +488,6 @@
         "required": true,
         "placeholder": "reason for retaining this CID",
         "default": ""
-      },
-      {
-        "id": "submit_pin",
-        "type": "button",
-        "label": "Prepare pin request",
-        "required": false,
-        "action": "none"
       }
     ],
     "layout": [
@@ -708,16 +683,6 @@
         "y": 9,
         "width": 16,
         "height": 4,
-        "unit": "grid"
-      },
-      {
-        "id": "submit_pin",
-        "type": "button",
-        "parent": "box-pin",
-        "x": 1,
-        "y": 14,
-        "width": 8,
-        "height": 1,
         "unit": "grid"
       },
       {

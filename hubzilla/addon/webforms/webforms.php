@@ -186,8 +186,9 @@ function webforms_add_design_assets() {
         head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=nested-container-1');
         head_add_js('/addon/webforms/view/js/webforms-design-properties.js?v=textarea-default-1');
         head_add_js('/addon/webforms/view/js/webforms-design-json.js?v=hard-recovery-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-bundled.js?v=bundled-design-1');
-        head_add_js('/addon/webforms/view/js/webforms-design.js?v=bundled-design-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-bundled.js?v=client-selector-1');
+        head_add_js('/addon/webforms/view/js/webforms-design.js?v=client-selector-1');
+        head_add_js('/addon/webforms/view/js/webforms-selectors.js?v=client-selector-1');
     }
 }
 
@@ -198,6 +199,7 @@ function webforms_add_deploy_assets() {
 
     if (function_exists('head_add_js')) {
         head_add_js('/addon/webforms/view/js/webforms-package-shared.js?v=hard-recovery-1');
-        head_add_js('/addon/webforms/view/js/webforms-deploy.js?v=bundled-package-2');
+        head_add_js('/addon/webforms/view/js/webforms-deploy.js?v=client-selector-1');
+        head_add_js('/addon/webforms/view/js/webforms-selectors.js?v=client-selector-1');
     }
 }
