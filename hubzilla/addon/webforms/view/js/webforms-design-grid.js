@@ -6,6 +6,7 @@
 
   ns.renderGrid = function (draft) {
     const grid = document.getElementById('webforms-design-grid');
+
     if (!grid) {
       return;
     }
@@ -13,20 +14,36 @@
     window.webformsDesignDraft = draft;
 
     const activeStep = activeWorkflowStep(draft);
+
     renderWorkflowSelector(draft, activeStep);
     removeGeneratedObjects(grid);
     renderChildObjects(grid, draft, draft.grid.id, draft.grid.size, activeStep);
 
     if (!grid.dataset.webformsSelectionHandler) {
       grid.addEventListener('pointerdown', function (event) {
+        const objectNode = event.target.closest('[data-webforms-generated-object="1"]');
         const activeDraft = window.webformsDesignDraft || draft;
-        const target = event.target && event.target.closest
-          ? event.target.closest('[data-webforms-generated-object="1"]')
-          : null;
 
-        if (target && grid.contains(target)) {
+        if (objectNode && grid.contains(objectNode)) {
+          event.preventDefault();
           event.stopPropagation();
-          ns.selectObject(activeDraft, target.dataset.webformsObjectId || null);
+          ns.selectObject(activeDraft, objectNode.dataset.webformsObjectId || null);
+          return;
+        }
+
+        if (event.target === grid) {
+          ns.selectObject(activeDraft, null);
+        }
+      }, true);
+
+      grid.addEventListener('click', function (event) {
+        const objectNode = event.target.closest('[data-webforms-generated-object="1"]');
+        const activeDraft = window.webformsDesignDraft || draft;
+
+        if (objectNode && grid.contains(objectNode)) {
+          event.preventDefault();
+          event.stopPropagation();
+          ns.selectObject(activeDraft, objectNode.dataset.webformsObjectId || null);
           return;
         }
 
@@ -55,6 +72,7 @@
     }
 
     const wrapper = document.querySelector('[data-webforms-object-id="' + ns.cssEscape(object.id) + '"]');
+
     if (!wrapper) {
       return;
     }
@@ -65,9 +83,11 @@
 
   function workflowSteps(draft) {
     const preserved = draft && draft.package && draft.package.deploy ? draft.package.deploy : null;
+
     if (preserved && preserved.workflow && Array.isArray(preserved.workflow.steps)) {
       return preserved.workflow.steps;
     }
+
     return [];
   }
 
@@ -118,7 +138,6 @@
       button.className = step.id === activeStep ? 'nav-link active' : 'nav-link';
       button.textContent = step.label || step.id || 'Step';
       button.dataset.webformsDesignStep = step.id || '';
-
       button.addEventListener('click', function () {
         draft.design.active_step = step.id || '';
         draft.design.selected_object_id = null;
@@ -180,12 +199,20 @@
       wrapper.style.position = 'absolute';
     }
 
-    wrapper.addEventListener('click', function (event) {
+    wrapper.addEventListener('pointerdown', function (event) {
+      event.preventDefault();
       event.stopPropagation();
       ns.selectObject(window.webformsDesignDraft || draft, object.id);
-    });
+    }, true);
+
+    wrapper.addEventListener('click', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      ns.selectObject(window.webformsDesignDraft || draft, object.id);
+    }, true);
 
     renderObjectContent(wrapper, object, gridSize);
+
     return wrapper;
   }
 
@@ -194,58 +221,72 @@
       renderContainerObject(wrapper, object);
       return;
     }
+
     if (object.type === 'label') {
       renderLabelObject(wrapper, object);
       return;
     }
+
     if (object.type === 'textarea') {
       renderTextareaObject(wrapper, object, gridSize);
       return;
     }
+
     if (object.type === 'checkbox') {
       renderCheckboxObject(wrapper, object);
       return;
     }
+
     if (object.type === 'button') {
       renderButtonObject(wrapper, object);
       return;
     }
+
     if (object.type === 'select') {
       renderSelectObject(wrapper, object);
       return;
     }
+
     if (object.type === 'result_panel') {
       renderResultPanelObject(wrapper, object);
       return;
     }
+
     if (object.type === 'help_text') {
       renderHelpTextObject(wrapper, object);
       return;
     }
+
     renderTextObject(wrapper, object);
   }
 
   function renderContainerObject(wrapper, object) {
     const label = document.createElement('div');
+
     label.className = 'webforms-object-label';
     label.textContent = object.label || object.id;
+
     wrapper.appendChild(label);
   }
 
   function renderLabelObject(wrapper, object) {
     const label = document.createElement('div');
+
     label.className = 'webforms-object-label';
     label.style.fontWeight = '700';
     label.textContent = object.label || object.id;
+
     wrapper.appendChild(label);
   }
 
   function renderTextObject(wrapper, object) {
     const label = document.createElement('label');
+
     label.setAttribute('for', 'webforms-preview-' + object.id);
     label.textContent = object.label || object.id;
 
     const input = document.createElement('input');
+
     input.id = 'webforms-preview-' + object.id;
     input.className = 'form-control form-control-sm';
     input.type = 'text';
@@ -259,10 +300,12 @@
 
   function renderTextareaObject(wrapper, object, gridSize) {
     const label = document.createElement('label');
+
     label.setAttribute('for', 'webforms-preview-' + object.id);
     label.textContent = object.label || object.id;
 
     const textarea = document.createElement('textarea');
+
     textarea.id = 'webforms-preview-' + object.id;
     textarea.className = 'form-control form-control-sm';
     textarea.value = object.default || '';
@@ -281,15 +324,18 @@
 
   function renderCheckboxObject(wrapper, object) {
     const group = document.createElement('div');
+
     group.className = 'form-check';
 
     const input = document.createElement('input');
+
     input.id = 'webforms-preview-' + object.id;
     input.className = 'form-check-input';
     input.type = 'checkbox';
     input.disabled = true;
 
     const label = document.createElement('label');
+
     label.className = 'form-check-label';
     label.setAttribute('for', 'webforms-preview-' + object.id);
     label.style.fontWeight = '700';
@@ -302,20 +348,24 @@
 
   function renderButtonObject(wrapper, object) {
     const button = document.createElement('button');
+
     button.className = 'btn btn-sm btn-secondary';
     button.type = 'button';
     button.disabled = true;
     button.style.fontWeight = '700';
     button.textContent = object.label || object.id;
+
     wrapper.appendChild(button);
   }
 
   function renderSelectObject(wrapper, object) {
     const label = document.createElement('label');
+
     label.setAttribute('for', 'webforms-preview-' + object.id);
     label.textContent = object.label || object.id;
 
     const select = document.createElement('select');
+
     select.id = 'webforms-preview-' + object.id;
     select.className = 'form-control form-control-sm';
     select.disabled = true;
@@ -323,6 +373,7 @@
     if (Array.isArray(object.options)) {
       object.options.forEach(function (option) {
         const opt = document.createElement('option');
+
         opt.value = option.value;
         opt.textContent = option.label;
         select.appendChild(opt);
@@ -335,10 +386,12 @@
 
   function renderResultPanelObject(wrapper, object) {
     const label = document.createElement('div');
+
     label.className = 'webforms-object-label';
     label.textContent = object.label || object.id;
 
     const panel = document.createElement('div');
+
     panel.className = 'well well-sm mt-1 mb-0';
     panel.textContent = object.default || 'Result output placeholder';
     panel.style.whiteSpace = 'pre-wrap';
@@ -352,10 +405,12 @@
 
   function renderHelpTextObject(wrapper, object) {
     const label = document.createElement('div');
+
     label.className = 'webforms-object-label';
     label.textContent = object.label || object.id;
 
     const text = document.createElement('p');
+
     text.className = 'small mb-0';
     text.textContent = object.default || 'Helpful instructions or explanatory text.';
 
@@ -371,9 +426,11 @@
     if (type === 'textarea') {
       return Math.max(4, height);
     }
+
     if (type === 'text' || type === 'select' || type === 'help_text' || type === 'result_panel') {
       return Math.max(2, height);
     }
+
     return height;
   }
 
