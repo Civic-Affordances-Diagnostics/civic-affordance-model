@@ -29,10 +29,11 @@ function webforms_render_design_page($design_form = '', $design_tab = '') {
     $design_tab = webforms_render_normalize_design_tab($design_tab);
     $label = webforms_h(webforms_config_label('design_options', $design_form, 'New blank form'));
     $description = webforms_h(webforms_config_label('design_descriptions', $design_form, ''));
+    $package_url = webforms_package_url_for_design_form($design_form);
     $access_state = webforms_access_state();
 
     return '
-    <div id="webforms-runtime" class="webforms-content" data-webforms-mode="design" data-webforms-access="' . webforms_h($access_state) . '" data-webforms-design-form="' . webforms_h($design_form) . '" data-webforms-design-tab="' . webforms_h($design_tab) . '">
+    <div id="webforms-runtime" class="webforms-content" data-webforms-mode="design" data-webforms-access="' . webforms_h($access_state) . '" data-webforms-design-form="' . webforms_h($design_form) . '" data-webforms-design-tab="' . webforms_h($design_tab) . '" data-webforms-package-url="' . webforms_h($package_url) . '">
         <section id="webforms-design-workspace" class="webforms-design-workspace-placeholder" data-webforms-container="design-workspace">
             ' . webforms_render_access_notice('design') . '
             <h3>Design workspace: ' . $label . '</h3>

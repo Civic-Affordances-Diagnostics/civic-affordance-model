@@ -1,0 +1,155 @@
+(function () {
+  'use strict';
+
+  const ns = window.WebformsDesign = window.WebformsDesign || {};
+  const pkgApi = window.WebformsPackage || null;
+
+  if (!pkgApi || typeof ns.packageToDraft !== 'function' || typeof ns.buildPackage !== 'function') {
+    return;
+  }
+
+  const originalPackageToDraft = ns.packageToDraft;
+  const originalBuildPackage = ns.buildPackage;
+
+  ns.packageToDraft = function (pkg, runtime) {
+    const draft = originalPackageToDraft(pkg, runtime);
+    const preserved = preservedPackageState(pkg);
+
+    if (Object.keys(preserved).length) {
+      draft.package = preserved;
+    }
+
+    if (draft.design) {
+      draft.design.source = packageSource(pkg);
+      draft.design.route_form_id = runtime.dataset.webformsDesignForm || draft.form.id;
+    }
+
+    return draft;
+  };
+
+  ns.buildPackage = function (draft) {
+    const pkg = originalBuildPackage(draft);
+    const preserved = draft && draft.package ? draft.package : null;
+
+    if (!preserved) {
+      return pkg;
+    }
+
+    if (preserved.meta) {
+      pkg.meta = Object.assign({}, pkg.meta, clonePlainObject(preserved.meta));
+    }
+
+    if (preserved.deploy) {
+      pkg.deploy = clonePlainObject(preserved.deploy);
+    }
+
+    if (preserved.runtime) {
+      pkg.runtime = clonePlainObject(preserved.runtime);
+    }
+
+    return pkg;
+  };
+
+  ns.loadBundledPackageDraft = async function (runtime, draft) {
+    const packageUrl = runtime.dataset.webformsPackageUrl || '';
+
+    if (!packageUrl || !shouldLoadBundledPackage(draft)) {
+      return draft;
+    }
+
+    const pkg = await fetchPackage(packageUrl);
+
+    if (!pkgApi.isValidPackage(pkg) || !pkg.design || !Array.isArray(pkg.design.objects)) {
+      return draft;
+    }
+
+    const nextDraft = ns.packageToDraft(pkg, runtime);
+
+    window.webformsDesignDraft = nextDraft;
+    ns.persistDraft(nextDraft);
+    ns.persistPackage(ns.buildPackage(nextDraft));
+
+    return nextDraft;
+  };
+
+  function shouldLoadBundledPackage(draft) {
+    if (!draft || !Array.isArray(draft.objects)) {
+      return true;
+    }
+
+    if (draft.objects.length > 0) {
+      return false;
+    }
+
+    const source = draft.design && draft.design.source ? draft.design.source : '';
+
+    return source === '' || source === 'browser' || source === 'package-json';
+  }
+
+  async function fetchPackage(packageUrl) {
+    try {
+      const response = await fetch(packageUrl, { credentials: 'same-origin' });
+
+      if (!response.ok) {
+        return null;
+      }
+
+      return await response.json();
+    }
+    catch (error) {
+      console.warn('Webforms bundled design package load failed.', error);
+      return null;
+    }
+  }
+
+  function preservedPackageState(pkg) {
+    const preserved = {};
+    const meta = preservedMeta(pkg);
+
+    if (Object.keys(meta).length) {
+      preserved.meta = meta;
+    }
+
+    if (pkg.deploy) {
+      preserved.deploy = clonePlainObject(pkg.deploy);
+    }
+
+    if (pkg.runtime) {
+      preserved.runtime = clonePlainObject(pkg.runtime);
+    }
+
+    return preserved;
+  }
+
+  function preservedMeta(pkg) {
+    const meta = {};
+    const source = pkg && pkg.meta ? pkg.meta : {};
+
+    [
+      'service_pack',
+      'webform',
+      'certification',
+      'purpose'
+    ].forEach(function (key) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
+        meta[key] = clonePlainObject(source[key]);
+      }
+    });
+
+    return meta;
+  }
+
+  function packageSource(pkg) {
+    const generatorMode = pkg && pkg.meta && pkg.meta.generator && pkg.meta.generator.mode;
+
+    if (generatorMode === 'addon-bundled') {
+      return 'addon-bundled-package';
+    }
+
+    return 'package-json';
+  }
+
+  function clonePlainObject(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
+}());

@@ -29,16 +29,16 @@
   }
 
   async function loadPackage(formId, packageUrl) {
-    const exactPackage = formId ? loadStoredPackage(pkgApi.packageKeyForForm(formId)) : null;
-
-    if (pkgApi.isValidPackage(exactPackage)) {
-      return exactPackage;
-    }
-
     const bundledPackage = packageUrl ? await fetchBundledPackage(packageUrl) : null;
 
     if (pkgApi.isValidPackage(bundledPackage)) {
       return bundledPackage;
+    }
+
+    const exactPackage = formId ? loadStoredPackage(pkgApi.packageKeyForForm(formId)) : null;
+
+    if (pkgApi.isValidPackage(exactPackage)) {
+      return exactPackage;
     }
 
     if (!formId) {
