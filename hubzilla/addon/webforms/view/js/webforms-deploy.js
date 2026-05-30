@@ -18,7 +18,8 @@
 
     const formId = runtime.dataset.webformsDeployForm || '';
     const packageUrl = runtime.dataset.webformsPackageUrl || '';
-    const pkg = await loadPackage(formId, packageUrl);
+    const servicePack = runtime.dataset.webformsServicePack || '';
+    const pkg = await loadPackage(formId, packageUrl, servicePack);
 
     if (!pkg) {
       renderMessage(root, 'No loaded Webforms package JSON found.\nSave or Import a package on the JSON tab first.');
@@ -28,7 +29,13 @@
     renderPackage(root, pkg);
   }
 
-  async function loadPackage(formId, packageUrl) {
+  async function loadPackage(formId, packageUrl, servicePack) {
+    const embeddedPackage = loadEmbeddedPackage(servicePack || '', formId || '');
+
+    if (pkgApi.isValidPackage(embeddedPackage)) {
+      return embeddedPackage;
+    }
+
     const bundledPackage = packageUrl ? await fetchBundledPackage(packageUrl) : null;
 
     if (pkgApi.isValidPackage(bundledPackage)) {
@@ -47,6 +54,32 @@
       if (pkgApi.isValidPackage(activePackage)) {
         return activePackage;
       }
+    }
+
+    return null;
+  }
+
+
+  function loadEmbeddedPackage(servicePack, formId) {
+    if (!servicePack || !formId) {
+      return null;
+    }
+
+    const script = document.getElementById('webforms-bundled-package-map');
+
+    if (!script) {
+      return null;
+    }
+
+    try {
+      const map = JSON.parse(script.textContent || '{}');
+
+      if (map[servicePack] && map[servicePack][formId]) {
+        return map[servicePack][formId];
+      }
+    }
+    catch (error) {
+      console.warn('Webforms embedded package map could not be parsed.', error);
     }
 
     return null;
@@ -469,10 +502,10 @@
     runtime.dataset.webformsDeployForm = formId || '';
     runtime.dataset.webformsServicePack = servicePack || '';
 
-    const pkg = await loadPackage(formId || '', packageUrl || '');
+    const pkg = await loadPackage(formId || '', packageUrl || '', servicePack || '');
 
     if (!pkg) {
-      renderMessage(root, 'Select a Service Pack and Webform to load its JSON interface.');
+      renderMessage(root, 'Package JSON was not loaded for the selected Service Pack and Webform.');
       return;
     }
 

@@ -20,6 +20,17 @@ function webforms_render_access_notice($mode) {
     ';
 }
 
+
+function webforms_render_bundled_package_map_script() {
+    $json = webforms_bundled_package_map_json();
+
+    if ($json === false || $json === null || $json === '') {
+        $json = '{}';
+    }
+
+    return '<script type="application/json" id="webforms-bundled-package-map">' . $json . '</script>';
+}
+
 function webforms_render_design_page($design_form = '', $design_tab = '') {
     $forms = webforms_config_section('design_options');
     if (!array_key_exists($design_form, $forms)) {
@@ -41,6 +52,7 @@ function webforms_render_design_page($design_form = '', $design_tab = '') {
             ' . webforms_render_design_tab_nav($design_form, $design_tab) . '
             ' . webforms_render_design_tab_content($design_tab) . '
         </section>
+        ' . webforms_render_bundled_package_map_script() . '
     </div>
     ';
 }
@@ -157,6 +169,7 @@ function webforms_render_deploy_page($service_pack = '', $deploy_form = '') {
                 </div>
             </div>
         </section>
+        ' . webforms_render_bundled_package_map_script() . '
     </div>
     ';
 }

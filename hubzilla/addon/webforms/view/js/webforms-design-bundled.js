@@ -52,12 +52,13 @@
 
   ns.loadBundledPackageDraft = async function (runtime, draft) {
     const packageUrl = runtime.dataset.webformsPackageUrl || '';
+    const formId = runtime.dataset.webformsDesignForm || '';
 
-    if (!packageUrl || !shouldLoadBundledPackage(draft)) {
+    if ((!packageUrl && !formId) || !shouldLoadBundledPackage(draft)) {
       return draft;
     }
 
-    const nextDraft = await ns.loadBundledPackageFromUrl(runtime, packageUrl, runtime.dataset.webformsDesignForm || '');
+    const nextDraft = await ns.loadBundledPackageFromUrl(runtime, packageUrl, formId);
 
     return nextDraft || draft;
   };
@@ -73,7 +74,7 @@
 
     runtime.dataset.webformsPackageUrl = packageUrl;
 
-    const pkg = await fetchPackage(packageUrl);
+    const pkg = loadEmbeddedPackage(formId || '') || await fetchPackage(packageUrl);
 
     if (!pkgApi.isValidPackage(pkg) || !pkg.design || !Array.isArray(pkg.design.objects)) {
       return null;
@@ -100,6 +101,37 @@
     const source = draft.design && draft.design.source ? draft.design.source : '';
 
     return source === '' || source === 'browser' || source === 'package-json';
+  }
+
+
+  function loadEmbeddedPackage(formId) {
+    if (!formId) {
+      return null;
+    }
+
+    const script = document.getElementById('webforms-bundled-package-map');
+
+    if (!script) {
+      return null;
+    }
+
+    try {
+      const map = JSON.parse(script.textContent || '{}');
+      const servicePacks = Object.keys(map);
+
+      for (let i = 0; i < servicePacks.length; i++) {
+        const servicePack = servicePacks[i];
+
+        if (map[servicePack] && map[servicePack][formId]) {
+          return map[servicePack][formId];
+        }
+      }
+    }
+    catch (error) {
+      console.warn('Webforms embedded design package map could not be parsed.', error);
+    }
+
+    return null;
   }
 
   async function fetchPackage(packageUrl) {

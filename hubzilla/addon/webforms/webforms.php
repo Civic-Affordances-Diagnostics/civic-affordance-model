@@ -129,6 +129,88 @@ function webforms_package_path_for_deploy_form($service_pack, $deploy_form) {
     return $path;
 }
 
+
+function webforms_package_file_for_deploy_form($service_pack, $deploy_form) {
+    $path = webforms_package_path_for_deploy_form($service_pack, $deploy_form);
+
+    if ($path === '') {
+        return '';
+    }
+
+    $base = realpath(__DIR__ . '/packages');
+    $file = realpath(__DIR__ . '/' . $path);
+
+    if ($base === false || $file === false) {
+        return '';
+    }
+
+    if (strpos($file, $base . DIRECTORY_SEPARATOR) !== 0) {
+        return '';
+    }
+
+    return $file;
+}
+
+function webforms_package_data_for_deploy_form($service_pack, $deploy_form) {
+    $file = webforms_package_file_for_deploy_form($service_pack, $deploy_form);
+
+    if ($file === '') {
+        return null;
+    }
+
+    $raw = @file_get_contents($file);
+
+    if ($raw === false) {
+        return null;
+    }
+
+    $data = json_decode($raw, true);
+
+    if (!is_array($data) || json_last_error() !== JSON_ERROR_NONE) {
+        return null;
+    }
+
+    return $data;
+}
+
+function webforms_bundled_package_map() {
+    $paths_by_service_pack = webforms_config_section('deploy_package_paths_by_service_pack');
+    $map = [];
+
+    foreach ($paths_by_service_pack as $service_pack => $forms) {
+        if ($service_pack === '' || !is_array($forms)) {
+            continue;
+        }
+
+        foreach ($forms as $deploy_form => $_path) {
+            if ($deploy_form === '') {
+                continue;
+            }
+
+            $package = webforms_package_data_for_deploy_form($service_pack, $deploy_form);
+
+            if ($package === null) {
+                continue;
+            }
+
+            if (!isset($map[$service_pack])) {
+                $map[$service_pack] = [];
+            }
+
+            $map[$service_pack][$deploy_form] = $package;
+        }
+    }
+
+    return $map;
+}
+
+function webforms_bundled_package_map_json() {
+    return json_encode(
+        webforms_bundled_package_map(),
+        JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+    );
+}
+
 function webforms_package_url_for_deploy_form($service_pack, $deploy_form) {
     $path = webforms_package_path_for_deploy_form($service_pack, $deploy_form);
 
@@ -186,9 +268,9 @@ function webforms_add_design_assets() {
         head_add_js('/addon/webforms/view/js/webforms-design-grid.js?v=nested-container-1');
         head_add_js('/addon/webforms/view/js/webforms-design-properties.js?v=textarea-default-1');
         head_add_js('/addon/webforms/view/js/webforms-design-json.js?v=hard-recovery-1');
-        head_add_js('/addon/webforms/view/js/webforms-design-bundled.js?v=client-selector-1');
-        head_add_js('/addon/webforms/view/js/webforms-design.js?v=client-selector-1');
-        head_add_js('/addon/webforms/view/js/webforms-selectors.js?v=client-selector-1');
+        head_add_js('/addon/webforms/view/js/webforms-design-bundled.js?v=embedded-package-1');
+        head_add_js('/addon/webforms/view/js/webforms-design.js?v=embedded-package-1');
+        head_add_js('/addon/webforms/view/js/webforms-selectors.js?v=embedded-package-1');
     }
 }
 
@@ -199,7 +281,7 @@ function webforms_add_deploy_assets() {
 
     if (function_exists('head_add_js')) {
         head_add_js('/addon/webforms/view/js/webforms-package-shared.js?v=hard-recovery-1');
-        head_add_js('/addon/webforms/view/js/webforms-deploy.js?v=client-selector-1');
-        head_add_js('/addon/webforms/view/js/webforms-selectors.js?v=client-selector-1');
+        head_add_js('/addon/webforms/view/js/webforms-deploy.js?v=embedded-package-1');
+        head_add_js('/addon/webforms/view/js/webforms-selectors.js?v=embedded-package-1');
     }
 }
