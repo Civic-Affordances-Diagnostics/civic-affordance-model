@@ -6,23 +6,35 @@
 
   ns.renderGrid = function (draft) {
     const grid = document.getElementById('webforms-design-grid');
-
     if (!grid) {
       return;
     }
 
-    const activeStep = activeWorkflowStep(draft);
+    window.webformsDesignDraft = draft;
 
+    const activeStep = activeWorkflowStep(draft);
     renderWorkflowSelector(draft, activeStep);
     removeGeneratedObjects(grid);
     renderChildObjects(grid, draft, draft.grid.id, draft.grid.size, activeStep);
 
     if (!grid.dataset.webformsSelectionHandler) {
-      grid.addEventListener('click', function (event) {
-        if (event.target === grid) {
-          ns.selectObject(draft, null);
+      grid.addEventListener('pointerdown', function (event) {
+        const activeDraft = window.webformsDesignDraft || draft;
+        const target = event.target && event.target.closest
+          ? event.target.closest('[data-webforms-generated-object="1"]')
+          : null;
+
+        if (target && grid.contains(target)) {
+          event.stopPropagation();
+          ns.selectObject(activeDraft, target.dataset.webformsObjectId || null);
+          return;
         }
-      });
+
+        if (event.target === grid) {
+          ns.selectObject(activeDraft, null);
+        }
+      }, true);
+
       grid.dataset.webformsSelectionHandler = '1';
     }
 
@@ -43,7 +55,6 @@
     }
 
     const wrapper = document.querySelector('[data-webforms-object-id="' + ns.cssEscape(object.id) + '"]');
-
     if (!wrapper) {
       return;
     }
@@ -54,11 +65,9 @@
 
   function workflowSteps(draft) {
     const preserved = draft && draft.package && draft.package.deploy ? draft.package.deploy : null;
-
     if (preserved && preserved.workflow && Array.isArray(preserved.workflow.steps)) {
       return preserved.workflow.steps;
     }
-
     return [];
   }
 
@@ -109,9 +118,11 @@
       button.className = step.id === activeStep ? 'nav-link active' : 'nav-link';
       button.textContent = step.label || step.id || 'Step';
       button.dataset.webformsDesignStep = step.id || '';
+
       button.addEventListener('click', function () {
         draft.design.active_step = step.id || '';
         draft.design.selected_object_id = null;
+        window.webformsDesignDraft = draft;
         ns.persistDraft(draft);
         ns.persistPackage(ns.buildPackage(draft));
         ns.renderGrid(draft);
@@ -171,7 +182,7 @@
 
     wrapper.addEventListener('click', function (event) {
       event.stopPropagation();
-      ns.selectObject(draft || window.webformsDesignDraft, object.id);
+      ns.selectObject(window.webformsDesignDraft || draft, object.id);
     });
 
     renderObjectContent(wrapper, object, gridSize);
@@ -183,42 +194,34 @@
       renderContainerObject(wrapper, object);
       return;
     }
-
     if (object.type === 'label') {
       renderLabelObject(wrapper, object);
       return;
     }
-
     if (object.type === 'textarea') {
       renderTextareaObject(wrapper, object, gridSize);
       return;
     }
-
     if (object.type === 'checkbox') {
       renderCheckboxObject(wrapper, object);
       return;
     }
-
     if (object.type === 'button') {
       renderButtonObject(wrapper, object);
       return;
     }
-
     if (object.type === 'select') {
       renderSelectObject(wrapper, object);
       return;
     }
-
     if (object.type === 'result_panel') {
       renderResultPanelObject(wrapper, object);
       return;
     }
-
     if (object.type === 'help_text') {
       renderHelpTextObject(wrapper, object);
       return;
     }
-
     renderTextObject(wrapper, object);
   }
 
@@ -368,11 +371,9 @@
     if (type === 'textarea') {
       return Math.max(4, height);
     }
-
     if (type === 'text' || type === 'select' || type === 'help_text' || type === 'result_panel') {
       return Math.max(2, height);
     }
-
     return height;
   }
 
