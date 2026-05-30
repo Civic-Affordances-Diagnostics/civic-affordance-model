@@ -57,9 +57,6 @@ class Webforms {
         return $this->config()['design_tabs'];
     }
 
-    private function deploy_tabs() {
-        return $this->config()['deploy_tabs'];
-    }
 
     private function collection_options() {
         return $this->config()['collection_options'];
@@ -82,16 +79,6 @@ class Webforms {
         }
 
         return $design_tab;
-    }
-
-    private function current_deploy_tab() {
-        $deploy_tab = $this->safe_query_value('deploy_tab');
-
-        if (!array_key_exists($deploy_tab, $this->deploy_tabs())) {
-            return 'form';
-        }
-
-        return $deploy_tab;
     }
 
     private function select_options($options, $current) {
@@ -201,24 +188,9 @@ class Webforms {
         return $out;
     }
 
-    private function deploy_tab_links($collection, $deploy_form, $active_tab) {
-        $out = '<div class="list-group list-group-flush webforms-deploy-tab-list">';
-
-        foreach ($this->deploy_tabs() as $tab => $label) {
-            $class = ($active_tab === $tab) ? 'list-group-item active' : 'list-group-item';
-            $href = 'webforms?mode=deploy&collection=' . rawurlencode($collection) . '&deploy_form=' . rawurlencode($deploy_form) . '&deploy_tab=' . rawurlencode($tab);
-            $out .= '<a class="' . $class . '" href="' . $this->h($href) . '">' . $this->h($label) . '</a>';
-        }
-
-        $out .= '</div>';
-        return $out;
-    }
-
     private function deploy_widget() {
         $collection = $this->safe_query_value('collection');
         $deploy_form = $this->safe_query_value('deploy_form');
-        $deploy_tab = $this->current_deploy_tab();
-
         if (!array_key_exists($collection, $this->collection_options())) {
             $collection = '';
         }
@@ -228,14 +200,13 @@ class Webforms {
         }
 
         return '
-        <div id="webforms-aside" class="widget webforms-aside" data-webforms-mode="deploy" data-webforms-deploy-tab="' . $this->h($deploy_tab) . '">
+        <div id="webforms-aside" class="widget webforms-aside" data-webforms-mode="deploy">
             <h3>Webforms</h3>
             ' . $this->mode_selector('deploy', '', $deploy_form) . '
             <div id="webforms-deploy-navigation" class="webforms-deploy-navigation" data-webforms-panel="deploy-navigation">
                 <h4>Deploy</h4>
                 <form id="webforms-deploy-selector" method="get" action="webforms">
                     <input type="hidden" name="mode" value="deploy">
-                    <input type="hidden" name="deploy_tab" value="' . $this->h($deploy_tab) . '">
                     <label for="webforms-deploy-collection-select">Collection</label>
                     <select id="webforms-deploy-collection-select" name="collection" class="form-control form-control-sm">'
                         . $this->select_options($this->collection_options(), $collection) .
@@ -246,9 +217,6 @@ class Webforms {
                     '</select>
                     <button type="submit" class="btn btn-sm btn-secondary mt-2">Load deploy view</button>
                 </form>
-                <hr>
-                <h5>Workflow tabs</h5>
-                ' . $this->deploy_tab_links($collection, $deploy_form, $deploy_tab) . '
             </div>
         </div>
         ';

@@ -115,76 +115,14 @@ function webforms_render_design_help_tab() {
         <ul>
             <li>Use Grid for visual placement.</li>
             <li>Use JSON to inspect, import, save, and reload the generated form definition.</li>
-            <li>Deploy workflow tabs are handled in Deploy mode, not Design mode.</li>
+            <li>Deploy mode uses the Collection and Webform selectors to render deployment packages.</li>
             <li>Service execution, credentials, and federation behavior are not active.</li>
         </ul>
     </div>
     ';
 }
 
-function webforms_render_normalize_deploy_tab($deploy_tab) {
-    $tabs = webforms_config_section('deploy_tabs');
-    if (!array_key_exists($deploy_tab, $tabs)) {
-        return 'form';
-    }
-    return $deploy_tab;
-}
-
-function webforms_render_deploy_tab_nav($collection, $deploy_form, $active_tab) {
-    $tabs = webforms_config_section('deploy_tabs');
-    $out = '<ul class="nav nav-tabs mb-3" id="webforms-deploy-tabs">';
-
-    foreach ($tabs as $tab => $label) {
-        $class = ($active_tab === $tab) ? 'nav-link active' : 'nav-link';
-        $href = 'webforms?mode=deploy&collection=' . rawurlencode($collection) . '&deploy_form=' . rawurlencode($deploy_form) . '&deploy_tab=' . rawurlencode($tab);
-        $out .= '<li class="nav-item">';
-        $out .= '<a class="' . $class . '" href="' . webforms_h($href) . '">' . webforms_h($label) . '</a>';
-        $out .= '</li>';
-    }
-
-    $out .= '</ul>';
-    return $out;
-}
-
-function webforms_render_deploy_tab_content($deploy_tab, $collection_label, $form_label) {
-    if ($deploy_tab === 'form') {
-        return webforms_render_deploy_form_tab($collection_label, $form_label);
-    }
-
-    return webforms_render_deploy_workflow_tab($deploy_tab);
-}
-
-function webforms_render_deploy_form_tab($collection_label, $form_label) {
-    return '
-    <div id="webforms-deploy-render-root"
-        class="webforms-deploy-render-root"
-        data-webforms-deploy-render-root="1">
-        <div id="webforms-deploy-empty-state" class="well" data-webforms-panel="empty-deploy-view">
-            <p><strong>Collection:</strong> ' . $collection_label . '</p>
-            <p><strong>Webform:</strong> ' . $form_label . '</p>
-            <p>Loading browser-local package renderer.</p>
-        </div>
-    </div>
-    ';
-}
-
-function webforms_render_deploy_workflow_tab($deploy_tab) {
-    $label = webforms_h(webforms_config_label('deploy_tabs', $deploy_tab, 'Deploy'));
-    $description = webforms_h(webforms_config_label('deploy_tab_descriptions', $deploy_tab, 'Deployment workflow placeholder.'));
-
-    return '
-    <div id="webforms-deploy-' . webforms_h($deploy_tab) . '-tab" class="webforms-deploy-workflow-tab" data-webforms-deploy-tab-panel="' . webforms_h($deploy_tab) . '">
-        <h4>' . $label . '</h4>
-        <p>' . $description . '</p>
-        <div class="well">
-            <p><strong>Current state:</strong> browser-local workflow placeholder.</p>
-            <p>No service call, credential use, Kubo RPC call, git write, pin mutation, server write, or federation action is performed by this tab.</p>
-        </div>
-    </div>
-    ';
-}
-
-function webforms_render_deploy_page($collection = '', $deploy_form = '', $deploy_tab = '') {
+function webforms_render_deploy_page($collection = '', $deploy_form = '') {
     $collections = webforms_config_section('collection_options');
     $forms = webforms_config_section('deploy_form_options');
 
@@ -196,18 +134,24 @@ function webforms_render_deploy_page($collection = '', $deploy_form = '', $deplo
         $deploy_form = '';
     }
 
-    $deploy_tab = webforms_render_normalize_deploy_tab($deploy_tab);
     $collection_label = webforms_h(webforms_config_label('collection_display_labels', $collection, webforms_config_label('collection_options', $collection, 'No collection selected')));
     $form_label = webforms_h(webforms_config_label('deploy_form_display_labels', $deploy_form, webforms_config_label('deploy_form_options', $deploy_form, 'No webform selected')));
     $access_state = webforms_access_state();
 
     return '
-    <div id="webforms-runtime" class="webforms-content" data-webforms-mode="deploy" data-webforms-access="' . webforms_h($access_state) . '" data-webforms-collection="' . webforms_h($collection) . '" data-webforms-deploy-form="' . webforms_h($deploy_form) . '" data-webforms-deploy-tab="' . webforms_h($deploy_tab) . '">
+    <div id="webforms-runtime" class="webforms-content" data-webforms-mode="deploy" data-webforms-access="' . webforms_h($access_state) . '" data-webforms-collection="' . webforms_h($collection) . '" data-webforms-deploy-form="' . webforms_h($deploy_form) . '">
         <section id="webforms-deploy-view" class="webforms-deploy-view-placeholder" data-webforms-container="deploy-view">
             ' . webforms_render_access_notice('deploy') . '
             <h3>Deploy preview</h3>
-            ' . webforms_render_deploy_tab_nav($collection, $deploy_form, $deploy_tab) . '
-            ' . webforms_render_deploy_tab_content($deploy_tab, $collection_label, $form_label) . '
+            <div id="webforms-deploy-render-root"
+                class="webforms-deploy-render-root"
+                data-webforms-deploy-render-root="1">
+                <div id="webforms-deploy-empty-state" class="well" data-webforms-panel="empty-deploy-view">
+                    <p><strong>Collection:</strong> ' . $collection_label . '</p>
+                    <p><strong>Webform:</strong> ' . $form_label . '</p>
+                    <p>Loading browser-local package renderer.</p>
+                </div>
+            </div>
         </section>
     </div>
     ';
