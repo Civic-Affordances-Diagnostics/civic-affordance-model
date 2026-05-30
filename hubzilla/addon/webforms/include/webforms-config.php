@@ -7,34 +7,51 @@ return [
         'placekey-verify-address' => 'Placekey Verify Address',
         'email-compose' => 'Email Compose',
     ],
-
     'design_descriptions' => [
         '' => 'Start with an empty inert root form container.',
         'ipfs-publish' => 'Placeholder for designing an inert IPFS Publish sub-form.',
         'placekey-verify-address' => 'Placeholder for designing an inert Placekey address-verification sub-form.',
         'email-compose' => 'Placeholder for designing an inert bare-bones email composition sub-form.',
     ],
-
     'design_tabs' => [
         'grid' => 'Grid',
         'json' => 'JSON',
         'help' => 'Help',
     ],
-
+    'deploy_tabs' => [
+        'form' => 'Form',
+        'node_connection' => 'Node Connection',
+        'publish_request' => 'Publish Request',
+        'browse_git' => 'Browse Git',
+        'pin_request' => 'Pin Request',
+        'unpin_request' => 'Unpin Request',
+        'services' => 'Services',
+        'federation' => 'Federation',
+        'results' => 'Results',
+    ],
+    'deploy_tab_descriptions' => [
+        'form' => 'Render the currently loaded browser-local package JSON.',
+        'node_connection' => 'Confirm the controlled execution boundary before publication operations are enabled.',
+        'publish_request' => 'Prepare a governed publication request after node connection passes.',
+        'browse_git' => 'Browse the git/POSIX CID-navigation surface after node connection passes.',
+        'pin_request' => 'Prepare a pin request for a selected CID/path after a file is selected.',
+        'unpin_request' => 'Prepare an unpin request for a selected CID/path after a file is selected.',
+        'services' => 'Display deployment-scope service status and authority boundaries.',
+        'federation' => 'Display deployment-scope publication/sharing status and boundaries.',
+        'results' => 'Display operation results such as CID, git path, status, policy, and errors.',
+    ],
     'collection_options' => [
         '' => 'Select collection',
         'cid-mapping' => 'CID Mapping',
         'placekey-address-validation' => 'Placekey Address Validation',
         'bare-bones-email-client' => 'Bare-Bones Email Client',
     ],
-
     'collection_display_labels' => [
         '' => 'No collection selected',
         'cid-mapping' => 'CID Mapping',
         'placekey-address-validation' => 'Placekey Address Validation',
         'bare-bones-email-client' => 'Bare-Bones Email Client',
     ],
-
     'deploy_form_options' => [
         '' => 'Select webform',
         'ipfs-publish' => 'IPFS Publish',
@@ -47,7 +64,6 @@ return [
         'email-compose' => 'Email Compose',
         'email-forward' => 'Email Forward',
     ],
-
     'deploy_form_display_labels' => [
         '' => 'No webform selected',
         'ipfs-publish' => 'IPFS Publish',
@@ -60,7 +76,6 @@ return [
         'email-compose' => 'Email Compose',
         'email-forward' => 'Email Forward',
     ],
-
     'toolbars' => [
         'grid' => [
             ['key' => 'container', 'label' => 'Box', 'title' => 'Add container', 'active' => true],
@@ -74,7 +89,6 @@ return [
             ['key' => 'result-panel', 'label' => 'Result', 'title' => 'Add result panel', 'active' => true],
             ['key' => 'help-text', 'label' => 'Help', 'title' => 'Add help text', 'active' => true],
         ],
-
         'json' => [
             ['key' => 'copy-json', 'label' => 'Copy', 'title' => 'Copy generated JSON', 'active' => true],
             ['key' => 'download-json', 'label' => 'Save', 'title' => 'Download generated JSON', 'active' => true],
@@ -83,7 +97,6 @@ return [
             ['key' => 'format-json', 'label' => 'Format', 'title' => 'Format JSON for readability'],
             ['key' => 'clear-json', 'label' => 'Clear', 'title' => 'Clear local draft', 'active' => true],
         ],
-
         'services' => [
             ['key' => 'service', 'label' => 'Svc', 'title' => 'Add service definition'],
             ['key' => 'endpoint', 'label' => 'URL', 'title' => 'Add service endpoint'],
@@ -96,7 +109,6 @@ return [
             ['key' => 'timeout', 'label' => 'Time', 'title' => 'Add timeout setting'],
             ['key' => 'retry', 'label' => 'Retry', 'title' => 'Add retry policy'],
         ],
-
         'federation' => [
             ['key' => 'channel-target', 'label' => 'Chan', 'title' => 'Add channel target'],
             ['key' => 'group-target', 'label' => 'Group', 'title' => 'Add privacy group target'],
@@ -109,7 +121,6 @@ return [
             ['key' => 'permission', 'label' => 'Perm', 'title' => 'Add permission rule'],
             ['key' => 'clone-note', 'label' => 'Clone', 'title' => 'Add clone or nomadic identity note'],
         ],
-
         'help' => [
             ['key' => 'help-grid', 'label' => 'Grid', 'title' => 'Show grid help'],
             ['key' => 'help-json', 'label' => 'JSON', 'title' => 'Show JSON help'],

@@ -7,55 +7,48 @@ function webforms_render_access_notice($mode) {
 
     if ($mode === 'design') {
         return '
-            <div class="alert alert-info py-2 webforms-access-notice" role="status">
-                Public local-only Design mode. Sign in to save, publish, deploy, or use private services.
-            </div>
+        <div class="alert alert-info py-2 webforms-access-notice" role="status">
+            Public local-only Design mode. Sign in to save, publish, deploy, or use private services.
+        </div>
         ';
     }
 
     return '
-        <div class="alert alert-info py-2 webforms-access-notice" role="status">
-            Public Deploy mode. Sign in to access private forms, storage, services, or federation.
-        </div>
+    <div class="alert alert-info py-2 webforms-access-notice" role="status">
+        Public Deploy mode. Sign in to access private forms, storage, services, or federation.
+    </div>
     ';
 }
 
 function webforms_render_design_page($design_form = '', $design_tab = '') {
     $forms = webforms_config_section('design_options');
-
     if (!array_key_exists($design_form, $forms)) {
         $design_form = '';
     }
 
     $design_tab = webforms_render_normalize_design_tab($design_tab);
-
     $label = webforms_h(webforms_config_label('design_options', $design_form, 'New blank form'));
     $description = webforms_h(webforms_config_label('design_descriptions', $design_form, ''));
     $access_state = webforms_access_state();
 
     return '
-        <div id="webforms-runtime" class="webforms-content" data-webforms-mode="design" data-webforms-access="' . webforms_h($access_state) . '" data-webforms-design-form="' . webforms_h($design_form) . '" data-webforms-design-tab="' . webforms_h($design_tab) . '">
-            <section id="webforms-design-workspace" class="webforms-design-workspace-placeholder" data-webforms-container="design-workspace">
-                ' . webforms_render_access_notice('design') . '
-
-                <h3>Design workspace: ' . $label . '</h3>
-                <p>' . $description . '</p>
-
-                ' . webforms_render_design_tab_nav($design_form, $design_tab) . '
-
-                ' . webforms_render_design_tab_content($design_tab) . '
-            </section>
-        </div>
+    <div id="webforms-runtime" class="webforms-content" data-webforms-mode="design" data-webforms-access="' . webforms_h($access_state) . '" data-webforms-design-form="' . webforms_h($design_form) . '" data-webforms-design-tab="' . webforms_h($design_tab) . '">
+        <section id="webforms-design-workspace" class="webforms-design-workspace-placeholder" data-webforms-container="design-workspace">
+            ' . webforms_render_access_notice('design') . '
+            <h3>Design workspace: ' . $label . '</h3>
+            <p>' . $description . '</p>
+            ' . webforms_render_design_tab_nav($design_form, $design_tab) . '
+            ' . webforms_render_design_tab_content($design_tab) . '
+        </section>
+    </div>
     ';
 }
 
 function webforms_render_normalize_design_tab($design_tab) {
     $tabs = webforms_config_section('design_tabs');
-
     if (!array_key_exists($design_tab, $tabs)) {
         return 'grid';
     }
-
     return $design_tab;
 }
 
@@ -66,28 +59,18 @@ function webforms_render_design_tab_nav($design_form, $active_tab) {
     foreach ($tabs as $tab => $label) {
         $class = ($active_tab === $tab) ? 'nav-link active' : 'nav-link';
         $href = 'webforms?mode=design&design_form=' . rawurlencode($design_form) . '&design_tab=' . rawurlencode($tab);
-
         $out .= '<li class="nav-item">';
         $out .= '<a class="' . $class . '" href="' . webforms_h($href) . '">' . webforms_h($label) . '</a>';
         $out .= '</li>';
     }
 
     $out .= '</ul>';
-
     return $out;
 }
 
 function webforms_render_design_tab_content($design_tab) {
     if ($design_tab === 'json') {
         return webforms_render_design_json_tab();
-    }
-
-    if ($design_tab === 'services') {
-        return webforms_render_design_services_tab();
-    }
-
-    if ($design_tab === 'federation') {
-        return webforms_render_design_federation_tab();
     }
 
     if ($design_tab === 'help') {
@@ -99,72 +82,109 @@ function webforms_render_design_tab_content($design_tab) {
 
 function webforms_render_design_grid_tab() {
     return '
-        <div id="webforms-design-grid-tab" data-webforms-design-tab-panel="grid">
-            <div id="webforms-design-grid"
-                 class="webforms-design-grid"
-                 data-webforms-container="root-form"
-                 data-webforms-grid-size="24">
-                <div id="webforms-grid-origin"
-                     class="webforms-grid-origin"
-                     data-webforms-grid-origin="0,0">
-                    root container · 24px grid · browser-local draft
-                </div>
+    <div id="webforms-design-grid-tab" data-webforms-design-tab-panel="grid">
+        <div id="webforms-design-grid"
+            class="webforms-design-grid"
+            data-webforms-container="root-form"
+            data-webforms-grid-size="24">
+            <div id="webforms-grid-origin"
+                class="webforms-grid-origin"
+                data-webforms-grid-origin="0,0">
+                root container · 24px grid · browser-local draft
             </div>
         </div>
+    </div>
     ';
 }
 
 function webforms_render_design_json_tab() {
     return '
-        <div id="webforms-design-json-tab" data-webforms-design-tab-panel="json">
-            <h4>JSON</h4>
-            <p>This tab shows the browser-local Webforms package generated by the Design workspace.</p>
-            <textarea id="webforms-json-output" class="form-control" rows="18" readonly="readonly" data-webforms-json-output="package">Loading browser-local Webforms package JSON...</textarea>
-        </div>
-    ';
-}
-
-function webforms_render_design_services_tab() {
-    return '
-        <div id="webforms-design-services-tab" data-webforms-design-tab-panel="services">
-            <h4>Services</h4>
-            <p>This tab will describe local-only mode and optional service settings for the selected form.</p>
-            <div class="well">
-                <p><strong>Current state:</strong> local-only placeholder.</p>
-                <p>No API keys, credentials, external services, or server writes are active.</p>
-            </div>
-        </div>
-    ';
-}
-
-function webforms_render_design_federation_tab() {
-    return '
-        <div id="webforms-design-federation-tab" data-webforms-design-tab-panel="federation">
-            <h4>Federation</h4>
-            <p>This tab will later describe Hubzilla-native sharing, service requests, service offers, service results, and permissioned records.</p>
-            <div class="well">
-                Federation behavior is not active.
-            </div>
-        </div>
+    <div id="webforms-design-json-tab" data-webforms-design-tab-panel="json">
+        <h4>JSON</h4>
+        <p>This tab shows the browser-local Webforms package generated by the Design workspace.</p>
+        <textarea id="webforms-json-output" class="form-control" rows="18" readonly="readonly" data-webforms-json-output="package">Loading browser-local Webforms package JSON...</textarea>
+    </div>
     ';
 }
 
 function webforms_render_design_help_tab() {
     return '
-        <div id="webforms-design-help-tab" data-webforms-design-tab-panel="help">
-            <h4>Help</h4>
-            <p>Design mode creates inert JSON-composed webform definitions.</p>
-            <ul>
-                <li>Use Grid for visual placement.</li>
-                <li>Use JSON to inspect the generated form definition.</li>
-                <li>Use Services for local/API/service settings.</li>
-                <li>Use Federation for future Hubzilla-native sharing concepts.</li>
-            </ul>
-        </div>
+    <div id="webforms-design-help-tab" data-webforms-design-tab-panel="help">
+        <h4>Help</h4>
+        <p>Design mode creates inert JSON-composed webform definitions.</p>
+        <ul>
+            <li>Use Grid for visual placement.</li>
+            <li>Use JSON to inspect, import, save, and reload the generated form definition.</li>
+            <li>Deploy workflow tabs are handled in Deploy mode, not Design mode.</li>
+            <li>Service execution, credentials, and federation behavior are not active.</li>
+        </ul>
+    </div>
     ';
 }
 
-function webforms_render_deploy_page($collection = '', $deploy_form = '') {
+function webforms_render_normalize_deploy_tab($deploy_tab) {
+    $tabs = webforms_config_section('deploy_tabs');
+    if (!array_key_exists($deploy_tab, $tabs)) {
+        return 'form';
+    }
+    return $deploy_tab;
+}
+
+function webforms_render_deploy_tab_nav($collection, $deploy_form, $active_tab) {
+    $tabs = webforms_config_section('deploy_tabs');
+    $out = '<ul class="nav nav-tabs mb-3" id="webforms-deploy-tabs">';
+
+    foreach ($tabs as $tab => $label) {
+        $class = ($active_tab === $tab) ? 'nav-link active' : 'nav-link';
+        $href = 'webforms?mode=deploy&collection=' . rawurlencode($collection) . '&deploy_form=' . rawurlencode($deploy_form) . '&deploy_tab=' . rawurlencode($tab);
+        $out .= '<li class="nav-item">';
+        $out .= '<a class="' . $class . '" href="' . webforms_h($href) . '">' . webforms_h($label) . '</a>';
+        $out .= '</li>';
+    }
+
+    $out .= '</ul>';
+    return $out;
+}
+
+function webforms_render_deploy_tab_content($deploy_tab, $collection_label, $form_label) {
+    if ($deploy_tab === 'form') {
+        return webforms_render_deploy_form_tab($collection_label, $form_label);
+    }
+
+    return webforms_render_deploy_workflow_tab($deploy_tab);
+}
+
+function webforms_render_deploy_form_tab($collection_label, $form_label) {
+    return '
+    <div id="webforms-deploy-render-root"
+        class="webforms-deploy-render-root"
+        data-webforms-deploy-render-root="1">
+        <div id="webforms-deploy-empty-state" class="well" data-webforms-panel="empty-deploy-view">
+            <p><strong>Collection:</strong> ' . $collection_label . '</p>
+            <p><strong>Webform:</strong> ' . $form_label . '</p>
+            <p>Loading browser-local package renderer.</p>
+        </div>
+    </div>
+    ';
+}
+
+function webforms_render_deploy_workflow_tab($deploy_tab) {
+    $label = webforms_h(webforms_config_label('deploy_tabs', $deploy_tab, 'Deploy'));
+    $description = webforms_h(webforms_config_label('deploy_tab_descriptions', $deploy_tab, 'Deployment workflow placeholder.'));
+
+    return '
+    <div id="webforms-deploy-' . webforms_h($deploy_tab) . '-tab" class="webforms-deploy-workflow-tab" data-webforms-deploy-tab-panel="' . webforms_h($deploy_tab) . '">
+        <h4>' . $label . '</h4>
+        <p>' . $description . '</p>
+        <div class="well">
+            <p><strong>Current state:</strong> browser-local workflow placeholder.</p>
+            <p>No service call, credential use, Kubo RPC call, git write, pin mutation, server write, or federation action is performed by this tab.</p>
+        </div>
+    </div>
+    ';
+}
+
+function webforms_render_deploy_page($collection = '', $deploy_form = '', $deploy_tab = '') {
     $collections = webforms_config_section('collection_options');
     $forms = webforms_config_section('deploy_form_options');
 
@@ -176,27 +196,19 @@ function webforms_render_deploy_page($collection = '', $deploy_form = '') {
         $deploy_form = '';
     }
 
+    $deploy_tab = webforms_render_normalize_deploy_tab($deploy_tab);
     $collection_label = webforms_h(webforms_config_label('collection_display_labels', $collection, webforms_config_label('collection_options', $collection, 'No collection selected')));
     $form_label = webforms_h(webforms_config_label('deploy_form_display_labels', $deploy_form, webforms_config_label('deploy_form_options', $deploy_form, 'No webform selected')));
     $access_state = webforms_access_state();
 
     return '
-        <div id="webforms-runtime" class="webforms-content" data-webforms-mode="deploy" data-webforms-access="' . webforms_h($access_state) . '" data-webforms-collection="' . webforms_h($collection) . '" data-webforms-deploy-form="' . webforms_h($deploy_form) . '">
-            <section id="webforms-deploy-view" class="webforms-deploy-view-placeholder" data-webforms-container="deploy-view">
-                ' . webforms_render_access_notice('deploy') . '
-
-                <h3>Deploy preview</h3>
-
-                <div id="webforms-deploy-render-root"
-                     class="webforms-deploy-render-root"
-                     data-webforms-deploy-render-root="1">
-                    <div id="webforms-deploy-empty-state" class="well" data-webforms-panel="empty-deploy-view">
-                        <p><strong>Collection:</strong> ' . $collection_label . '</p>
-                        <p><strong>Webform:</strong> ' . $form_label . '</p>
-                        <p>Loading browser-local package renderer.</p>
-                    </div>
-                </div>
-            </section>
-        </div>
+    <div id="webforms-runtime" class="webforms-content" data-webforms-mode="deploy" data-webforms-access="' . webforms_h($access_state) . '" data-webforms-collection="' . webforms_h($collection) . '" data-webforms-deploy-form="' . webforms_h($deploy_form) . '" data-webforms-deploy-tab="' . webforms_h($deploy_tab) . '">
+        <section id="webforms-deploy-view" class="webforms-deploy-view-placeholder" data-webforms-container="deploy-view">
+            ' . webforms_render_access_notice('deploy') . '
+            <h3>Deploy preview</h3>
+            ' . webforms_render_deploy_tab_nav($collection, $deploy_form, $deploy_tab) . '
+            ' . webforms_render_deploy_tab_content($deploy_tab, $collection_label, $form_label) . '
+        </section>
+    </div>
     ';
 }

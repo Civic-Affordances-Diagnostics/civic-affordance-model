@@ -92,7 +92,8 @@ function webforms_content() {
         webforms_add_deploy_assets();
         return webforms_render_deploy_page(
             webforms_safe_query_value('collection'),
-            webforms_safe_query_value('deploy_form')
+            webforms_safe_query_value('deploy_form'),
+            webforms_safe_query_value('deploy_tab')
         );
     }
 
