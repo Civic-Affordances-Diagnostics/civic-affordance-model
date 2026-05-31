@@ -44,16 +44,11 @@ function webforms_handle_attestation_prepare_action()
         webforms_json_response($prepared, $http_status);
     }
 
-    $request = [
-        'operation_id' => $prepared['operation_id'],
-        'operation' => 'attestation.package.prepare',
-        'target' => $profile['target'] ?? 'orchestrator1',
-        'backend_role' => $profile['backend_role'] ?? 'ipfs_publication',
-        'source_operation' => $prepared['operation'],
-        'attestation_package' => $prepared,
-    ];
-
-    [$response, $error_message, $http_status] = webforms_post_json_url($prepare_url, $request);
+    // The orchestrator prepare endpoint expects the prepared attestation
+    // package itself as the JSON document root. Do not wrap it in a
+    // Webforms result envelope here; FastAPI/Pydantic validates required
+    // package fields at the root of the POST body.
+    [$response, $error_message, $http_status] = webforms_post_json_url($prepare_url, $prepared);
 
     if ($response === null) {
         webforms_json_response([
