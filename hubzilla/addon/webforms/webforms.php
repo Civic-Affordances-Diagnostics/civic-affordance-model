@@ -11,6 +11,7 @@
 use Zotlabs\Extend\Widget;
 
 require_once __DIR__ . '/include/webforms-render.php';
+require_once __DIR__ . '/include/webforms-attestation.php';
 
 function webforms_module() {}
 
@@ -30,7 +31,6 @@ function webforms_load_pdl(&$b) {
     }
 
     $layout = @file_get_contents('addon/webforms/mod_webforms.pdl');
-
     if ($layout !== false) {
         $b['layout'] = $layout;
     }
@@ -53,11 +53,9 @@ function webforms_config_section($name) {
 
 function webforms_config_label($section, $key, $fallback = '') {
     $values = webforms_config_section($section);
-
     if (array_key_exists($key, $values)) {
         return $values[$key];
     }
-
     return $fallback;
 }
 
@@ -65,7 +63,6 @@ function webforms_current_mode() {
     if (isset($_GET['mode']) && $_GET['mode'] === 'deploy') {
         return 'deploy';
     }
-
     return 'design';
 }
 
@@ -77,7 +74,6 @@ function webforms_safe_query_value($name) {
     if (!isset($_GET[$name])) {
         return '';
     }
-
     return preg_replace('/[^a-z0-9_-]/', '', $_GET[$name]);
 }
 
@@ -87,25 +83,21 @@ function webforms_h($value) {
 
 function webforms_service_pack_for_deploy_form($deploy_form) {
     $forms_by_service_pack = webforms_config_section('deploy_form_options_by_service_pack');
-
     foreach ($forms_by_service_pack as $service_pack => $forms) {
         if ($service_pack !== '' && array_key_exists($deploy_form, $forms)) {
             return $service_pack;
         }
     }
-
     return '';
 }
 
 function webforms_current_service_pack() {
     $service_pack = webforms_safe_query_value('service_pack');
-
     if ($service_pack !== '') {
         return $service_pack;
     }
 
     $legacy_collection = webforms_safe_query_value('collection');
-
     if ($legacy_collection !== '') {
         return $legacy_collection;
     }
@@ -115,23 +107,19 @@ function webforms_current_service_pack() {
 
 function webforms_current_design_service_pack() {
     $service_pack = webforms_safe_query_value('service_pack');
-
     if ($service_pack !== '') {
         return $service_pack;
     }
-
     return webforms_service_pack_for_deploy_form(webforms_safe_query_value('design_form'));
 }
 
 function webforms_package_path_for_deploy_form($service_pack, $deploy_form) {
     $paths_by_service_pack = webforms_config_section('deploy_package_paths_by_service_pack');
-
     if (!isset($paths_by_service_pack[$service_pack][$deploy_form])) {
         return '';
     }
 
     $path = $paths_by_service_pack[$service_pack][$deploy_form];
-
     if (!preg_match('/^[a-z0-9_\-\/]+\.json$/', $path)) {
         return '';
     }
@@ -141,14 +129,12 @@ function webforms_package_path_for_deploy_form($service_pack, $deploy_form) {
 
 function webforms_package_file_for_deploy_form($service_pack, $deploy_form) {
     $path = webforms_package_path_for_deploy_form($service_pack, $deploy_form);
-
     if ($path === '') {
         return '';
     }
 
     $base = realpath(__DIR__ . '/packages');
     $file = realpath(__DIR__ . '/' . $path);
-
     if ($base === false || $file === false) {
         return '';
     }
@@ -162,19 +148,16 @@ function webforms_package_file_for_deploy_form($service_pack, $deploy_form) {
 
 function webforms_package_data_for_deploy_form($service_pack, $deploy_form) {
     $file = webforms_package_file_for_deploy_form($service_pack, $deploy_form);
-
     if ($file === '') {
         return null;
     }
 
     $raw = @file_get_contents($file);
-
     if ($raw === false) {
         return null;
     }
 
     $data = json_decode($raw, true);
-
     if (!is_array($data) || json_last_error() !== JSON_ERROR_NONE) {
         return null;
     }
@@ -185,7 +168,6 @@ function webforms_package_data_for_deploy_form($service_pack, $deploy_form) {
 function webforms_bundled_package_map() {
     $paths_by_service_pack = webforms_config_section('deploy_package_paths_by_service_pack');
     $map = [];
-
     foreach ($paths_by_service_pack as $service_pack => $forms) {
         if ($service_pack === '' || !is_array($forms)) {
             continue;
@@ -197,7 +179,6 @@ function webforms_bundled_package_map() {
             }
 
             $package = webforms_package_data_for_deploy_form($service_pack, $deploy_form);
-
             if ($package === null) {
                 continue;
             }
@@ -205,7 +186,6 @@ function webforms_bundled_package_map() {
             if (!isset($map[$service_pack])) {
                 $map[$service_pack] = [];
             }
-
             $map[$service_pack][$deploy_form] = $package;
         }
     }
@@ -222,11 +202,9 @@ function webforms_bundled_package_map_json() {
 
 function webforms_package_url_for_deploy_form($service_pack, $deploy_form) {
     $path = webforms_package_path_for_deploy_form($service_pack, $deploy_form);
-
     if ($path === '') {
         return '';
     }
-
     return '/addon/webforms/' . $path . '?v=0.1';
 }
 
@@ -236,14 +214,12 @@ function webforms_package_url_for_design_form($design_form) {
     }
 
     $service_pack = webforms_service_pack_for_deploy_form($design_form);
-
     if ($service_pack === '') {
         return '';
     }
 
     return webforms_package_url_for_deploy_form($service_pack, $design_form);
 }
-
 
 function webforms_json_response($data, $status = 200) {
     if (!headers_sent()) {
@@ -253,11 +229,9 @@ function webforms_json_response($data, $status = 200) {
     }
 
     echo json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-
     if (function_exists('killme')) {
         killme();
     }
-
     exit;
 }
 
@@ -267,11 +241,9 @@ function webforms_current_action() {
 
 function webforms_service_profile_config($service_pack, $profile_id) {
     $profiles = webforms_config_section('service_profiles');
-
     if (!isset($profiles[$service_pack][$profile_id]) || !is_array($profiles[$service_pack][$profile_id])) {
         return [];
     }
-
     return $profiles[$service_pack][$profile_id];
 }
 
@@ -305,14 +277,12 @@ function webforms_fetch_json_url($url) {
             ],
         ]);
         $raw = @file_get_contents($url, false, $context);
-
         if ($raw === false || $raw === '') {
             return [null, 'request_failed'];
         }
     }
 
     $data = json_decode($raw, true);
-
     if (!is_array($data) || json_last_error() !== JSON_ERROR_NONE) {
         return [null, 'invalid_json'];
     }
@@ -333,7 +303,6 @@ function webforms_handle_service_profile_status_action() {
     }
 
     $profile = webforms_service_profile_config($service_pack, $profile_id);
-
     if (!$profile) {
         webforms_json_response([
             'status' => 'failed',
@@ -343,7 +312,6 @@ function webforms_handle_service_profile_status_action() {
     }
 
     [$data, $error] = webforms_fetch_json_url($profile['status_url'] ?? '');
-
     if ($data === null) {
         webforms_json_response([
             'service_pack' => $service_pack,
@@ -369,13 +337,16 @@ function webforms_handle_action_if_needed() {
     if (webforms_current_action() === 'service_profile_status') {
         webforms_handle_service_profile_status_action();
     }
+
+    if (webforms_current_action() === 'attestation_prepare') {
+        webforms_handle_attestation_prepare_action();
+    }
 }
 
 function webforms_content() {
     webforms_handle_action_if_needed();
 
     $mode = webforms_current_mode();
-
     if ($mode === 'deploy') {
         webforms_add_deploy_assets();
         return webforms_render_deploy_page(
