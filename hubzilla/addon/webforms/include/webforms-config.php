@@ -76,6 +76,18 @@ return [
         'ldap-search' => 'LDAP Search',
         'ldap-add-sase' => 'LDAP Add SASE',
     ],
+    'service_profiles' => [
+        'ipfs' => [
+            'ipfs-publication-default' => [
+                'label' => 'orchestrator1 / ipfs1 controlled backend',
+                'target' => 'orchestrator1',
+                'orchestrator' => 'orchestrator1.internal.diagnostics.kane-il.us',
+                'backend_role' => 'ipfs_publication',
+                'backend_node' => 'ipfs1.diagnostics.kane-il.us',
+                'status_url' => 'http://10.0.0.105:8700/service-packs/ipfs/status',
+            ],
+        ],
+    ],
     'toolbars' => [
         'grid' => [
             ['key' => 'container', 'label' => 'Box', 'title' => 'Add container', 'active' => true],

@@ -244,7 +244,136 @@ function webforms_package_url_for_design_form($design_form) {
     return webforms_package_url_for_deploy_form($service_pack, $design_form);
 }
 
+
+function webforms_json_response($data, $status = 200) {
+    if (!headers_sent()) {
+        http_response_code($status);
+        header('Content-Type: application/json; charset=UTF-8');
+        header('Cache-Control: no-store');
+    }
+
+    echo json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+    if (function_exists('killme')) {
+        killme();
+    }
+
+    exit;
+}
+
+function webforms_current_action() {
+    return webforms_safe_query_value('webforms_action');
+}
+
+function webforms_service_profile_config($service_pack, $profile_id) {
+    $profiles = webforms_config_section('service_profiles');
+
+    if (!isset($profiles[$service_pack][$profile_id]) || !is_array($profiles[$service_pack][$profile_id])) {
+        return [];
+    }
+
+    return $profiles[$service_pack][$profile_id];
+}
+
+function webforms_fetch_json_url($url) {
+    if ($url === '' || !preg_match('/^https?:\/\//', $url)) {
+        return [null, 'invalid_url'];
+    }
+
+    if (function_exists('curl_init')) {
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Accept: application/json']);
+        $raw = curl_exec($ch);
+        $error = curl_error($ch);
+        $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($raw === false || $raw === '' || $status < 200 || $status >= 300) {
+            return [null, $error !== '' ? $error : 'http_status_' . $status];
+        }
+    }
+    else {
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'GET',
+                'timeout' => 5,
+                'ignore_errors' => true,
+                'header' => "Accept: application/json\r\n",
+            ],
+        ]);
+        $raw = @file_get_contents($url, false, $context);
+
+        if ($raw === false || $raw === '') {
+            return [null, 'request_failed'];
+        }
+    }
+
+    $data = json_decode($raw, true);
+
+    if (!is_array($data) || json_last_error() !== JSON_ERROR_NONE) {
+        return [null, 'invalid_json'];
+    }
+
+    return [$data, ''];
+}
+
+function webforms_handle_service_profile_status_action() {
+    $service_pack = webforms_safe_query_value('service_pack');
+    $profile_id = webforms_safe_query_value('profile_id');
+
+    if ($service_pack === '' || $profile_id === '') {
+        webforms_json_response([
+            'status' => 'failed',
+            'error_code' => 'missing_profile',
+            'error_message' => 'Missing service pack or profile id.',
+        ], 400);
+    }
+
+    $profile = webforms_service_profile_config($service_pack, $profile_id);
+
+    if (!$profile) {
+        webforms_json_response([
+            'status' => 'failed',
+            'error_code' => 'unknown_profile',
+            'error_message' => 'The requested service profile is not configured on this Hubzilla node.',
+        ], 404);
+    }
+
+    [$data, $error] = webforms_fetch_json_url($profile['status_url'] ?? '');
+
+    if ($data === null) {
+        webforms_json_response([
+            'service_pack' => $service_pack,
+            'profile_id' => $profile_id,
+            'target' => $profile['target'] ?? '',
+            'orchestrator' => $profile['orchestrator'] ?? '',
+            'backend_role' => $profile['backend_role'] ?? '',
+            'backend_node' => $profile['backend_node'] ?? '',
+            'execution_active' => false,
+            'raw_kubo_rpc_exposed' => false,
+            'raw_git_write_exposed' => false,
+            'operations' => [],
+            'status' => 'failed',
+            'error_code' => 'profile_status_unavailable',
+            'error_message' => $error !== '' ? $error : 'The service profile status endpoint did not return usable JSON.',
+        ], 502);
+    }
+
+    webforms_json_response($data, 200);
+}
+
+function webforms_handle_action_if_needed() {
+    if (webforms_current_action() === 'service_profile_status') {
+        webforms_handle_service_profile_status_action();
+    }
+}
+
 function webforms_content() {
+    webforms_handle_action_if_needed();
+
     $mode = webforms_current_mode();
 
     if ($mode === 'deploy') {

@@ -156,6 +156,7 @@
     root.appendChild(notice);
     renderWorkflow(root, pkg, selectedStep);
     root.appendChild(grid);
+    wireRuntimeActions(root, pkg);
   }
 
   function workflowSteps(pkg) {
@@ -406,6 +407,9 @@
 
     button.className = 'btn btn-sm btn-secondary';
     button.type = 'button';
+    button.name = field.id;
+    button.id = 'webforms-deploy-field-' + field.id;
+    button.dataset.webformsAction = field.action || '';
     button.style.fontWeight = '700';
     button.textContent = field.label || field.id;
 
@@ -472,6 +476,133 @@
     const size = parseInt(gridSize, 10) || 24;
     const gridHeight = Math.max(4, height || 4) * size;
     return Math.max(96, gridHeight - 56) + 'px';
+  }
+
+
+  function wireRuntimeActions(root, pkg) {
+    root.querySelectorAll('[data-webforms-action="service_profile.verify"]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        verifyServiceProfile(root, pkg, button);
+      });
+    });
+  }
+
+  async function verifyServiceProfile(root, pkg, button) {
+    const servicePack = (pkg && pkg.meta && pkg.meta.service_pack) || '';
+    const profileId = deployFieldValue(root, 'service_profile_id') || runtimeServiceValue(pkg, 'service_profile_id') || 'ipfs-publication-default';
+    const backendRole = deployFieldValue(root, 'backend_role') || runtimeServiceValue(pkg, 'backend_role') || '';
+
+    if (!servicePack || !profileId) {
+      setDeployFieldValue(root, 'connection_status', 'failed');
+      setResultPanelText(root, 'result-verify-status', 'Connection status: failed\nError: missing service pack or profile id');
+      return;
+    }
+
+    const previousLabel = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Checking...';
+    setDeployFieldValue(root, 'connection_status', 'checking');
+    setResultPanelText(root, 'result-verify-status', 'Connection status: checking\nProfile: ' + profileId);
+
+    try {
+      const url = 'webforms?webforms_action=service_profile_status&service_pack=' + encodeURIComponent(servicePack) + '&profile_id=' + encodeURIComponent(profileId);
+      const response = await fetch(url, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } });
+      const data = await response.json();
+
+      if (!response.ok || !data || data.status === 'failed') {
+        throw new Error((data && (data.error_message || data.error_code)) || 'profile status request failed');
+      }
+
+      const expectedSafeBoundary = data.raw_kubo_rpc_exposed === false && data.raw_git_write_exposed === false;
+      const backendMatches = !backendRole || data.backend_role === backendRole;
+      const connected = data.status === 'available' && backendMatches && expectedSafeBoundary;
+
+      setDeployFieldValue(root, 'connection_status', connected ? 'connected' : 'blocked');
+      setDeployFieldValue(root, 'capability_status', data.status || 'unknown');
+      setDeployFieldValue(root, 'execution_active', data.execution_active ? 'true' : 'false');
+      updateProfileStatusPanels(root, data, connected, backendMatches, expectedSafeBoundary);
+    }
+    catch (error) {
+      setDeployFieldValue(root, 'connection_status', 'failed');
+      setDeployFieldValue(root, 'capability_status', 'failed');
+      setResultPanelText(root, 'result-verify-status', 'Connection status: failed\nError: ' + error.message);
+    }
+    finally {
+      button.disabled = false;
+      button.textContent = previousLabel;
+    }
+  }
+
+  function runtimeServiceValue(pkg, key) {
+    const services = pkg && pkg.runtime && Array.isArray(pkg.runtime.services) ? pkg.runtime.services : [];
+
+    for (let i = 0; i < services.length; i += 1) {
+      if (services[i] && Object.prototype.hasOwnProperty.call(services[i], key)) {
+        return services[i][key];
+      }
+    }
+
+    return '';
+  }
+
+  function deployFieldValue(root, id) {
+    const field = root.querySelector('[name="' + cssEscape(id) + '"]');
+    return field ? field.value : '';
+  }
+
+  function setDeployFieldValue(root, id, value) {
+    const field = root.querySelector('[name="' + cssEscape(id) + '"]');
+
+    if (field) {
+      field.value = String(value);
+    }
+  }
+
+  function setResultPanelText(root, layoutId, text) {
+    const panel = root.querySelector('[data-webforms-layout-id="' + cssEscape(layoutId) + '"] .well');
+
+    if (panel) {
+      panel.textContent = text;
+    }
+  }
+
+  function updateProfileStatusPanels(root, data, connected, backendMatches, expectedSafeBoundary) {
+    const operations = Array.isArray(data.operations) ? data.operations : [];
+
+    setResultPanelText(root, 'result-verify-status', [
+      'Connection status: ' + (connected ? 'connected' : 'blocked'),
+      'Capability status: ' + (data.status || 'unknown'),
+      'Execution active: ' + boolText(data.execution_active),
+      'Backend role: ' + (data.backend_role || ''),
+      'Backend role matched: ' + boolText(backendMatches),
+      'Authority boundary safe: ' + boolText(expectedSafeBoundary)
+    ].join('\n'));
+
+    setResultPanelText(root, 'result-capability-status', [
+      'service_pack: ' + (data.service_pack || ''),
+      'profile_id: ' + (data.profile_id || ''),
+      'target: ' + (data.target || ''),
+      'orchestrator: ' + (data.orchestrator || ''),
+      'backend_role: ' + (data.backend_role || ''),
+      'backend_node: ' + (data.backend_node || ''),
+      'raw_kubo_rpc_exposed: ' + boolText(data.raw_kubo_rpc_exposed),
+      'raw_git_write_exposed: ' + boolText(data.raw_git_write_exposed),
+      'status: ' + (data.status || '')
+    ].join('\n'));
+
+    setResultPanelText(root, 'result-capabilities', 'operations:\n' + operations.join('\n'));
+  }
+
+  function boolText(value) {
+    return value ? 'true' : 'false';
+  }
+
+  function cssEscape(value) {
+    if (window.CSS && typeof window.CSS.escape === 'function') {
+      return window.CSS.escape(value);
+    }
+
+    return String(value).replace(/"/g, '\\"');
   }
 
   function renderMessage(root, message) {
