@@ -391,6 +391,7 @@ function webforms_add_deploy_assets() {
     if (function_exists('head_add_js')) {
         head_add_js('/addon/webforms/view/js/webforms-package-shared.js?v=hard-recovery-1');
         head_add_js('/addon/webforms/view/js/webforms-deploy.js?v=workflow-panel-1');
+        head_add_js('/addon/webforms/view/js/webforms-deploy-attestation.js?v=attestation-prepare-1');
         head_add_js('/addon/webforms/view/js/webforms-selectors.js?v=workflow-panel-1');
     }
 }
