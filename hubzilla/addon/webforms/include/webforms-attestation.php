@@ -9,6 +9,11 @@
 
 function webforms_handle_attestation_prepare_action()
 {
+    $operation = webforms_safe_query_value('operation');
+    if ($operation === 'ipfs.cid.prepare') {
+        webforms_handle_attestation_ipfs_cid_prepare_action();
+    }
+
     if (!local_channel()) {
         webforms_json_response(webforms_attestation_failure('not_authenticated', 'A current authenticated Hubzilla channel is required.'), 403);
     }
@@ -44,10 +49,6 @@ function webforms_handle_attestation_prepare_action()
         webforms_json_response($prepared, $http_status);
     }
 
-    // The orchestrator prepare endpoint expects the prepared attestation
-    // package itself as the JSON document root. Do not wrap it in a
-    // Webforms result envelope here; FastAPI/Pydantic validates required
-    // package fields at the root of the POST body.
     [$response, $error_message, $http_status] = webforms_post_json_url($prepare_url, $prepared);
 
     if ($response === null) {
@@ -73,6 +74,84 @@ function webforms_handle_attestation_prepare_action()
     webforms_json_response(webforms_attestation_prepare_response($response, $prepared, $http_status), 200);
 }
 
+function webforms_handle_attestation_ipfs_cid_prepare_action()
+{
+    if (!local_channel()) {
+        webforms_json_response(webforms_attestation_operation_failure(
+            'ipfs.cid.prepare',
+            'not_authenticated',
+            'A current authenticated Hubzilla channel is required.'
+        ), 403);
+    }
+
+    $service_pack = webforms_safe_query_value('service_pack');
+    $profile_id = webforms_safe_query_value('profile_id');
+    $operation_id = webforms_safe_query_value('operation_id');
+
+    if ($service_pack === '') {
+        $service_pack = 'ipfs';
+    }
+
+    if ($profile_id === '') {
+        $profile_id = 'ipfs-publication-default';
+    }
+
+    if ($service_pack !== 'ipfs') {
+        webforms_json_response(webforms_attestation_operation_failure(
+            'ipfs.cid.prepare',
+            'policy_blocked',
+            'CID preparation is currently available only for the IPFS service pack.'
+        ), 400);
+    }
+
+    if ($operation_id === '' || !preg_match('/^[A-Za-z0-9_.:\\-]+$/', $operation_id)) {
+        webforms_json_response(webforms_attestation_operation_failure(
+            'ipfs.cid.prepare',
+            'missing_operation_id',
+            'A stored attestation operation_id is required before preparing a CID.'
+        ), 400);
+    }
+
+    $profile = webforms_service_profile_config($service_pack, $profile_id);
+    if (!$profile) {
+        webforms_json_response(webforms_attestation_operation_failure(
+            'ipfs.cid.prepare',
+            'policy_blocked',
+            'Unknown service profile.'
+        ), 404);
+    }
+
+    $prepare_url = webforms_attestation_orchestrator_operation_url_for_profile($profile, '/ipfs/cid/prepare');
+    if ($prepare_url === '') {
+        webforms_json_response(webforms_attestation_operation_failure(
+            'ipfs.cid.prepare',
+            'policy_blocked',
+            'The selected service profile does not define an IPFS CID prepare endpoint.'
+        ), 409);
+    }
+
+    [$response, $error_message, $http_status] = webforms_post_json_url($prepare_url, [
+        'operation_id' => $operation_id,
+    ]);
+
+    if ($response === null) {
+        webforms_json_response(webforms_attestation_operation_failure(
+            'ipfs.cid.prepare',
+            'orchestrator_cid_prepare_failed',
+            $error_message ?: 'Unable to prepare candidate CID through orchestrator1.',
+            $operation_id,
+            $http_status
+        ), 502);
+    }
+
+    $response['operation_id'] = $response['operation_id'] ?? $operation_id;
+    $response['operation'] = $response['operation'] ?? 'ipfs.cid.prepare';
+    $response['status'] = $response['status'] ?? 'prepared';
+    $response['http_status'] = $http_status;
+
+    webforms_json_response($response, 200);
+}
+
 function webforms_attestation_prepare_url_for_profile(array $profile)
 {
     $configured = isset($profile['prepare_url']) ? trim((string) $profile['prepare_url']) : '';
@@ -85,6 +164,42 @@ function webforms_attestation_prepare_url_for_profile(array $profile)
 
     if ($target === 'orchestrator1' && $backend_role === 'ipfs_publication') {
         return 'http://10.0.0.105:8700/attestations/packages/prepare';
+    }
+
+    return '';
+}
+
+function webforms_attestation_orchestrator_operation_url_for_profile(array $profile, $path)
+{
+    $base = webforms_attestation_orchestrator_base_url_for_profile($profile);
+    if ($base === '') {
+        return '';
+    }
+
+    return rtrim($base, '/') . '/' . ltrim((string) $path, '/');
+}
+
+function webforms_attestation_orchestrator_base_url_for_profile(array $profile)
+{
+    $configured = isset($profile['orchestrator_url']) ? trim((string) $profile['orchestrator_url']) : '';
+    if ($configured !== '') {
+        return $configured;
+    }
+
+    $prepare_url = webforms_attestation_prepare_url_for_profile($profile);
+    if ($prepare_url !== '') {
+        $marker = '/attestations/packages/prepare';
+        $position = strpos($prepare_url, $marker);
+        if ($position !== false) {
+            return substr($prepare_url, 0, $position);
+        }
+    }
+
+    $target = isset($profile['target']) ? (string) $profile['target'] : '';
+    $backend_role = isset($profile['backend_role']) ? (string) $profile['backend_role'] : '';
+
+    if ($target === 'orchestrator1' && $backend_role === 'ipfs_publication') {
+        return 'http://10.0.0.105:8700';
     }
 
     return '';
@@ -176,6 +291,7 @@ function webforms_prepare_latest_own_hubzilla_post_package(array $profile = [])
             'backend_role' => $profile['backend_role'] ?? 'ipfs_publication',
             'next_operations' => [
                 'attestation.package.prepare',
+                'ipfs.cid.prepare',
                 'ipfs.cid.publish',
                 'ipfs.cid.pin',
                 'git_posix.path_reference.create',
@@ -471,6 +587,19 @@ function webforms_attestation_prepare_response(array $response, array $prepared,
     $response['http_status'] = $http_status;
 
     return $response;
+}
+
+function webforms_attestation_operation_failure($operation, $code, $message, $operation_id = '', $http_status = 0)
+{
+    return [
+        'operation_id' => $operation_id,
+        'operation' => $operation,
+        'status' => 'failed',
+        'completed_at' => gmdate('c'),
+        'error_code' => $code,
+        'error_message' => $message,
+        'http_status' => $http_status,
+    ];
 }
 
 function webforms_attestation_failure($code, $message)
