@@ -14,6 +14,10 @@ function webforms_handle_attestation_prepare_action()
         webforms_handle_attestation_ipfs_cid_prepare_action();
     }
 
+    if ($operation === 'ipfs.cid.publish') {
+        webforms_handle_attestation_ipfs_cid_publish_action();
+    }
+
     if (!local_channel()) {
         webforms_json_response(webforms_attestation_failure('not_authenticated', 'A current authenticated Hubzilla channel is required.'), 403);
     }
@@ -147,6 +151,85 @@ function webforms_handle_attestation_ipfs_cid_prepare_action()
     $response['operation_id'] = $response['operation_id'] ?? $operation_id;
     $response['operation'] = $response['operation'] ?? 'ipfs.cid.prepare';
     $response['status'] = $response['status'] ?? 'prepared';
+    $response['http_status'] = $http_status;
+
+    webforms_json_response($response, 200);
+}
+
+
+function webforms_handle_attestation_ipfs_cid_publish_action()
+{
+    if (!local_channel()) {
+        webforms_json_response(webforms_attestation_operation_failure(
+            'ipfs.cid.publish',
+            'not_authenticated',
+            'A current authenticated Hubzilla channel is required.'
+        ), 403);
+    }
+
+    $service_pack = webforms_safe_query_value('service_pack');
+    $profile_id = webforms_safe_query_value('profile_id');
+    $operation_id = webforms_safe_query_value('operation_id');
+
+    if ($service_pack === '') {
+        $service_pack = 'ipfs';
+    }
+
+    if ($profile_id === '') {
+        $profile_id = 'ipfs-publication-default';
+    }
+
+    if ($service_pack !== 'ipfs') {
+        webforms_json_response(webforms_attestation_operation_failure(
+            'ipfs.cid.publish',
+            'policy_blocked',
+            'CID publication is currently available only for the IPFS service pack.'
+        ), 400);
+    }
+
+    if ($operation_id === '' || !preg_match('/^[A-Za-z0-9_.:\\-]+$/', $operation_id)) {
+        webforms_json_response(webforms_attestation_operation_failure(
+            'ipfs.cid.publish',
+            'missing_operation_id',
+            'A prepared CID operation_id is required before publishing a CID.'
+        ), 400);
+    }
+
+    $profile = webforms_service_profile_config($service_pack, $profile_id);
+    if (!$profile) {
+        webforms_json_response(webforms_attestation_operation_failure(
+            'ipfs.cid.publish',
+            'policy_blocked',
+            'Unknown service profile.'
+        ), 404);
+    }
+
+    $publish_url = webforms_attestation_orchestrator_operation_url_for_profile($profile, '/ipfs/cid/publish');
+    if ($publish_url === '') {
+        webforms_json_response(webforms_attestation_operation_failure(
+            'ipfs.cid.publish',
+            'policy_blocked',
+            'The selected service profile does not define an IPFS CID publish endpoint.'
+        ), 409);
+    }
+
+    [$response, $error_message, $http_status] = webforms_post_json_url($publish_url, [
+        'operation_id' => $operation_id,
+    ]);
+
+    if ($response === null) {
+        webforms_json_response(webforms_attestation_operation_failure(
+            'ipfs.cid.publish',
+            'orchestrator_cid_publish_failed',
+            $error_message ?: 'Unable to publish candidate CID through orchestrator1.',
+            $operation_id,
+            $http_status
+        ), 502);
+    }
+
+    $response['operation_id'] = $response['operation_id'] ?? $operation_id;
+    $response['operation'] = $response['operation'] ?? 'ipfs.cid.publish';
+    $response['status'] = $response['status'] ?? 'published';
     $response['http_status'] = $http_status;
 
     webforms_json_response($response, 200);

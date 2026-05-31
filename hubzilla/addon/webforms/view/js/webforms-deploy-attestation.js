@@ -3,6 +3,7 @@
 
     let wireQueued = false;
     let lastPreparedOperationId = '';
+    let lastCidPrepared = false;
 
     function init() {
         const runtime = document.getElementById('webforms-runtime');
@@ -84,6 +85,21 @@
             });
             bar.appendChild(button);
         }
+
+        if (!bar.querySelector('[data-webforms-attestation-cid-publish="1"]')) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'btn btn-sm btn-secondary';
+            button.textContent = 'Publish CID';
+            button.dataset.webformsAction = 'attestation.cid.publish';
+            button.dataset.webformsAttestationCidPublish = '1';
+            button.disabled = true;
+            button.title = 'Prepare CID first.';
+            button.addEventListener('click', function () {
+                publishCid(root, button);
+            });
+            bar.appendChild(button);
+        }
     }
 
     function insertActionBar(root, preparePanel, bar) {
@@ -106,7 +122,9 @@
         const previousLabel = button.textContent;
 
         lastPreparedOperationId = '';
+        lastCidPrepared = false;
         setCidPrepareEnabled(root, false);
+        setCidPublishEnabled(root, false);
         button.disabled = true;
         button.textContent = 'Preparing...';
 
@@ -176,9 +194,53 @@
                 throw new Error(errorText(data) || 'CID prepare failed');
             }
 
+            lastCidPrepared = true;
             setPanelText(root, 'result-attestation', formatCidPrepareResponse(data));
+            setCidPublishEnabled(root, true);
         } catch (error) {
+            lastCidPrepared = false;
+            setCidPublishEnabled(root, false);
             setPanelText(root, 'result-attestation', 'Prepare CID\nstatus: failed\nerror: ' + error.message);
+        } finally {
+            button.disabled = false;
+            button.textContent = previousLabel;
+        }
+    }
+
+    async function publishCid(root, button) {
+        const servicePack = currentServicePack();
+        const profileId = fieldValue(root, 'service_profile_id') || 'ipfs-publication-default';
+        const operationId = lastPreparedOperationId;
+        const previousLabel = button.textContent;
+
+        if (!operationId || !lastCidPrepared) {
+            setPanelText(root, 'result-attestation', 'Publish CID\nstatus: failed\nerror: Prepare CID must succeed first.');
+            return;
+        }
+
+        button.disabled = true;
+        button.textContent = 'Publishing...';
+        setPanelText(root, 'result-attestation', 'Publish CID\nstatus: publishing\noperation_id: ' + operationId);
+
+        try {
+            const url = 'webforms?webforms_action=attestation_prepare'
+                + '&operation=' + encodeURIComponent('ipfs.cid.publish')
+                + '&service_pack=' + encodeURIComponent(servicePack)
+                + '&profile_id=' + encodeURIComponent(profileId)
+                + '&operation_id=' + encodeURIComponent(operationId);
+            const response = await fetch(url, {
+                credentials: 'same-origin',
+                headers: { 'Accept': 'application/json' }
+            });
+            const data = await responseJson(response);
+
+            if (!response.ok || !data || data.status === 'failed') {
+                throw new Error(errorText(data) || 'CID publish failed');
+            }
+
+            setPanelText(root, 'result-attestation', formatCidPublishResponse(data));
+        } catch (error) {
+            setPanelText(root, 'result-attestation', 'Publish CID\nstatus: failed\nerror: ' + error.message);
         } finally {
             button.disabled = false;
             button.textContent = previousLabel;
@@ -237,6 +299,16 @@
 
         button.disabled = !enabled;
         button.title = enabled ? 'Prepare candidate CID through orchestrator1.' : 'Prepare Package first.';
+    }
+
+    function setCidPublishEnabled(root, enabled) {
+        const button = root.querySelector('[data-webforms-attestation-cid-publish="1"]');
+        if (!button) {
+            return;
+        }
+
+        button.disabled = !enabled;
+        button.title = enabled ? 'Publish candidate CID through orchestrator1.' : 'Prepare CID first.';
     }
 
     function cleanAttestationPanels(root) {
@@ -314,6 +386,23 @@
             'retrieval: ' + safe(data.retrieval_status),
             'verification: ' + safe(data.verification_status),
             'policy: ' + safe(data.policy_status),
+            'error: ' + safe(data.error_message)
+        ].join('\n');
+    }
+
+    function formatCidPublishResponse(data) {
+        return [
+            'Publish CID',
+            'operation_id: ' + safe(data.operation_id),
+            'status: ' + safe(data.status),
+            'cid: ' + safe(data.cid),
+            'expected_cid: ' + safe(data.expected_cid),
+            'publish: ' + safe(data.publish_status),
+            'pin: ' + safe(data.pin_status),
+            'retrieval: ' + safe(data.retrieval_status),
+            'verification: ' + safe(data.verification_status),
+            'policy: ' + safe(data.policy_status),
+            'backend_node: ' + safe(data.backend_node),
             'error: ' + safe(data.error_message)
         ].join('\n');
     }
