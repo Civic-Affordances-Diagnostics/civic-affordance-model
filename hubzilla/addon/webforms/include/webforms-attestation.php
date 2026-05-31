@@ -33,7 +33,7 @@ function webforms_handle_attestation_prepare_action()
         webforms_json_response(webforms_attestation_failure('policy_blocked', 'Unknown service profile.'), 404);
     }
 
-    $prepare_url = isset($profile['prepare_url']) ? trim((string) $profile['prepare_url']) : '';
+    $prepare_url = webforms_attestation_prepare_url_for_profile($profile);
     if ($prepare_url === '') {
         webforms_json_response(webforms_attestation_failure('policy_blocked', 'The selected service profile does not define an attestation prepare endpoint.'), 409);
     }
@@ -76,6 +76,23 @@ function webforms_handle_attestation_prepare_action()
     }
 
     webforms_json_response(webforms_attestation_prepare_response($response, $prepared, $http_status), 200);
+}
+
+function webforms_attestation_prepare_url_for_profile(array $profile)
+{
+    $configured = isset($profile['prepare_url']) ? trim((string) $profile['prepare_url']) : '';
+    if ($configured !== '') {
+        return $configured;
+    }
+
+    $target = isset($profile['target']) ? (string) $profile['target'] : '';
+    $backend_role = isset($profile['backend_role']) ? (string) $profile['backend_role'] : '';
+
+    if ($target === 'orchestrator1' && $backend_role === 'ipfs_publication') {
+        return 'http://10.0.0.105:8700/attestations/packages/prepare';
+    }
+
+    return '';
 }
 
 function webforms_prepare_latest_own_hubzilla_post_package(array $profile = [])
