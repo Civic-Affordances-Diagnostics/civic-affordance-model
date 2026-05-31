@@ -1,0 +1,1964 @@
+{
+  "schema": "hubzilla.webforms.package",
+  "version": "0.1",
+  "meta": {
+    "id": "ipfs-attest-hubzilla-post",
+    "title": "IPFS Attest Hubzilla Post",
+    "status": "addon-bundled",
+    "service_pack": "ipfs",
+    "webform": "ipfs-attest-hubzilla-post",
+    "certification": {
+      "version": "0.1",
+      "signature": "NULL",
+      "signature_status": "not signed"
+    },
+    "access": {
+      "mode": "public",
+      "public_local_only": true
+    },
+    "generator": {
+      "name": "Hubzilla Webforms",
+      "mode": "addon-bundled",
+      "version": "0.1"
+    },
+    "purpose": "Prepare an authenticated user's own Hubzilla post as an attestation package, then publish, pin, and POSIX-map it through the controlled IPFS/orchestrator backend."
+  },
+  "design": {
+    "schema": "hubzilla.webforms.design",
+    "version": "0.1",
+    "active_tab": "grid",
+    "selected_object_id": null,
+    "grid": {
+      "id": "root-form",
+      "unit": "px",
+      "size": 24,
+      "columns_observed": 22,
+      "rows_observed": 17,
+      "placement_scope": "immediate-container"
+    },
+    "objects": [
+      {
+        "id": "box-profile",
+        "type": "container",
+        "parent": "root-form",
+        "label": "Profile",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 20,
+          "height": 15,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        },
+        "step": "profile"
+      },
+      {
+        "id": "label-profile",
+        "type": "label",
+        "parent": "box-profile",
+        "label": "Profile",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "service_profile_id",
+        "type": "text",
+        "parent": "box-profile",
+        "label": "Service profile ID",
+        "placeholder": "Hubzilla-known service profile",
+        "default": "ipfs-publication-default",
+        "placement": {
+          "x": 1,
+          "y": 3,
+          "width": 9,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "backend_role",
+        "type": "text",
+        "parent": "box-profile",
+        "label": "Backend role",
+        "placeholder": "logical backend role",
+        "default": "ipfs_publication",
+        "placement": {
+          "x": 11,
+          "y": 3,
+          "width": 7,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "endpoint_label",
+        "type": "text",
+        "parent": "box-profile",
+        "label": "Endpoint label",
+        "placeholder": "human-readable backend label",
+        "default": "orchestrator1 / ipfs1 controlled backend",
+        "placement": {
+          "x": 1,
+          "y": 6,
+          "width": 17,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "help-profile",
+        "type": "help_text",
+        "parent": "box-profile",
+        "label": "Profile boundary",
+        "placeholder": "",
+        "default": "This Webform selects a Hubzilla-known orchestrator service profile. The certified JSON names the profile and backend role; the Hubzilla node resolves the actual local endpoint. No raw Kubo URL, git write path, or service secret is portable package data.",
+        "placement": {
+          "x": 1,
+          "y": 9,
+          "width": 17,
+          "height": 4,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "box-verify",
+        "type": "container",
+        "parent": "root-form",
+        "label": "Verify",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 20,
+          "height": 15,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        },
+        "step": "verify"
+      },
+      {
+        "id": "label-verify",
+        "type": "label",
+        "parent": "box-verify",
+        "label": "Verify",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "operation_id",
+        "type": "text",
+        "parent": "box-verify",
+        "label": "Operation ID",
+        "placeholder": "client/request operation id",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 3,
+          "width": 7,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "connection_status",
+        "type": "text",
+        "parent": "box-verify",
+        "label": "Connection Status",
+        "placeholder": "not checked",
+        "default": "not checked",
+        "placement": {
+          "x": 9,
+          "y": 3,
+          "width": 5,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "verify_profile",
+        "type": "button",
+        "parent": "box-verify",
+        "label": "Verify Profile",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 15,
+          "y": 3,
+          "width": 4,
+          "height": 2,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        },
+        "action": "service_profile.verify"
+      },
+      {
+        "id": "execution_active",
+        "type": "text",
+        "parent": "box-verify",
+        "label": "Execution active",
+        "placeholder": "false",
+        "default": "false",
+        "placement": {
+          "x": 1,
+          "y": 6,
+          "width": 5,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "capability_status",
+        "type": "text",
+        "parent": "box-verify",
+        "label": "Capability status",
+        "placeholder": "available",
+        "default": "available",
+        "placement": {
+          "x": 7,
+          "y": 6,
+          "width": 5,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "help-verify",
+        "type": "help_text",
+        "parent": "box-verify",
+        "label": "Verification boundary",
+        "placeholder": "",
+        "default": "Verify Profile checks that the selected profile resolves to orchestrator1 and matches backend role ipfs_publication. It does not publish, pin, unpin, write git/POSIX paths, expose credentials, or call raw Kubo RPC from the browser.",
+        "placement": {
+          "x": 1,
+          "y": 9,
+          "width": 18,
+          "height": 3,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "result-verify-status",
+        "type": "result_panel",
+        "parent": "box-verify",
+        "label": "Profile status",
+        "placeholder": "",
+        "default": "Connection status: not checked\nCapability status: available\nExecution active: false\nBackend role: ipfs_publication\nAuthority boundary safe: not checked",
+        "placement": {
+          "x": 1,
+          "y": 13,
+          "width": 18,
+          "height": 2,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "box-capabilities",
+        "type": "container",
+        "parent": "root-form",
+        "label": "Capabilities",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 20,
+          "height": 15,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        },
+        "step": "capabilities"
+      },
+      {
+        "id": "label-capabilities",
+        "type": "label",
+        "parent": "box-capabilities",
+        "label": "Capabilities",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "result-capability-status",
+        "type": "result_panel",
+        "parent": "box-capabilities",
+        "label": "Profile fields",
+        "placeholder": "",
+        "default": "service_pack: ipfs\nprofile_id: ipfs-publication-default\ntarget: orchestrator1\norchestrator: orchestrator1.internal.diagnostics.kane-il.us\nbackend_role: ipfs_publication\nbackend_node: ipfs1.diagnostics.kane-il.us\nraw_kubo_rpc_exposed: false\nraw_git_write_exposed: false\nstatus: available",
+        "placement": {
+          "x": 1,
+          "y": 3,
+          "width": 8,
+          "height": 10,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "result-capabilities",
+        "type": "result_panel",
+        "parent": "box-capabilities",
+        "label": "Operation list",
+        "placeholder": "",
+        "default": "operations:\nipfs.cid.prepare\nipfs.cid.publish\nipfs.cid.pin\nipfs.cid.request_unpin\ngit_posix.path_reference.create\nipfs.cid.read_verify\n\nAttestation operations required next:\nhubzilla.own_post.resolve\nattestation.package.prepare",
+        "placement": {
+          "x": 10,
+          "y": 3,
+          "width": 9,
+          "height": 10,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "box-select-post",
+        "type": "container",
+        "parent": "root-form",
+        "label": "Select Own Post",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 20,
+          "height": 15,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        },
+        "step": "select-post"
+      },
+      {
+        "id": "label-select-post",
+        "type": "label",
+        "parent": "box-select-post",
+        "label": "Select Own Post",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "own_post_picker",
+        "type": "result_panel",
+        "parent": "box-select-post",
+        "label": "Own post selector",
+        "placeholder": "",
+        "default": "Future picker: authenticated user's own Hubzilla posts with delivery manifests. The user should select an authored post from the local node, not paste someone else's post or an external archive target.",
+        "placement": {
+          "x": 1,
+          "y": 3,
+          "width": 18,
+          "height": 3,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "selected_post_reference",
+        "type": "text",
+        "parent": "box-select-post",
+        "label": "Selected post reference",
+        "placeholder": "local item/mid/guid selected from manifest",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 7,
+          "width": 9,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "source_channel_scope",
+        "type": "text",
+        "parent": "box-select-post",
+        "label": "Source scope",
+        "placeholder": "own channel only",
+        "default": "authenticated_channel_owner",
+        "placement": {
+          "x": 11,
+          "y": 7,
+          "width": 7,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "delivery_manifest_reference",
+        "type": "text",
+        "parent": "box-select-post",
+        "label": "Delivery manifest",
+        "placeholder": "local delivery report/manifest reference",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 10,
+          "width": 9,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "attestation_subject",
+        "type": "text",
+        "parent": "box-select-post",
+        "label": "Attestation subject",
+        "placeholder": "own_hubzilla_post",
+        "default": "own_hubzilla_post",
+        "placement": {
+          "x": 11,
+          "y": 10,
+          "width": 7,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "help-select-post",
+        "type": "help_text",
+        "parent": "box-select-post",
+        "label": "Selection rule",
+        "placeholder": "",
+        "default": "This workflow is for an authenticated user's own Hubzilla post. A post by someone else is archival/evidence capture, not this attestation workflow.",
+        "placement": {
+          "x": 1,
+          "y": 13,
+          "width": 18,
+          "height": 2,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "box-resolve-payload",
+        "type": "container",
+        "parent": "root-form",
+        "label": "Resolve Payload",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 20,
+          "height": 15,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        },
+        "step": "resolve-payload"
+      },
+      {
+        "id": "label-resolve-payload",
+        "type": "label",
+        "parent": "box-resolve-payload",
+        "label": "Resolve Payload",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "resolution_method",
+        "type": "text",
+        "parent": "box-resolve-payload",
+        "label": "Resolution method",
+        "placeholder": "local_hubzilla_source",
+        "default": "local_hubzilla_source",
+        "placement": {
+          "x": 1,
+          "y": 3,
+          "width": 7,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "payload_format",
+        "type": "text",
+        "parent": "box-resolve-payload",
+        "label": "Payload format",
+        "placeholder": "Nomad/Zot6 JSON",
+        "default": "nomad-zot6-json",
+        "placement": {
+          "x": 9,
+          "y": 3,
+          "width": 7,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "resolution_status",
+        "type": "text",
+        "parent": "box-resolve-payload",
+        "label": "Resolution status",
+        "placeholder": "not checked",
+        "default": "not checked",
+        "placement": {
+          "x": 1,
+          "y": 6,
+          "width": 6,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "resolver_owner",
+        "type": "text",
+        "parent": "box-resolve-payload",
+        "label": "Resolver owner",
+        "placeholder": "hubzilla_node",
+        "default": "hubzilla_node",
+        "placement": {
+          "x": 9,
+          "y": 6,
+          "width": 7,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "result-resolver-work",
+        "type": "result_panel",
+        "parent": "box-resolve-payload",
+        "label": "Resolver work for orchestrator/API",
+        "placeholder": "",
+        "default": "Required resolver contract:\n1. Receive selected local post reference from Webforms/Hubzilla.\n2. Confirm the post belongs to the authenticated channel owner.\n3. Produce the Hubzilla/Nomad JSON payload or a precise failure status.\n4. Return stable identifiers and hashes for review.",
+        "placement": {
+          "x": 1,
+          "y": 9,
+          "width": 18,
+          "height": 3,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "result-resolved-fields",
+        "type": "result_panel",
+        "parent": "box-resolve-payload",
+        "label": "Resolved payload fields",
+        "placeholder": "",
+        "default": "item_id | mid | guid | object_id | canonical_url | author_channel | created | edited | delivery_manifest | payload_sha256 | payload_size_bytes | retrieval_status",
+        "placement": {
+          "x": 1,
+          "y": 13,
+          "width": 18,
+          "height": 2,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "box-review-attestation",
+        "type": "container",
+        "parent": "root-form",
+        "label": "Review Attestation",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 20,
+          "height": 15,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        },
+        "step": "review-attestation"
+      },
+      {
+        "id": "label-review-attestation",
+        "type": "label",
+        "parent": "box-review-attestation",
+        "label": "Review Attestation",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "attestation_schema",
+        "type": "text",
+        "parent": "box-review-attestation",
+        "label": "Attestation schema",
+        "placeholder": "schema id",
+        "default": "us.civic-infra.attestation.hubzilla-own-post.v0.1",
+        "placement": {
+          "x": 1,
+          "y": 3,
+          "width": 10,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "attestation_type",
+        "type": "text",
+        "parent": "box-review-attestation",
+        "label": "Attestation type",
+        "placeholder": "attestation type",
+        "default": "hubzilla_own_post_attestation",
+        "placement": {
+          "x": 12,
+          "y": 3,
+          "width": 7,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "affected_status",
+        "type": "text",
+        "parent": "box-review-attestation",
+        "label": "Affected status",
+        "placeholder": "owner/member/resident/status label",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 6,
+          "width": 8,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "policy_status",
+        "type": "text",
+        "parent": "box-review-attestation",
+        "label": "Policy status",
+        "placeholder": "requires_review",
+        "default": "requires_review",
+        "placement": {
+          "x": 11,
+          "y": 6,
+          "width": 7,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "evidence_context",
+        "type": "textarea",
+        "parent": "box-review-attestation",
+        "label": "Evidence context",
+        "placeholder": "Brief account/context for why this authored post is being preserved as attestation",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 9,
+          "width": 9,
+          "height": 4,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "result-attestation-preview",
+        "type": "result_panel",
+        "parent": "box-review-attestation",
+        "label": "Attestation package preview",
+        "placeholder": "",
+        "default": "source: local Hubzilla post\nretrieval: local_hubzilla_source\npayload: Nomad/Zot6 JSON\nverification: owner post confirmed / signatures not yet checked\npublication: pending",
+        "placement": {
+          "x": 11,
+          "y": 9,
+          "width": 8,
+          "height": 4,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "box-publish-pin-map",
+        "type": "container",
+        "parent": "root-form",
+        "label": "Publish / Pin / Map",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 20,
+          "height": 15,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        },
+        "step": "publish-pin-map"
+      },
+      {
+        "id": "label-publish-pin-map",
+        "type": "label",
+        "parent": "box-publish-pin-map",
+        "label": "Publish / Pin / Map",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "publish_intent",
+        "type": "text",
+        "parent": "box-publish-pin-map",
+        "label": "Publish intent",
+        "placeholder": "publish_pin_posix_map",
+        "default": "publish_pin_posix_map",
+        "placement": {
+          "x": 1,
+          "y": 3,
+          "width": 8,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "posix_path_hint",
+        "type": "text",
+        "parent": "box-publish-pin-map",
+        "label": "POSIX path hint",
+        "placeholder": "attestations/<channel>/<date>/<guid>.json",
+        "default": "",
+        "placement": {
+          "x": 10,
+          "y": 3,
+          "width": 8,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "retention_policy",
+        "type": "select",
+        "parent": "box-publish-pin-map",
+        "label": "Retention policy",
+        "placeholder": "",
+        "default": "retained",
+        "placement": {
+          "x": 1,
+          "y": 6,
+          "width": 7,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        },
+        "options": [
+          {
+            "value": "standard",
+            "label": "standard"
+          },
+          {
+            "value": "retained",
+            "label": "retained"
+          },
+          {
+            "value": "requires_review",
+            "label": "requires review"
+          }
+        ]
+      },
+      {
+        "id": "pin_after_publish",
+        "type": "checkbox",
+        "parent": "box-publish-pin-map",
+        "label": "Pin after publish",
+        "placeholder": "",
+        "default": "true",
+        "placement": {
+          "x": 10,
+          "y": 6,
+          "width": 7,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "result-orchestrator-work",
+        "type": "result_panel",
+        "parent": "box-publish-pin-map",
+        "label": "Work for IPFS/Kubo/orchestrator",
+        "placeholder": "",
+        "default": "Required operation chain after attestation review:\n1. attestation.package.prepare\n2. ipfs.cid.publish\n3. ipfs.cid.pin\n4. git_posix.path_reference.create\n5. ipfs.cid.read_verify\nNo raw Kubo RPC, git write path, service credential, or pinset mutation authority is exposed to Webforms.",
+        "placement": {
+          "x": 1,
+          "y": 9,
+          "width": 18,
+          "height": 4,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "box-results",
+        "type": "container",
+        "parent": "root-form",
+        "label": "Results",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 20,
+          "height": 15,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        },
+        "step": "results"
+      },
+      {
+        "id": "label-results",
+        "type": "label",
+        "parent": "box-results",
+        "label": "Results",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "result-attestation",
+        "type": "result_panel",
+        "parent": "box-results",
+        "label": "Attestation result",
+        "placeholder": "",
+        "default": "operation_id\nstatus\nsource_post_reference\nresolved_object_id\npayload_sha256\npayload_size_bytes\nattestation_sha256\nattestation_size_bytes\ncid\npin_status\ngit_path\nmanifest_path\nverification_status\npolicy_status\ncompleted_at\nerror_code\nerror_message",
+        "placement": {
+          "x": 1,
+          "y": 3,
+          "width": 18,
+          "height": 10,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      }
+    ]
+  },
+  "form": {
+    "schema": "hubzilla.webforms.form",
+    "version": "0.1",
+    "id": "ipfs-attest-hubzilla-post",
+    "title": "IPFS Attest Hubzilla Post",
+    "fields": [
+      {
+        "id": "service_profile_id",
+        "type": "text",
+        "label": "Service profile ID",
+        "required": true,
+        "placeholder": "Hubzilla-known service profile",
+        "default": "ipfs-publication-default"
+      },
+      {
+        "id": "backend_role",
+        "type": "text",
+        "label": "Backend role",
+        "required": true,
+        "placeholder": "logical backend role",
+        "default": "ipfs_publication"
+      },
+      {
+        "id": "endpoint_label",
+        "type": "text",
+        "label": "Endpoint label",
+        "required": false,
+        "placeholder": "human-readable backend label",
+        "default": "orchestrator1 / ipfs1 controlled backend"
+      },
+      {
+        "id": "operation_id",
+        "type": "text",
+        "label": "Operation ID",
+        "required": true,
+        "placeholder": "client/request operation id"
+      },
+      {
+        "id": "connection_status",
+        "type": "text",
+        "label": "Connection Status",
+        "required": false,
+        "placeholder": "not checked",
+        "default": "not checked"
+      },
+      {
+        "id": "verify_profile",
+        "type": "button",
+        "label": "Verify Profile",
+        "required": false,
+        "action": "service_profile.verify"
+      },
+      {
+        "id": "execution_active",
+        "type": "text",
+        "label": "Execution active",
+        "required": false,
+        "placeholder": "false",
+        "default": "false"
+      },
+      {
+        "id": "capability_status",
+        "type": "text",
+        "label": "Capability status",
+        "required": false,
+        "placeholder": "available",
+        "default": "available"
+      },
+      {
+        "id": "selected_post_reference",
+        "type": "text",
+        "label": "Selected post reference",
+        "required": false,
+        "placeholder": "local item/mid/guid selected from manifest"
+      },
+      {
+        "id": "source_channel_scope",
+        "type": "text",
+        "label": "Source scope",
+        "required": false,
+        "placeholder": "own channel only",
+        "default": "authenticated_channel_owner"
+      },
+      {
+        "id": "delivery_manifest_reference",
+        "type": "text",
+        "label": "Delivery manifest",
+        "required": false,
+        "placeholder": "local delivery report/manifest reference"
+      },
+      {
+        "id": "attestation_subject",
+        "type": "text",
+        "label": "Attestation subject",
+        "required": false,
+        "placeholder": "own_hubzilla_post",
+        "default": "own_hubzilla_post"
+      },
+      {
+        "id": "resolution_method",
+        "type": "text",
+        "label": "Resolution method",
+        "required": false,
+        "placeholder": "local_hubzilla_source",
+        "default": "local_hubzilla_source"
+      },
+      {
+        "id": "payload_format",
+        "type": "text",
+        "label": "Payload format",
+        "required": false,
+        "placeholder": "Nomad/Zot6 JSON",
+        "default": "nomad-zot6-json"
+      },
+      {
+        "id": "resolution_status",
+        "type": "text",
+        "label": "Resolution status",
+        "required": false,
+        "placeholder": "not checked",
+        "default": "not checked"
+      },
+      {
+        "id": "resolver_owner",
+        "type": "text",
+        "label": "Resolver owner",
+        "required": false,
+        "placeholder": "hubzilla_node",
+        "default": "hubzilla_node"
+      },
+      {
+        "id": "attestation_schema",
+        "type": "text",
+        "label": "Attestation schema",
+        "required": false,
+        "placeholder": "schema id",
+        "default": "us.civic-infra.attestation.hubzilla-own-post.v0.1"
+      },
+      {
+        "id": "attestation_type",
+        "type": "text",
+        "label": "Attestation type",
+        "required": false,
+        "placeholder": "attestation type",
+        "default": "hubzilla_own_post_attestation"
+      },
+      {
+        "id": "affected_status",
+        "type": "text",
+        "label": "Affected status",
+        "required": false,
+        "placeholder": "owner/member/resident/status label"
+      },
+      {
+        "id": "policy_status",
+        "type": "text",
+        "label": "Policy status",
+        "required": false,
+        "placeholder": "requires_review",
+        "default": "requires_review"
+      },
+      {
+        "id": "evidence_context",
+        "type": "textarea",
+        "label": "Evidence context",
+        "required": false,
+        "placeholder": "Brief account/context for why this authored post is being preserved as attestation"
+      },
+      {
+        "id": "publish_intent",
+        "type": "text",
+        "label": "Publish intent",
+        "required": false,
+        "placeholder": "publish_pin_posix_map",
+        "default": "publish_pin_posix_map"
+      },
+      {
+        "id": "posix_path_hint",
+        "type": "text",
+        "label": "POSIX path hint",
+        "required": false,
+        "placeholder": "attestations/<channel>/<date>/<guid>.json"
+      },
+      {
+        "id": "retention_policy",
+        "type": "select",
+        "label": "Retention policy",
+        "required": false,
+        "default": "retained",
+        "options": [
+          {
+            "value": "standard",
+            "label": "standard"
+          },
+          {
+            "value": "retained",
+            "label": "retained"
+          },
+          {
+            "value": "requires_review",
+            "label": "requires review"
+          }
+        ]
+      },
+      {
+        "id": "pin_after_publish",
+        "type": "checkbox",
+        "label": "Pin after publish",
+        "required": false,
+        "default": "true"
+      }
+    ],
+    "layout": [
+      {
+        "id": "box-profile",
+        "type": "container",
+        "parent": "root-form",
+        "x": 1,
+        "y": 1,
+        "width": 20,
+        "height": 15,
+        "unit": "grid",
+        "label": "Profile",
+        "step": "profile"
+      },
+      {
+        "id": "label-profile",
+        "type": "label",
+        "parent": "box-profile",
+        "x": 1,
+        "y": 1,
+        "width": 12,
+        "height": 1,
+        "unit": "grid",
+        "label": "Profile"
+      },
+      {
+        "id": "service_profile_id",
+        "type": "text",
+        "parent": "box-profile",
+        "x": 1,
+        "y": 3,
+        "width": 9,
+        "height": 1,
+        "unit": "grid",
+        "label": "Service profile ID"
+      },
+      {
+        "id": "backend_role",
+        "type": "text",
+        "parent": "box-profile",
+        "x": 11,
+        "y": 3,
+        "width": 7,
+        "height": 1,
+        "unit": "grid",
+        "label": "Backend role"
+      },
+      {
+        "id": "endpoint_label",
+        "type": "text",
+        "parent": "box-profile",
+        "x": 1,
+        "y": 6,
+        "width": 17,
+        "height": 1,
+        "unit": "grid",
+        "label": "Endpoint label"
+      },
+      {
+        "id": "help-profile",
+        "type": "help_text",
+        "parent": "box-profile",
+        "x": 1,
+        "y": 9,
+        "width": 17,
+        "height": 4,
+        "unit": "grid",
+        "label": "Profile boundary",
+        "text": "This Webform selects a Hubzilla-known orchestrator service profile. The certified JSON names the profile and backend role; the Hubzilla node resolves the actual local endpoint. No raw Kubo URL, git write path, or service secret is portable package data."
+      },
+      {
+        "id": "box-verify",
+        "type": "container",
+        "parent": "root-form",
+        "x": 1,
+        "y": 1,
+        "width": 20,
+        "height": 15,
+        "unit": "grid",
+        "label": "Verify",
+        "step": "verify"
+      },
+      {
+        "id": "label-verify",
+        "type": "label",
+        "parent": "box-verify",
+        "x": 1,
+        "y": 1,
+        "width": 12,
+        "height": 1,
+        "unit": "grid",
+        "label": "Verify"
+      },
+      {
+        "id": "operation_id",
+        "type": "text",
+        "parent": "box-verify",
+        "x": 1,
+        "y": 3,
+        "width": 7,
+        "height": 1,
+        "unit": "grid",
+        "label": "Operation ID"
+      },
+      {
+        "id": "connection_status",
+        "type": "text",
+        "parent": "box-verify",
+        "x": 9,
+        "y": 3,
+        "width": 5,
+        "height": 1,
+        "unit": "grid",
+        "label": "Connection Status"
+      },
+      {
+        "id": "verify_profile",
+        "type": "button",
+        "parent": "box-verify",
+        "x": 15,
+        "y": 3,
+        "width": 4,
+        "height": 2,
+        "unit": "grid",
+        "label": "Verify Profile"
+      },
+      {
+        "id": "execution_active",
+        "type": "text",
+        "parent": "box-verify",
+        "x": 1,
+        "y": 6,
+        "width": 5,
+        "height": 1,
+        "unit": "grid",
+        "label": "Execution active"
+      },
+      {
+        "id": "capability_status",
+        "type": "text",
+        "parent": "box-verify",
+        "x": 7,
+        "y": 6,
+        "width": 5,
+        "height": 1,
+        "unit": "grid",
+        "label": "Capability status"
+      },
+      {
+        "id": "help-verify",
+        "type": "help_text",
+        "parent": "box-verify",
+        "x": 1,
+        "y": 9,
+        "width": 18,
+        "height": 3,
+        "unit": "grid",
+        "label": "Verification boundary",
+        "text": "Verify Profile checks that the selected profile resolves to orchestrator1 and matches backend role ipfs_publication. It does not publish, pin, unpin, write git/POSIX paths, expose credentials, or call raw Kubo RPC from the browser."
+      },
+      {
+        "id": "result-verify-status",
+        "type": "result_panel",
+        "parent": "box-verify",
+        "x": 1,
+        "y": 13,
+        "width": 18,
+        "height": 2,
+        "unit": "grid",
+        "label": "Profile status"
+      },
+      {
+        "id": "box-capabilities",
+        "type": "container",
+        "parent": "root-form",
+        "x": 1,
+        "y": 1,
+        "width": 20,
+        "height": 15,
+        "unit": "grid",
+        "label": "Capabilities",
+        "step": "capabilities"
+      },
+      {
+        "id": "label-capabilities",
+        "type": "label",
+        "parent": "box-capabilities",
+        "x": 1,
+        "y": 1,
+        "width": 12,
+        "height": 1,
+        "unit": "grid",
+        "label": "Capabilities"
+      },
+      {
+        "id": "result-capability-status",
+        "type": "result_panel",
+        "parent": "box-capabilities",
+        "x": 1,
+        "y": 3,
+        "width": 8,
+        "height": 10,
+        "unit": "grid",
+        "label": "Profile fields"
+      },
+      {
+        "id": "result-capabilities",
+        "type": "result_panel",
+        "parent": "box-capabilities",
+        "x": 10,
+        "y": 3,
+        "width": 9,
+        "height": 10,
+        "unit": "grid",
+        "label": "Operation list"
+      },
+      {
+        "id": "box-select-post",
+        "type": "container",
+        "parent": "root-form",
+        "x": 1,
+        "y": 1,
+        "width": 20,
+        "height": 15,
+        "unit": "grid",
+        "label": "Select Own Post",
+        "step": "select-post"
+      },
+      {
+        "id": "label-select-post",
+        "type": "label",
+        "parent": "box-select-post",
+        "x": 1,
+        "y": 1,
+        "width": 12,
+        "height": 1,
+        "unit": "grid",
+        "label": "Select Own Post"
+      },
+      {
+        "id": "own_post_picker",
+        "type": "result_panel",
+        "parent": "box-select-post",
+        "x": 1,
+        "y": 3,
+        "width": 18,
+        "height": 3,
+        "unit": "grid",
+        "label": "Own post selector"
+      },
+      {
+        "id": "selected_post_reference",
+        "type": "text",
+        "parent": "box-select-post",
+        "x": 1,
+        "y": 7,
+        "width": 9,
+        "height": 1,
+        "unit": "grid",
+        "label": "Selected post reference"
+      },
+      {
+        "id": "source_channel_scope",
+        "type": "text",
+        "parent": "box-select-post",
+        "x": 11,
+        "y": 7,
+        "width": 7,
+        "height": 1,
+        "unit": "grid",
+        "label": "Source scope"
+      },
+      {
+        "id": "delivery_manifest_reference",
+        "type": "text",
+        "parent": "box-select-post",
+        "x": 1,
+        "y": 10,
+        "width": 9,
+        "height": 1,
+        "unit": "grid",
+        "label": "Delivery manifest"
+      },
+      {
+        "id": "attestation_subject",
+        "type": "text",
+        "parent": "box-select-post",
+        "x": 11,
+        "y": 10,
+        "width": 7,
+        "height": 1,
+        "unit": "grid",
+        "label": "Attestation subject"
+      },
+      {
+        "id": "help-select-post",
+        "type": "help_text",
+        "parent": "box-select-post",
+        "x": 1,
+        "y": 13,
+        "width": 18,
+        "height": 2,
+        "unit": "grid",
+        "label": "Selection rule",
+        "text": "This workflow is for an authenticated user's own Hubzilla post. A post by someone else is archival/evidence capture, not this attestation workflow."
+      },
+      {
+        "id": "box-resolve-payload",
+        "type": "container",
+        "parent": "root-form",
+        "x": 1,
+        "y": 1,
+        "width": 20,
+        "height": 15,
+        "unit": "grid",
+        "label": "Resolve Payload",
+        "step": "resolve-payload"
+      },
+      {
+        "id": "label-resolve-payload",
+        "type": "label",
+        "parent": "box-resolve-payload",
+        "x": 1,
+        "y": 1,
+        "width": 12,
+        "height": 1,
+        "unit": "grid",
+        "label": "Resolve Payload"
+      },
+      {
+        "id": "resolution_method",
+        "type": "text",
+        "parent": "box-resolve-payload",
+        "x": 1,
+        "y": 3,
+        "width": 7,
+        "height": 1,
+        "unit": "grid",
+        "label": "Resolution method"
+      },
+      {
+        "id": "payload_format",
+        "type": "text",
+        "parent": "box-resolve-payload",
+        "x": 9,
+        "y": 3,
+        "width": 7,
+        "height": 1,
+        "unit": "grid",
+        "label": "Payload format"
+      },
+      {
+        "id": "resolution_status",
+        "type": "text",
+        "parent": "box-resolve-payload",
+        "x": 1,
+        "y": 6,
+        "width": 6,
+        "height": 1,
+        "unit": "grid",
+        "label": "Resolution status"
+      },
+      {
+        "id": "resolver_owner",
+        "type": "text",
+        "parent": "box-resolve-payload",
+        "x": 9,
+        "y": 6,
+        "width": 7,
+        "height": 1,
+        "unit": "grid",
+        "label": "Resolver owner"
+      },
+      {
+        "id": "result-resolver-work",
+        "type": "result_panel",
+        "parent": "box-resolve-payload",
+        "x": 1,
+        "y": 9,
+        "width": 18,
+        "height": 3,
+        "unit": "grid",
+        "label": "Resolver work for orchestrator/API"
+      },
+      {
+        "id": "result-resolved-fields",
+        "type": "result_panel",
+        "parent": "box-resolve-payload",
+        "x": 1,
+        "y": 13,
+        "width": 18,
+        "height": 2,
+        "unit": "grid",
+        "label": "Resolved payload fields"
+      },
+      {
+        "id": "box-review-attestation",
+        "type": "container",
+        "parent": "root-form",
+        "x": 1,
+        "y": 1,
+        "width": 20,
+        "height": 15,
+        "unit": "grid",
+        "label": "Review Attestation",
+        "step": "review-attestation"
+      },
+      {
+        "id": "label-review-attestation",
+        "type": "label",
+        "parent": "box-review-attestation",
+        "x": 1,
+        "y": 1,
+        "width": 12,
+        "height": 1,
+        "unit": "grid",
+        "label": "Review Attestation"
+      },
+      {
+        "id": "attestation_schema",
+        "type": "text",
+        "parent": "box-review-attestation",
+        "x": 1,
+        "y": 3,
+        "width": 10,
+        "height": 1,
+        "unit": "grid",
+        "label": "Attestation schema"
+      },
+      {
+        "id": "attestation_type",
+        "type": "text",
+        "parent": "box-review-attestation",
+        "x": 12,
+        "y": 3,
+        "width": 7,
+        "height": 1,
+        "unit": "grid",
+        "label": "Attestation type"
+      },
+      {
+        "id": "affected_status",
+        "type": "text",
+        "parent": "box-review-attestation",
+        "x": 1,
+        "y": 6,
+        "width": 8,
+        "height": 1,
+        "unit": "grid",
+        "label": "Affected status"
+      },
+      {
+        "id": "policy_status",
+        "type": "text",
+        "parent": "box-review-attestation",
+        "x": 11,
+        "y": 6,
+        "width": 7,
+        "height": 1,
+        "unit": "grid",
+        "label": "Policy status"
+      },
+      {
+        "id": "evidence_context",
+        "type": "textarea",
+        "parent": "box-review-attestation",
+        "x": 1,
+        "y": 9,
+        "width": 9,
+        "height": 4,
+        "unit": "grid",
+        "label": "Evidence context"
+      },
+      {
+        "id": "result-attestation-preview",
+        "type": "result_panel",
+        "parent": "box-review-attestation",
+        "x": 11,
+        "y": 9,
+        "width": 8,
+        "height": 4,
+        "unit": "grid",
+        "label": "Attestation package preview"
+      },
+      {
+        "id": "box-publish-pin-map",
+        "type": "container",
+        "parent": "root-form",
+        "x": 1,
+        "y": 1,
+        "width": 20,
+        "height": 15,
+        "unit": "grid",
+        "label": "Publish / Pin / Map",
+        "step": "publish-pin-map"
+      },
+      {
+        "id": "label-publish-pin-map",
+        "type": "label",
+        "parent": "box-publish-pin-map",
+        "x": 1,
+        "y": 1,
+        "width": 12,
+        "height": 1,
+        "unit": "grid",
+        "label": "Publish / Pin / Map"
+      },
+      {
+        "id": "publish_intent",
+        "type": "text",
+        "parent": "box-publish-pin-map",
+        "x": 1,
+        "y": 3,
+        "width": 8,
+        "height": 1,
+        "unit": "grid",
+        "label": "Publish intent"
+      },
+      {
+        "id": "posix_path_hint",
+        "type": "text",
+        "parent": "box-publish-pin-map",
+        "x": 10,
+        "y": 3,
+        "width": 8,
+        "height": 1,
+        "unit": "grid",
+        "label": "POSIX path hint"
+      },
+      {
+        "id": "retention_policy",
+        "type": "select",
+        "parent": "box-publish-pin-map",
+        "x": 1,
+        "y": 6,
+        "width": 7,
+        "height": 1,
+        "unit": "grid",
+        "label": "Retention policy"
+      },
+      {
+        "id": "pin_after_publish",
+        "type": "checkbox",
+        "parent": "box-publish-pin-map",
+        "x": 10,
+        "y": 6,
+        "width": 7,
+        "height": 1,
+        "unit": "grid",
+        "label": "Pin after publish"
+      },
+      {
+        "id": "result-orchestrator-work",
+        "type": "result_panel",
+        "parent": "box-publish-pin-map",
+        "x": 1,
+        "y": 9,
+        "width": 18,
+        "height": 4,
+        "unit": "grid",
+        "label": "Work for IPFS/Kubo/orchestrator"
+      },
+      {
+        "id": "box-results",
+        "type": "container",
+        "parent": "root-form",
+        "x": 1,
+        "y": 1,
+        "width": 20,
+        "height": 15,
+        "unit": "grid",
+        "label": "Results",
+        "step": "results"
+      },
+      {
+        "id": "label-results",
+        "type": "label",
+        "parent": "box-results",
+        "x": 1,
+        "y": 1,
+        "width": 12,
+        "height": 1,
+        "unit": "grid",
+        "label": "Results"
+      },
+      {
+        "id": "result-attestation",
+        "type": "result_panel",
+        "parent": "box-results",
+        "x": 1,
+        "y": 3,
+        "width": 18,
+        "height": 10,
+        "unit": "grid",
+        "label": "Attestation result"
+      }
+    ]
+  },
+  "deploy": {
+    "schema": "hubzilla.webforms.deploy",
+    "version": "0.1",
+    "workflow": {
+      "steps": [
+        {
+          "id": "profile",
+          "label": "Profile"
+        },
+        {
+          "id": "verify",
+          "label": "Verify"
+        },
+        {
+          "id": "capabilities",
+          "label": "Capabilities"
+        },
+        {
+          "id": "select-post",
+          "label": "Select Own Post"
+        },
+        {
+          "id": "resolve-payload",
+          "label": "Resolve Payload"
+        },
+        {
+          "id": "review-attestation",
+          "label": "Review Attestation"
+        },
+        {
+          "id": "publish-pin-map",
+          "label": "Publish / Pin / Map"
+        },
+        {
+          "id": "results",
+          "label": "Results"
+        }
+      ]
+    },
+    "operation_contract": {
+      "target": "orchestrator1",
+      "backend_role": "ipfs_publication",
+      "service_profile_id": "ipfs-publication-default",
+      "execution_active": false,
+      "primary_subject": "authenticated_user_own_hubzilla_post",
+      "required_future_operations": [
+        "hubzilla.own_post.resolve",
+        "attestation.package.prepare",
+        "ipfs.cid.publish",
+        "ipfs.cid.pin",
+        "git_posix.path_reference.create",
+        "ipfs.cid.read_verify"
+      ],
+      "non_goals": [
+        "archive someone else's post",
+        "retrieve arbitrary external network content",
+        "call raw Kubo RPC from Webforms",
+        "write git/POSIX paths from Webforms",
+        "store credentials in portable JSON"
+      ]
+    }
+  },
+  "runtime": {
+    "schema": "hubzilla.webforms.runtime",
+    "version": "0.1",
+    "storage": {
+      "mode": "none"
+    },
+    "services": [
+      {
+        "id": "service-attest-hubzilla-post",
+        "type": "attestation",
+        "action": "attestation.hubzilla_post.prepare_publish",
+        "execution": {
+          "active": false,
+          "reason": "Attestation execution is not active in Webforms."
+        },
+        "target": "orchestrator1",
+        "backend_role": "ipfs_publication",
+        "service_profile_id": "ipfs-publication-default"
+      },
+      {
+        "id": "service-resolve-own-post",
+        "type": "hubzilla",
+        "action": "hubzilla.own_post.resolve",
+        "execution": {
+          "active": false,
+          "reason": "Local post resolver contract is not implemented yet."
+        },
+        "target": "hubzilla-local",
+        "scope": "authenticated_channel_owner"
+      },
+      {
+        "id": "service-publish-attestation",
+        "type": "ipfs",
+        "action": "ipfs.cid.publish",
+        "execution": {
+          "active": false,
+          "reason": "Publish execution is not active in Webforms."
+        },
+        "target": "orchestrator1",
+        "backend_role": "ipfs_publication"
+      },
+      {
+        "id": "service-pin-attestation",
+        "type": "ipfs",
+        "action": "ipfs.cid.pin",
+        "execution": {
+          "active": false,
+          "reason": "Pin execution is not active in Webforms."
+        },
+        "target": "orchestrator1",
+        "backend_role": "ipfs_publication"
+      },
+      {
+        "id": "service-map-attestation",
+        "type": "git_posix",
+        "action": "git_posix.path_reference.create",
+        "execution": {
+          "active": false,
+          "reason": "POSIX path mapping execution is not active in Webforms."
+        },
+        "target": "orchestrator1",
+        "backend_role": "ipfs_publication"
+      }
+    ],
+    "federation": [],
+    "notes": [
+      "This addon-bundled package is declarative only.",
+      "This workflow is for an authenticated user's own Hubzilla post, not archival capture of someone else's post.",
+      "The local Hubzilla node should be the primary source for resolving the post payload.",
+      "The delivery manifest is selection/distribution evidence, not the primary source of the payload.",
+      "No Kubo RPC, git/POSIX write, credential use, service call, server write, database write, or federation action is performed by this package.",
+      "The package targets orchestrator1 conceptually; raw endpoint URLs and mutation authority are not embedded in portable JSON."
+    ]
+  }
+}
