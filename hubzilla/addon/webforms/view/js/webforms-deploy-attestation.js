@@ -3,12 +3,15 @@
 
     let wireQueued = false;
     let lastPreparedOperationId = '';
+    let lastPreparedPackage = null;
     let lastCidPrepared = false;
+    let lastCidPublished = false;
+    let lastCidPinned = false;
+    let lastPathCreated = false;
 
     function init() {
         const runtime = document.getElementById('webforms-runtime');
         const root = document.getElementById('webforms-deploy-render-root');
-
         if (!runtime || runtime.dataset.webformsMode !== 'deploy' || !root) {
             return;
         }
@@ -16,7 +19,6 @@
         const observer = new MutationObserver(function () {
             queueWire(root);
         });
-
         observer.observe(root, { childList: true, subtree: true });
         queueWire(root);
     }
@@ -25,7 +27,6 @@
         if (wireQueued) {
             return;
         }
-
         wireQueued = true;
         window.setTimeout(function () {
             wireQueued = false;
@@ -54,64 +55,60 @@
             bar.style.border = '1px solid #d8d8d8';
             bar.style.borderRadius = '4px';
             bar.style.background = '#f8f9fa';
-
             insertActionBar(root, preparePanel, bar);
         }
 
-        if (!bar.querySelector('[data-webforms-attestation-prepare="1"]')) {
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.className = 'btn btn-sm btn-primary';
-            button.textContent = 'Prepare Package';
-            button.dataset.webformsAction = 'attestation.prepare';
-            button.dataset.webformsAttestationPrepare = '1';
-            button.addEventListener('click', function () {
-                prepareAttestation(root, button);
-            });
-            bar.appendChild(button);
+        addActionButton(bar, 'Prepare Package', 'attestation.prepare', 'primary', 'prepare', false, function (button) {
+            prepareAttestation(root, button);
+        });
+        addActionButton(bar, 'Prepare CID', 'attestation.cid.prepare', 'secondary', 'cidPrepare', true, function (button) {
+            prepareCid(root, button);
+        });
+        addActionButton(bar, 'Publish CID', 'attestation.cid.publish', 'secondary', 'cidPublish', true, function (button) {
+            publishCid(root, button);
+        });
+        addActionButton(bar, 'Pin CID', 'attestation.cid.pin', 'secondary', 'cidPin', true, function (button) {
+            pinCid(root, button);
+        });
+        addActionButton(bar, 'Add POSIX Path', 'attestation.git_posix.create', 'secondary', 'pathCreate', true, function (button) {
+            createPathReference(root, button);
+        });
+        addActionButton(bar, 'Read / Verify', 'attestation.cid.read_verify', 'secondary', 'readVerify', true, function (button) {
+            readVerifyCid(root, button);
+        });
+
+        syncButtonState(root);
+    }
+
+    function addActionButton(bar, label, action, variant, key, disabled, onClick) {
+        const selector = '[data-webforms-attestation-key="' + cssEscape(key) + '"]';
+        if (bar.querySelector(selector)) {
+            return;
         }
 
-        if (!bar.querySelector('[data-webforms-attestation-cid-prepare="1"]')) {
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.className = 'btn btn-sm btn-secondary';
-            button.textContent = 'Prepare CID';
-            button.dataset.webformsAction = 'attestation.cid.prepare';
-            button.dataset.webformsAttestationCidPrepare = '1';
-            button.disabled = true;
-            button.title = 'Prepare Package first.';
-            button.addEventListener('click', function () {
-                prepareCid(root, button);
-            });
-            bar.appendChild(button);
-        }
-
-        if (!bar.querySelector('[data-webforms-attestation-cid-publish="1"]')) {
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.className = 'btn btn-sm btn-secondary';
-            button.textContent = 'Publish CID';
-            button.dataset.webformsAction = 'attestation.cid.publish';
-            button.dataset.webformsAttestationCidPublish = '1';
-            button.disabled = true;
-            button.title = 'Prepare CID first.';
-            button.addEventListener('click', function () {
-                publishCid(root, button);
-            });
-            bar.appendChild(button);
-        }
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn btn-sm btn-' + variant;
+        button.textContent = label;
+        button.dataset.webformsAction = action;
+        button.dataset.webformsAttestationKey = key;
+        button.disabled = Boolean(disabled);
+        button.addEventListener('click', function () {
+            onClick(button);
+        });
+        bar.appendChild(button);
     }
 
     function insertActionBar(root, preparePanel, bar) {
         let anchor = preparePanel;
-
         while (anchor.parentElement && anchor.parentElement !== root) {
             anchor = anchor.parentElement;
         }
 
         if (anchor && anchor.parentElement === root) {
             root.insertBefore(bar, anchor);
-        } else {
+        }
+        else {
             root.insertBefore(bar, root.firstChild);
         }
     }
@@ -121,13 +118,11 @@
         const profileId = fieldValue(root, 'service_profile_id') || 'ipfs-publication-default';
         const previousLabel = button.textContent;
 
-        lastPreparedOperationId = '';
-        lastCidPrepared = false;
-        setCidPrepareEnabled(root, false);
-        setCidPublishEnabled(root, false);
+        resetOperationState();
+        syncButtonState(root);
+
         button.disabled = true;
         button.textContent = 'Preparing...';
-
         setFieldValue(root, 'prepare_status', 'preparing');
         setFieldValue(root, 'stored', 'false');
         setFieldValue(root, 'stored_path', '');
@@ -135,21 +130,20 @@
         setPanelText(root, 'result-attestation', 'Preparing package through Hubzilla/Webforms and orchestrator1.');
 
         try {
-            const url = 'webforms?webforms_action=attestation_prepare'
-                + '&service_pack=' + encodeURIComponent(servicePack)
-                + '&profile_id=' + encodeURIComponent(profileId);
+            const url = 'webforms?webforms_action=attestation_prepare' +
+                '&service_pack=' + encodeURIComponent(servicePack) +
+                '&profile_id=' + encodeURIComponent(profileId);
             const response = await fetch(url, {
                 credentials: 'same-origin',
                 headers: { 'Accept': 'application/json' }
             });
             const data = await responseJson(response);
-
             if (!response.ok || !data || data.status === 'failed') {
                 throw new Error(errorText(data) || 'attestation prepare failed');
             }
-
             updatePrepareResults(root, data);
-        } catch (error) {
+        }
+        catch (error) {
             setFieldValue(root, 'prepare_status', 'failed');
             setFieldValue(root, 'current_channel_status', 'requires authenticated channel');
             setFieldValue(root, 'latest_post_status', 'not resolved');
@@ -157,111 +151,148 @@
             setFieldValue(root, 'stored', 'false');
             setPanelText(root, 'result-prepare-expected', 'Prepare Package\nstatus: failed\nerror: ' + error.message);
             setPanelText(root, 'result-attestation', 'Prepare Package failed.\nerror: ' + error.message);
-        } finally {
+        }
+        finally {
             button.disabled = false;
             button.textContent = previousLabel;
+            syncButtonState(root);
         }
     }
 
     async function prepareCid(root, button) {
-        const servicePack = currentServicePack();
-        const profileId = fieldValue(root, 'service_profile_id') || 'ipfs-publication-default';
-        const operationId = lastPreparedOperationId;
-        const previousLabel = button.textContent;
-
-        if (!operationId) {
+        if (!lastPreparedOperationId) {
             setPanelText(root, 'result-attestation', 'Prepare CID\nstatus: failed\nerror: Prepare Package must succeed first.');
             return;
         }
 
-        button.disabled = true;
-        button.textContent = 'Preparing...';
-        setPanelText(root, 'result-attestation', 'Prepare CID\nstatus: preparing\noperation_id: ' + operationId);
-
-        try {
-            const url = 'webforms?webforms_action=attestation_prepare'
-                + '&operation=' + encodeURIComponent('ipfs.cid.prepare')
-                + '&service_pack=' + encodeURIComponent(servicePack)
-                + '&profile_id=' + encodeURIComponent(profileId)
-                + '&operation_id=' + encodeURIComponent(operationId);
-            const response = await fetch(url, {
-                credentials: 'same-origin',
-                headers: { 'Accept': 'application/json' }
-            });
-            const data = await responseJson(response);
-
-            if (!response.ok || !data || data.status === 'failed') {
-                throw new Error(errorText(data) || 'CID prepare failed');
-            }
-
-            lastCidPrepared = true;
-            setPanelText(root, 'result-attestation', formatCidPrepareResponse(data));
-            setCidPublishEnabled(root, true);
-        } catch (error) {
-            lastCidPrepared = false;
-            setCidPublishEnabled(root, false);
-            setPanelText(root, 'result-attestation', 'Prepare CID\nstatus: failed\nerror: ' + error.message);
-        } finally {
-            button.disabled = false;
-            button.textContent = previousLabel;
+        const data = await runOperation(root, button, 'ipfs.cid.prepare', 'Prepare CID', 'Preparing...', {
+            operation_id: lastPreparedOperationId
+        });
+        if (!data) {
+            return;
         }
+
+        lastCidPrepared = true;
+        setPanelText(root, 'result-attestation', formatCidPrepareResponse(data));
+        syncButtonState(root);
     }
 
     async function publishCid(root, button) {
-        const servicePack = currentServicePack();
-        const profileId = fieldValue(root, 'service_profile_id') || 'ipfs-publication-default';
-        const operationId = lastPreparedOperationId;
-        const previousLabel = button.textContent;
-
-        if (!operationId || !lastCidPrepared) {
+        if (!lastPreparedOperationId || !lastCidPrepared) {
             setPanelText(root, 'result-attestation', 'Publish CID\nstatus: failed\nerror: Prepare CID must succeed first.');
             return;
         }
 
+        const data = await runOperation(root, button, 'ipfs.cid.publish', 'Publish CID', 'Publishing...', {
+            operation_id: lastPreparedOperationId
+        });
+        if (!data) {
+            return;
+        }
+
+        lastCidPublished = data.status === 'published' || data.publish_status === 'published' || Boolean(data.cid);
+        setPanelText(root, 'result-attestation', formatCidPublishResponse(data));
+        syncButtonState(root);
+    }
+
+    async function pinCid(root, button) {
+        if (!lastPreparedOperationId || !lastCidPublished) {
+            setPanelText(root, 'result-attestation', 'Pin CID\nstatus: failed\nerror: Publish CID must succeed first.');
+            return;
+        }
+
+        const data = await runOperation(root, button, 'ipfs.cid.pin', 'Pin CID', 'Pinning...', {
+            operation_id: lastPreparedOperationId
+        });
+        if (!data) {
+            return;
+        }
+
+        lastCidPinned = data.status === 'pinned' || data.pin_status === 'pinned';
+        setPanelText(root, 'result-attestation', formatPinResponse(data));
+        syncButtonState(root);
+    }
+
+    async function createPathReference(root, button) {
+        if (!lastPreparedOperationId || !lastCidPinned) {
+            setPanelText(root, 'result-attestation', 'Add POSIX Path\nstatus: failed\nerror: Pin CID must succeed first.');
+            return;
+        }
+
+        const posixPath = pathForPreparedPackage(lastPreparedPackage);
+        const uuid = preparedPostValue(lastPreparedPackage, 'uuid') || 'own-post-attestation';
+        const data = await runOperation(root, button, 'git_posix.path_reference.create', 'Add POSIX Path', 'Creating...', {
+            operation_id: lastPreparedOperationId,
+            posix_path: posixPath,
+            path_role: 'attestation_record',
+            commit_message: 'Create Hubzilla own-post attestation path reference ' + uuid,
+            manifest_title: 'Hubzilla own-post attestation ' + uuid,
+            manifest_description: 'CID reference for a Hubzilla own-post attestation prepared through Webforms.'
+        });
+        if (!data) {
+            return;
+        }
+
+        lastPathCreated = data.status === 'completed' || data.path_status === 'created' || Boolean(data.commit_sha);
+        setPanelText(root, 'result-attestation', formatPathResponse(data));
+        syncButtonState(root);
+    }
+
+    async function readVerifyCid(root, button) {
+        if (!lastPreparedOperationId || !lastPathCreated) {
+            setPanelText(root, 'result-attestation', 'Read / Verify\nstatus: failed\nerror: Add POSIX Path must succeed first.');
+            return;
+        }
+
+        const data = await runOperation(root, button, 'ipfs.cid.read_verify', 'Read / Verify', 'Verifying...', {
+            operation_id: lastPreparedOperationId
+        });
+        if (!data) {
+            return;
+        }
+
+        setPanelText(root, 'result-attestation', formatReadVerifyResponse(data));
+        setPanelText(root, 'result-prepare-expected', formatDurableSummary(data));
+        syncButtonState(root);
+    }
+
+    async function runOperation(root, button, operation, title, activeLabel, payload) {
+        const servicePack = currentServicePack();
+        const profileId = fieldValue(root, 'service_profile_id') || 'ipfs-publication-default';
+        const previousLabel = button.textContent;
+
         button.disabled = true;
-        button.textContent = 'Publishing...';
-        setPanelText(root, 'result-attestation', 'Publish CID\nstatus: publishing\noperation_id: ' + operationId);
+        button.textContent = activeLabel;
+        setPanelText(root, 'result-attestation', title + '\nstatus: running\noperation_id: ' + safe(payload.operation_id));
 
         try {
-            const url = 'webforms?webforms_action=attestation_prepare'
-                + '&operation=' + encodeURIComponent('ipfs.cid.publish')
-                + '&service_pack=' + encodeURIComponent(servicePack)
-                + '&profile_id=' + encodeURIComponent(profileId)
-                + '&operation_id=' + encodeURIComponent(operationId);
+            const url = 'webforms?webforms_action=attestation_prepare' +
+                '&operation=' + encodeURIComponent(operation) +
+                '&service_pack=' + encodeURIComponent(servicePack) +
+                '&profile_id=' + encodeURIComponent(profileId);
             const response = await fetch(url, {
+                method: 'POST',
                 credentials: 'same-origin',
-                headers: { 'Accept': 'application/json' }
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
             });
             const data = await responseJson(response);
-
             if (!response.ok || !data || data.status === 'failed') {
-                throw new Error(errorText(data) || 'CID publish failed');
+                throw new Error(errorText(data) || (title + ' failed'));
             }
-
-            setPanelText(root, 'result-attestation', formatCidPublishResponse(data));
-        } catch (error) {
-            setPanelText(root, 'result-attestation', 'Publish CID\nstatus: failed\nerror: ' + error.message);
-        } finally {
-            button.disabled = false;
-            button.textContent = previousLabel;
+            return data;
         }
-    }
-
-    function currentServicePack() {
-        const runtime = document.getElementById('webforms-runtime');
-        return (runtime && runtime.dataset.webformsServicePack) || 'ipfs';
-    }
-
-    async function responseJson(response) {
-        const text = await response.text();
-        if (!text) {
+        catch (error) {
+            setPanelText(root, 'result-attestation', title + '\nstatus: failed\nerror: ' + error.message);
             return null;
         }
-
-        try {
-            return JSON.parse(text);
-        } catch (error) {
-            throw new Error('invalid JSON response');
+        finally {
+            button.disabled = false;
+            button.textContent = previousLabel;
+            syncButtonState(root);
         }
     }
 
@@ -273,8 +304,10 @@
         const delivery = prepared.delivery_manifest || {};
         const identity = prepared.identity || {};
 
-        lastPreparedOperationId = data.operation_id || '';
+        lastPreparedOperationId = data.operation_id || prepared.operation_id || '';
+        lastPreparedPackage = prepared;
 
+        setFieldValue(root, 'operation_id', lastPreparedOperationId);
         setFieldValue(root, 'prepare_status', data.status || 'prepared');
         setFieldValue(root, 'stored', data.stored ? 'true' : 'false');
         setFieldValue(root, 'stored_path', data.stored_path || '');
@@ -288,27 +321,44 @@
         setPanelText(root, 'result-attestation-preview', formatAttestationPreview(data, prepared));
         setPanelText(root, 'result-resolved-fields', formatResolvedFields(source, identity, post, payload, delivery));
 
-        setCidPrepareEnabled(root, Boolean(data.stored && lastPreparedOperationId));
+        syncButtonState(root);
     }
 
-    function setCidPrepareEnabled(root, enabled) {
-        const button = root.querySelector('[data-webforms-attestation-cid-prepare="1"]');
+    function resetOperationState() {
+        lastPreparedOperationId = '';
+        lastPreparedPackage = null;
+        lastCidPrepared = false;
+        lastCidPublished = false;
+        lastCidPinned = false;
+        lastPathCreated = false;
+    }
+
+    function syncButtonState(root) {
+        setButtonEnabled(root, 'cidPrepare', Boolean(lastPreparedOperationId));
+        setButtonEnabled(root, 'cidPublish', Boolean(lastPreparedOperationId && lastCidPrepared));
+        setButtonEnabled(root, 'cidPin', Boolean(lastPreparedOperationId && lastCidPublished));
+        setButtonEnabled(root, 'pathCreate', Boolean(lastPreparedOperationId && lastCidPinned));
+        setButtonEnabled(root, 'readVerify', Boolean(lastPreparedOperationId && lastPathCreated));
+    }
+
+    function setButtonEnabled(root, key, enabled) {
+        const button = root.querySelector('[data-webforms-attestation-key="' + cssEscape(key) + '"]');
         if (!button) {
             return;
         }
-
         button.disabled = !enabled;
-        button.title = enabled ? 'Prepare candidate CID through orchestrator1.' : 'Prepare Package first.';
+        button.title = enabled ? '' : buttonGateText(key);
     }
 
-    function setCidPublishEnabled(root, enabled) {
-        const button = root.querySelector('[data-webforms-attestation-cid-publish="1"]');
-        if (!button) {
-            return;
-        }
-
-        button.disabled = !enabled;
-        button.title = enabled ? 'Publish candidate CID through orchestrator1.' : 'Prepare CID first.';
+    function buttonGateText(key) {
+        const gates = {
+            cidPrepare: 'Prepare Package first.',
+            cidPublish: 'Prepare CID first.',
+            cidPin: 'Publish CID first.',
+            pathCreate: 'Pin CID first.',
+            readVerify: 'Add POSIX Path first.'
+        };
+        return gates[key] || '';
     }
 
     function cleanAttestationPanels(root) {
@@ -338,6 +388,47 @@
                 well.style.marginBottom = '0';
             }
         });
+    }
+
+    function currentServicePack() {
+        const runtime = document.getElementById('webforms-runtime');
+        return (runtime && runtime.dataset.webformsServicePack) || 'ipfs';
+    }
+
+    async function responseJson(response) {
+        const text = await response.text();
+        if (!text) {
+            return null;
+        }
+        try {
+            return JSON.parse(text);
+        }
+        catch (error) {
+            throw new Error('invalid JSON response');
+        }
+    }
+
+    function pathForPreparedPackage(prepared) {
+        const source = (prepared && prepared.source) || {};
+        const post = (prepared && prepared.post) || {};
+        const channel = cleanPathSegment(source.channel_address || 'unknown-channel');
+        const created = String(post.created || '').slice(0, 10);
+        const date = /^\d{4}-\d{2}-\d{2}$/.test(created) ? created : new Date().toISOString().slice(0, 10);
+        const uuid = cleanPathSegment(post.uuid || post.mid || 'own-post-attestation');
+        return 'kane-il/hubzilla/attestations/own-posts/' + channel + '/' + date + '/' + uuid + '.json';
+    }
+
+    function preparedPostValue(prepared, key) {
+        return prepared && prepared.post && prepared.post[key] ? String(prepared.post[key]) : '';
+    }
+
+    function cleanPathSegment(value) {
+        const segment = String(value || '')
+            .toLowerCase()
+            .replace(/[^a-z0-9._-]+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .slice(0, 96);
+        return segment || 'unknown';
     }
 
     function formatPrepareSummary(data) {
@@ -407,10 +498,81 @@
         ].join('\n');
     }
 
+    function formatPinResponse(data) {
+        return [
+            'Pin CID',
+            'operation_id: ' + safe(data.operation_id),
+            'status: ' + safe(data.status),
+            'cid: ' + safe(data.cid),
+            'pin_status: ' + safe(data.pin_status),
+            'pin_type: ' + safe(data.pin_type),
+            'publish: ' + safe(data.publish_status),
+            'retrieval: ' + safe(data.retrieval_status),
+            'verification: ' + safe(data.verification_status),
+            'policy: ' + safe(data.policy_status),
+            'backend_node: ' + safe(data.backend_node),
+            'node_peer_id: ' + safe(data.node_peer_id),
+            'error: ' + safe(data.error_message)
+        ].join('\n');
+    }
+
+    function formatPathResponse(data) {
+        return [
+            'Add POSIX Path',
+            'operation_id: ' + safe(data.operation_id),
+            'status: ' + safe(data.status),
+            'cid: ' + safe(data.cid),
+            'git_path: ' + safe(data.git_path),
+            'manifest_path: ' + safe(data.manifest_path),
+            'path_status: ' + safe(data.path_status),
+            'commit_sha: ' + safe(data.commit_sha),
+            'verification: ' + safe(data.verification_status),
+            'policy: ' + safe(data.policy_status),
+            'error: ' + safe(data.error_message)
+        ].join('\n');
+    }
+
+    function formatReadVerifyResponse(data) {
+        return [
+            'Read / Verify',
+            'operation_id: ' + safe(data.operation_id),
+            'status: ' + safe(data.status),
+            'cid: ' + safe(data.cid),
+            'ipfs_uri: ' + safe(data.ipfs_uri),
+            'content_type: ' + safe(data.content_type),
+            'size_bytes: ' + safe(data.size_bytes),
+            'sha256: ' + safe(data.sha256),
+            'pin_status: ' + safe(data.pin_status),
+            'pin_type: ' + safe(data.pin_type),
+            'retrieval: ' + safe(data.retrieval_status),
+            'verification: ' + safe(data.verification_status),
+            'content_verified: ' + boolText(data.content_verified),
+            'git_reference_verified: ' + boolText(data.git_reference_verified),
+            'git_path: ' + safe(data.git_path),
+            'path_status: ' + safe(data.path_status),
+            'commit_sha: ' + safe(data.commit_sha),
+            'policy: ' + safe(data.policy_status),
+            'error: ' + safe(data.error_message)
+        ].join('\n');
+    }
+
+    function formatDurableSummary(data) {
+        return [
+            'Durable Publication Result',
+            'status: ' + safe(data.status),
+            'cid: ' + safe(data.cid),
+            'pin_status: ' + safe(data.pin_status),
+            'retrieval_status: ' + safe(data.retrieval_status),
+            'content_verified: ' + boolText(data.content_verified),
+            'git_reference_verified: ' + boolText(data.git_reference_verified),
+            'git_path: ' + safe(data.git_path),
+            'commit_sha: ' + safe(data.commit_sha)
+        ].join('\n');
+    }
+
     function formatAttestationPreview(data, prepared) {
         const preview = prepared.attestation_preview || {};
         const plan = prepared.publication_plan || {};
-
         return [
             'schema: ' + safe(preview.schema),
             'attestation_type: ' + safe(preview.attestation_type),
@@ -444,8 +606,7 @@
         if (!data || typeof data !== 'object') {
             return '';
         }
-
-        return data.error_message || data.error_code || '';
+        return data.error_message || data.error_code || data.detail || '';
     }
 
     function fieldValue(root, id) {
@@ -471,11 +632,14 @@
         return Array.isArray(value) ? value.join(', ') : safe(value);
     }
 
+    function boolText(value) {
+        return value ? 'true' : 'false';
+    }
+
     function safe(value) {
         if (value === null || typeof value === 'undefined') {
             return '';
         }
-
         return String(value);
     }
 
@@ -483,13 +647,13 @@
         if (window.CSS && typeof window.CSS.escape === 'function') {
             return window.CSS.escape(value);
         }
-
         return String(value).replace(/"/g, '\\"');
     }
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
-    } else {
+    }
+    else {
         init();
     }
 }());
