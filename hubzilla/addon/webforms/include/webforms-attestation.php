@@ -346,19 +346,20 @@ function webforms_attestation_post_summary(array $post)
 function webforms_attestation_delivery_manifest($channel_id, $mid)
 {
     $rows = q(
-        "SELECT dreport_site, dreport_result, dreport_name, dreport_time, dreport_xchan, dreport_queue
+        "SELECT dreport_channel, dreport_site, dreport_result, dreport_name, dreport_time, dreport_xchan, dreport_queue
            FROM dreport
-          WHERE dreport_channel = %d
-            AND dreport_mid = '%s'
+          WHERE dreport_mid = '%s'
+            AND (dreport_channel = %d OR dreport_channel = 0)
           ORDER BY dreport_time ASC, dreport_id ASC",
-        intval($channel_id),
-        dbesc($mid)
+        dbesc($mid),
+        intval($channel_id)
     );
 
     $reports = [];
     if ($rows) {
         foreach ($rows as $row) {
             $reports[] = [
+                'dreport_channel' => (int) ($row['dreport_channel'] ?? 0),
                 'dreport_site' => $row['dreport_site'] ?? '',
                 'dreport_result' => $row['dreport_result'] ?? '',
                 'dreport_name' => $row['dreport_name'] ?? '',
