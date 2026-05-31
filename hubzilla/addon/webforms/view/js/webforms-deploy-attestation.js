@@ -535,38 +535,38 @@
     function formatReadVerifyResponse(data) {
         return [
             'Read / Verify',
-            'operation_id: ' + safe(data.operation_id),
-            'status: ' + safe(data.status),
-            'cid: ' + safe(data.cid),
-            'ipfs_uri: ' + safe(data.ipfs_uri),
-            'content_type: ' + safe(data.content_type),
-            'size_bytes: ' + safe(data.size_bytes),
-            'sha256: ' + safe(data.sha256),
-            'pin_status: ' + safe(data.pin_status),
-            'pin_type: ' + safe(data.pin_type),
-            'retrieval: ' + safe(data.retrieval_status),
-            'verification: ' + safe(data.verification_status),
-            'content_verified: ' + boolText(data.content_verified),
-            'git_reference_verified: ' + boolText(data.git_reference_verified),
-            'git_path: ' + safe(data.git_path),
-            'path_status: ' + safe(data.path_status),
-            'commit_sha: ' + safe(data.commit_sha),
-            'policy: ' + safe(data.policy_status),
-            'error: ' + safe(data.error_message)
+            'operation_id: ' + safe(resultValue(data, 'operation_id')),
+            'status: ' + safe(resultValue(data, 'status')),
+            'cid: ' + safe(resultValue(data, 'cid')),
+            'ipfs_uri: ' + safe(resultValue(data, 'ipfs_uri')),
+            'content_type: ' + safe(resultValue(data, 'content_type')),
+            'size_bytes: ' + safe(resultValue(data, 'size_bytes')),
+            'sha256: ' + safe(resultValue(data, 'sha256')),
+            'pin_status: ' + safe(resultValue(data, 'pin_status')),
+            'pin_type: ' + safe(resultValue(data, 'pin_type')),
+            'retrieval: ' + safe(resultValue(data, 'retrieval_status')),
+            'verification: ' + safe(resultValue(data, 'verification_status')),
+            'content_verified: ' + boolText(resultValue(data, 'content_verified')),
+            'git_reference_verified: ' + boolText(resultValue(data, 'git_reference_verified')),
+            'git_path: ' + safe(resultValue(data, 'git_path')),
+            'path_status: ' + safe(resultValue(data, 'path_status')),
+            'commit_sha: ' + safe(resultValue(data, 'commit_sha')),
+            'policy: ' + safe(resultValue(data, 'policy_status')),
+            'error: ' + safe(resultValue(data, 'error_message'))
         ].join('\n');
     }
 
     function formatDurableSummary(data) {
         return [
             'Durable Publication Result',
-            'status: ' + safe(data.status),
-            'cid: ' + safe(data.cid),
-            'pin_status: ' + safe(data.pin_status),
-            'retrieval_status: ' + safe(data.retrieval_status),
-            'content_verified: ' + boolText(data.content_verified),
-            'git_reference_verified: ' + boolText(data.git_reference_verified),
-            'git_path: ' + safe(data.git_path),
-            'commit_sha: ' + safe(data.commit_sha)
+            'status: ' + safe(resultValue(data, 'status')),
+            'cid: ' + safe(resultValue(data, 'cid')),
+            'pin_status: ' + safe(resultValue(data, 'pin_status')),
+            'retrieval_status: ' + safe(resultValue(data, 'retrieval_status')),
+            'content_verified: ' + boolText(resultValue(data, 'content_verified')),
+            'git_reference_verified: ' + boolText(resultValue(data, 'git_reference_verified')),
+            'git_path: ' + safe(resultValue(data, 'git_path')),
+            'commit_sha: ' + safe(resultValue(data, 'commit_sha'))
         ].join('\n');
     }
 
@@ -630,6 +630,64 @@
 
     function listText(value) {
         return Array.isArray(value) ? value.join(', ') : safe(value);
+    }
+
+    function resultValue(data, key) {
+        if (!data || typeof data !== 'object') {
+            return undefined;
+        }
+
+        const topLevel = data[key];
+        if (hasDisplayValue(topLevel)) {
+            return topLevel;
+        }
+
+        const candidateKeys = [
+            'publication_result',
+            'durable_publication_result',
+            'read_verify_result',
+            'verification_result',
+            'operation_result',
+            'result',
+            'data',
+            'response'
+        ];
+
+        for (let i = 0; i < candidateKeys.length; i += 1) {
+            const nested = data[candidateKeys[i]];
+            if (nested && typeof nested === 'object' && hasDisplayValue(nested[key])) {
+                return nested[key];
+            }
+        }
+
+        return recursiveResultValue(data, key, 0);
+    }
+
+    function recursiveResultValue(value, key, depth) {
+        if (!value || typeof value !== 'object' || depth > 4) {
+            return undefined;
+        }
+
+        if (hasDisplayValue(value[key])) {
+            return value[key];
+        }
+
+        const values = Array.isArray(value) ? value : Object.keys(value).map(function (name) {
+            return value[name];
+        });
+
+        for (let i = 0; i < values.length; i += 1) {
+            const found = recursiveResultValue(values[i], key, depth + 1);
+            if (hasDisplayValue(found)) {
+                return found;
+            }
+        }
+
+        return undefined;
+    }
+
+    function hasDisplayValue(value) {
+        return value !== null && typeof value !== 'undefined' && value !== '';
     }
 
     function boolText(value) {
