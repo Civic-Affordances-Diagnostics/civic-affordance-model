@@ -38,29 +38,138 @@
     },
     "objects": [
       {
-        "id": "box-connect",
+        "id": "box-profile",
         "type": "container",
         "parent": "root-form",
-        "label": "Connect",
+        "label": "Profile",
         "placeholder": "",
         "default": "",
         "placement": {
           "x": 1,
           "y": 1,
           "width": 20,
-          "height": 17,
+          "height": 15,
           "unit": "grid"
         },
         "validation": {
           "required": false
         },
-        "step": "connect"
+        "step": "profile"
       },
       {
-        "id": "label-connect",
+        "id": "label-profile",
         "type": "label",
-        "parent": "box-connect",
-        "label": "Connect",
+        "parent": "box-profile",
+        "label": "Profile",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 12,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "service_profile_id",
+        "type": "text",
+        "parent": "box-profile",
+        "label": "Service profile ID",
+        "placeholder": "Hubzilla-known service profile",
+        "default": "ipfs-publication-default",
+        "placement": {
+          "x": 1,
+          "y": 3,
+          "width": 9,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "backend_role",
+        "type": "text",
+        "parent": "box-profile",
+        "label": "Backend role",
+        "placeholder": "logical backend role",
+        "default": "ipfs_publication",
+        "placement": {
+          "x": 11,
+          "y": 3,
+          "width": 7,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": true
+        }
+      },
+      {
+        "id": "endpoint_label",
+        "type": "text",
+        "parent": "box-profile",
+        "label": "Endpoint label",
+        "placeholder": "human-readable backend label",
+        "default": "orchestrator1 / ipfs1 controlled backend",
+        "placement": {
+          "x": 1,
+          "y": 6,
+          "width": 17,
+          "height": 1,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "help-profile",
+        "type": "help_text",
+        "parent": "box-profile",
+        "label": "Profile boundary",
+        "placeholder": "",
+        "default": "Webforms selects a Hubzilla-known orchestrator service profile. The portable JSON names the profile and backend role, not a raw URL or service secret.",
+        "placement": {
+          "x": 1,
+          "y": 9,
+          "width": 17,
+          "height": 4,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "box-verify",
+        "type": "container",
+        "parent": "root-form",
+        "label": "Verify",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 20,
+          "height": 15,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        },
+        "step": "verify"
+      },
+      {
+        "id": "label-verify",
+        "type": "label",
+        "parent": "box-verify",
+        "label": "Verify",
         "placeholder": "",
         "default": "",
         "placement": {
@@ -77,7 +186,7 @@
       {
         "id": "operation_id",
         "type": "text",
-        "parent": "box-connect",
+        "parent": "box-verify",
         "label": "Operation ID",
         "placeholder": "client/request operation id",
         "default": "",
@@ -93,51 +202,15 @@
         }
       },
       {
-        "id": "service_profile_id",
-        "type": "text",
-        "parent": "box-connect",
-        "label": "Service profile ID",
-        "placeholder": "Hubzilla-known service profile",
-        "default": "ipfs-publication-default",
-        "placement": {
-          "x": 10,
-          "y": 3,
-          "width": 9,
-          "height": 1,
-          "unit": "grid"
-        },
-        "validation": {
-          "required": true
-        }
-      },
-      {
-        "id": "backend_role",
-        "type": "text",
-        "parent": "box-connect",
-        "label": "Backend role",
-        "placeholder": "logical backend role",
-        "default": "ipfs_publication",
-        "placement": {
-          "x": 1,
-          "y": 6,
-          "width": 8,
-          "height": 1,
-          "unit": "grid"
-        },
-        "validation": {
-          "required": false
-        }
-      },
-      {
         "id": "execution_active",
         "type": "text",
-        "parent": "box-connect",
+        "parent": "box-verify",
         "label": "Execution active",
-        "placeholder": "false until service execution is enabled",
+        "placeholder": "false",
         "default": "false",
         "placement": {
           "x": 10,
-          "y": 6,
+          "y": 3,
           "width": 4,
           "height": 1,
           "unit": "grid"
@@ -149,13 +222,13 @@
       {
         "id": "capability_status",
         "type": "text",
-        "parent": "box-connect",
+        "parent": "box-verify",
         "label": "Capability status",
-        "placeholder": "profile/status capability state",
+        "placeholder": "available",
         "default": "available",
         "placement": {
           "x": 15,
-          "y": 6,
+          "y": 3,
           "width": 4,
           "height": 1,
           "unit": "grid"
@@ -165,16 +238,71 @@
         }
       },
       {
-        "id": "endpoint_label",
-        "type": "text",
-        "parent": "box-connect",
-        "label": "Endpoint label",
-        "placeholder": "human-readable display label only",
-        "default": "orchestrator1 / ipfs1 controlled backend",
+        "id": "help-verify",
+        "type": "help_text",
+        "parent": "box-verify",
+        "label": "Verification boundary",
+        "placeholder": "",
+        "default": "Verification will confirm the selected service profile resolves to orchestrator1, matches backend role ipfs_publication, and preserves the authority boundary. No Kubo RPC, git write path, pinset mutation, or credential is exposed here.",
         "placement": {
           "x": 1,
-          "y": 9,
+          "y": 6,
           "width": 18,
+          "height": 5,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "result-verify-status",
+        "type": "result_panel",
+        "parent": "box-verify",
+        "label": "Profile status",
+        "placeholder": "",
+        "default": "Connection status: available\nExecution active: false\nBackend role: ipfs_publication\nRaw Kubo RPC exposed: false\nRaw Git write exposed: false",
+        "placement": {
+          "x": 1,
+          "y": 12,
+          "width": 18,
+          "height": 3,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        }
+      },
+      {
+        "id": "box-capabilities",
+        "type": "container",
+        "parent": "root-form",
+        "label": "Capabilities",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 20,
+          "height": 15,
+          "unit": "grid"
+        },
+        "validation": {
+          "required": false
+        },
+        "step": "capabilities"
+      },
+      {
+        "id": "label-capabilities",
+        "type": "label",
+        "parent": "box-capabilities",
+        "label": "Capabilities",
+        "placeholder": "",
+        "default": "",
+        "placement": {
+          "x": 1,
+          "y": 1,
+          "width": 12,
           "height": 1,
           "unit": "grid"
         },
@@ -183,17 +311,17 @@
         }
       },
       {
-        "id": "help-connect",
-        "type": "help_text",
-        "parent": "box-connect",
-        "label": "Connection boundary",
+        "id": "result-capability-status",
+        "type": "result_panel",
+        "parent": "box-capabilities",
+        "label": "Profile fields",
         "placeholder": "",
-        "default": "Webforms selects a Hubzilla-known orchestrator service profile. It does not connect directly to Kubo, mutate pinsets, write git/POSIX paths, or hold service credentials. The selected service profile determines which controlled backend role will execute the declared operation later.",
+        "default": "service_pack: ipfs\nprofile_id: ipfs-publication-default\ntarget: orchestrator1\norchestrator: orchestrator1.internal.diagnostics.kane-il.us\nbackend_role: ipfs_publication\nbackend_node: ipfs1.diagnostics.kane-il.us\nstatus: available",
         "placement": {
           "x": 1,
-          "y": 12,
-          "width": 18,
-          "height": 2,
+          "y": 3,
+          "width": 8,
+          "height": 10,
           "unit": "grid"
         },
         "validation": {
@@ -201,17 +329,17 @@
         }
       },
       {
-        "id": "connect-status",
+        "id": "result-capabilities",
         "type": "result_panel",
-        "parent": "box-connect",
-        "label": "Connect status fields",
+        "parent": "box-capabilities",
+        "label": "Operation list",
         "placeholder": "",
-        "default": "service_pack: ipfs\nprofile_id: ipfs-publication-default\ntarget: orchestrator1\norchestrator: orchestrator1.internal.diagnostics.kane-il.us\nbackend_role: ipfs_publication\nbackend_node: ipfs1.diagnostics.kane-il.us\nexecution_active: false\nraw_kubo_rpc_exposed: false\nraw_git_write_exposed: false\nstatus: available\noperations: ipfs.cid.prepare, ipfs.cid.publish, ipfs.cid.pin, ipfs.cid.request_unpin, git_posix.path_reference.create, ipfs.cid.read_verify",
+        "default": "operations:\nipfs.cid.prepare\nipfs.cid.publish\nipfs.cid.pin\nipfs.cid.request_unpin\ngit_posix.path_reference.create\nipfs.cid.read_verify",
         "placement": {
-          "x": 1,
-          "y": 15,
-          "width": 18,
-          "height": 2,
+          "x": 10,
+          "y": 3,
+          "width": 9,
+          "height": 10,
           "unit": "grid"
         },
         "validation": {
@@ -464,14 +592,6 @@
     "title": "IPFS Pin CID",
     "fields": [
       {
-        "id": "operation_id",
-        "type": "text",
-        "label": "Operation ID",
-        "required": true,
-        "placeholder": "client/request operation id",
-        "default": ""
-      },
-      {
         "id": "service_profile_id",
         "type": "text",
         "label": "Service profile ID",
@@ -483,16 +603,32 @@
         "id": "backend_role",
         "type": "text",
         "label": "Backend role",
-        "required": false,
+        "required": true,
         "placeholder": "logical backend role",
         "default": "ipfs_publication"
+      },
+      {
+        "id": "endpoint_label",
+        "type": "text",
+        "label": "Endpoint label",
+        "required": false,
+        "placeholder": "human-readable backend label",
+        "default": "orchestrator1 / ipfs1 controlled backend"
+      },
+      {
+        "id": "operation_id",
+        "type": "text",
+        "label": "Operation ID",
+        "required": true,
+        "placeholder": "client/request operation id",
+        "default": ""
       },
       {
         "id": "execution_active",
         "type": "text",
         "label": "Execution active",
         "required": false,
-        "placeholder": "false until service execution is enabled",
+        "placeholder": "false",
         "default": "false"
       },
       {
@@ -500,16 +636,8 @@
         "type": "text",
         "label": "Capability status",
         "required": false,
-        "placeholder": "profile/status capability state",
+        "placeholder": "available",
         "default": "available"
-      },
-      {
-        "id": "endpoint_label",
-        "type": "text",
-        "label": "Endpoint label",
-        "required": false,
-        "placeholder": "human-readable display label only",
-        "default": "orchestrator1 / ipfs1 controlled backend"
       },
       {
         "id": "cid",
@@ -588,43 +716,33 @@
     ],
     "layout": [
       {
-        "id": "box-connect",
+        "id": "box-profile",
         "type": "container",
         "parent": "root-form",
         "x": 1,
         "y": 1,
         "width": 20,
-        "height": 17,
+        "height": 15,
         "unit": "grid",
-        "label": "Connect",
-        "step": "connect"
+        "label": "Profile",
+        "step": "profile"
       },
       {
-        "id": "label-connect",
+        "id": "label-profile",
         "type": "label",
-        "parent": "box-connect",
+        "parent": "box-profile",
         "x": 1,
         "y": 1,
         "width": 12,
         "height": 1,
         "unit": "grid",
-        "label": "Connect"
-      },
-      {
-        "id": "operation_id",
-        "type": "text",
-        "parent": "box-connect",
-        "x": 1,
-        "y": 3,
-        "width": 8,
-        "height": 1,
-        "unit": "grid"
+        "label": "Profile"
       },
       {
         "id": "service_profile_id",
         "type": "text",
-        "parent": "box-connect",
-        "x": 10,
+        "parent": "box-profile",
+        "x": 1,
         "y": 3,
         "width": 9,
         "height": 1,
@@ -633,9 +751,64 @@
       {
         "id": "backend_role",
         "type": "text",
-        "parent": "box-connect",
+        "parent": "box-profile",
+        "x": 11,
+        "y": 3,
+        "width": 7,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "endpoint_label",
+        "type": "text",
+        "parent": "box-profile",
         "x": 1,
         "y": 6,
+        "width": 17,
+        "height": 1,
+        "unit": "grid"
+      },
+      {
+        "id": "help-profile",
+        "type": "help_text",
+        "parent": "box-profile",
+        "x": 1,
+        "y": 9,
+        "width": 17,
+        "height": 4,
+        "unit": "grid",
+        "label": "Profile boundary",
+        "text": "Webforms selects a Hubzilla-known orchestrator service profile. The portable JSON names the profile and backend role, not a raw URL or service secret."
+      },
+      {
+        "id": "box-verify",
+        "type": "container",
+        "parent": "root-form",
+        "x": 1,
+        "y": 1,
+        "width": 20,
+        "height": 15,
+        "unit": "grid",
+        "label": "Verify",
+        "step": "verify"
+      },
+      {
+        "id": "label-verify",
+        "type": "label",
+        "parent": "box-verify",
+        "x": 1,
+        "y": 1,
+        "width": 12,
+        "height": 1,
+        "unit": "grid",
+        "label": "Verify"
+      },
+      {
+        "id": "operation_id",
+        "type": "text",
+        "parent": "box-verify",
+        "x": 1,
+        "y": 3,
         "width": 8,
         "height": 1,
         "unit": "grid"
@@ -643,9 +816,9 @@
       {
         "id": "execution_active",
         "type": "text",
-        "parent": "box-connect",
+        "parent": "box-verify",
         "x": 10,
-        "y": 6,
+        "y": 3,
         "width": 4,
         "height": 1,
         "unit": "grid"
@@ -653,46 +826,83 @@
       {
         "id": "capability_status",
         "type": "text",
-        "parent": "box-connect",
+        "parent": "box-verify",
         "x": 15,
-        "y": 6,
+        "y": 3,
         "width": 4,
         "height": 1,
         "unit": "grid"
       },
       {
-        "id": "endpoint_label",
-        "type": "text",
-        "parent": "box-connect",
+        "id": "help-verify",
+        "type": "help_text",
+        "parent": "box-verify",
         "x": 1,
-        "y": 9,
+        "y": 6,
         "width": 18,
-        "height": 1,
-        "unit": "grid"
+        "height": 5,
+        "unit": "grid",
+        "label": "Verification boundary",
+        "text": "Verification will confirm the selected service profile resolves to orchestrator1, matches backend role ipfs_publication, and preserves the authority boundary. No Kubo RPC, git write path, pinset mutation, or credential is exposed here."
       },
       {
-        "id": "help-connect",
-        "type": "help_text",
-        "parent": "box-connect",
+        "id": "result-verify-status",
+        "type": "result_panel",
+        "parent": "box-verify",
         "x": 1,
         "y": 12,
         "width": 18,
-        "height": 2,
+        "height": 3,
         "unit": "grid",
-        "label": "Connection boundary",
-        "text": "Webforms selects a Hubzilla-known orchestrator service profile. It does not connect directly to Kubo, mutate pinsets, write git/POSIX paths, or hold service credentials. The selected service profile determines which controlled backend role will execute the declared operation later."
+        "label": "Profile status",
+        "text": "Connection status: available\nExecution active: false\nBackend role: ipfs_publication\nRaw Kubo RPC exposed: false\nRaw Git write exposed: false"
       },
       {
-        "id": "connect-status",
-        "type": "result_panel",
-        "parent": "box-connect",
+        "id": "box-capabilities",
+        "type": "container",
+        "parent": "root-form",
         "x": 1,
-        "y": 15,
-        "width": 18,
-        "height": 2,
+        "y": 1,
+        "width": 20,
+        "height": 15,
         "unit": "grid",
-        "label": "Connect status fields",
-        "text": "service_pack: ipfs\nprofile_id: ipfs-publication-default\ntarget: orchestrator1\norchestrator: orchestrator1.internal.diagnostics.kane-il.us\nbackend_role: ipfs_publication\nbackend_node: ipfs1.diagnostics.kane-il.us\nexecution_active: false\nraw_kubo_rpc_exposed: false\nraw_git_write_exposed: false\nstatus: available\noperations: ipfs.cid.prepare, ipfs.cid.publish, ipfs.cid.pin, ipfs.cid.request_unpin, git_posix.path_reference.create, ipfs.cid.read_verify"
+        "label": "Capabilities",
+        "step": "capabilities"
+      },
+      {
+        "id": "label-capabilities",
+        "type": "label",
+        "parent": "box-capabilities",
+        "x": 1,
+        "y": 1,
+        "width": 12,
+        "height": 1,
+        "unit": "grid",
+        "label": "Capabilities"
+      },
+      {
+        "id": "result-capability-status",
+        "type": "result_panel",
+        "parent": "box-capabilities",
+        "x": 1,
+        "y": 3,
+        "width": 8,
+        "height": 10,
+        "unit": "grid",
+        "label": "Profile fields",
+        "text": "service_pack: ipfs\nprofile_id: ipfs-publication-default\ntarget: orchestrator1\norchestrator: orchestrator1.internal.diagnostics.kane-il.us\nbackend_role: ipfs_publication\nbackend_node: ipfs1.diagnostics.kane-il.us\nstatus: available"
+      },
+      {
+        "id": "result-capabilities",
+        "type": "result_panel",
+        "parent": "box-capabilities",
+        "x": 10,
+        "y": 3,
+        "width": 9,
+        "height": 10,
+        "unit": "grid",
+        "label": "Operation list",
+        "text": "operations:\nipfs.cid.prepare\nipfs.cid.publish\nipfs.cid.pin\nipfs.cid.request_unpin\ngit_posix.path_reference.create\nipfs.cid.read_verify"
       },
       {
         "id": "box-select-cid",
@@ -843,8 +1053,16 @@
     "workflow": {
       "steps": [
         {
-          "id": "connect",
-          "label": "Connect"
+          "id": "profile",
+          "label": "Profile"
+        },
+        {
+          "id": "verify",
+          "label": "Verify"
+        },
+        {
+          "id": "capabilities",
+          "label": "Capabilities"
         },
         {
           "id": "select-cid",
@@ -866,7 +1084,15 @@
       "backend_role": "ipfs_publication",
       "execution_active": false,
       "service_profile_id": "ipfs-publication-default",
-      "capability_status": "available"
+      "capability_status": "available",
+      "available_operations": [
+        "ipfs.cid.prepare",
+        "ipfs.cid.publish",
+        "ipfs.cid.pin",
+        "ipfs.cid.request_unpin",
+        "git_posix.path_reference.create",
+        "ipfs.cid.read_verify"
+      ]
     },
     "result_fields": [
       "operation_id",
@@ -882,39 +1108,7 @@
       "completed_at",
       "error_code",
       "error_message"
-    ],
-    "connection": {
-      "service_profile_id": "ipfs-publication-default",
-      "target": "orchestrator1",
-      "orchestrator": "orchestrator1.internal.diagnostics.kane-il.us",
-      "backend_role": "ipfs_publication",
-      "backend_node": "ipfs1.diagnostics.kane-il.us",
-      "execution_active": false,
-      "capability_status": "available",
-      "raw_kubo_rpc_exposed": false,
-      "raw_git_write_exposed": false,
-      "status_fields": [
-        "service_pack",
-        "profile_id",
-        "target",
-        "orchestrator",
-        "backend_role",
-        "backend_node",
-        "execution_active",
-        "raw_kubo_rpc_exposed",
-        "raw_git_write_exposed",
-        "status",
-        "operations"
-      ],
-      "operations": [
-        "ipfs.cid.prepare",
-        "ipfs.cid.publish",
-        "ipfs.cid.pin",
-        "ipfs.cid.request_unpin",
-        "git_posix.path_reference.create",
-        "ipfs.cid.read_verify"
-      ]
-    }
+    ]
   },
   "runtime": {
     "schema": "hubzilla.webforms.runtime",
@@ -935,7 +1129,21 @@
         "backend_role": "ipfs_publication",
         "service_profile_id": "ipfs-publication-default",
         "execution_active": false,
-        "capability_status": "available"
+        "capability_status": "available",
+        "available_operations": [
+          "ipfs.cid.prepare",
+          "ipfs.cid.publish",
+          "ipfs.cid.pin",
+          "ipfs.cid.request_unpin",
+          "git_posix.path_reference.create",
+          "ipfs.cid.read_verify"
+        ],
+        "authority_boundary": {
+          "raw_kubo_rpc_exposed": false,
+          "raw_git_write_exposed": false,
+          "browser_holds_service_credentials": false,
+          "pinset_mutation_authority_exposed": false
+        }
       }
     ],
     "federation": [],
@@ -943,7 +1151,7 @@
       "This addon-bundled package is declarative only.",
       "No Kubo RPC, git/POSIX write, credential use, service call, server write, database write, or federation action is performed by this package.",
       "The package targets orchestrator1 conceptually; raw ipfs1/Kubo/git mutation endpoints are not embedded.",
-      "Connect uses service_profile_id ipfs-publication-default and does not embed the orchestrator status endpoint, raw Kubo RPC endpoints, git write paths, credentials, or pinset mutation authority."
+      "The package selects a Hubzilla-known orchestrator service profile; raw status URLs, Kubo RPC endpoints, git write paths, service credentials, and pinset mutation authority are not embedded."
     ]
   }
 }
