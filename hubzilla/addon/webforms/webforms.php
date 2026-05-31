@@ -654,6 +654,7 @@ function webforms_prepare_latest_own_post_package($profile) {
 		'operation' => 'attestation.hubzilla_post.latest.prepare',
 		'status' => 'prepared',
 		'source' => [
+			'retrieval_method' => 'local_hubzilla_source',
 			'system' => 'hubzilla',
 			'source_type' => 'latest_own_post',
 			'channel_scope' => 'authenticated_current_channel',
@@ -697,7 +698,7 @@ function webforms_prepare_latest_own_post_package($profile) {
 		],
 		'attestation_preview' => [
 			'schema' => 'us.civic-infra.attestation.hubzilla-own-post.v0.1',
-			'attestation_type' => 'hubzilla_own_post',
+			'attestation_type' => 'own_hubzilla_post',
 			'source_event' => 'latest_eligible_own_post',
 			'payload_status' => 'prepared',
 			'delivery_status' => count($delivery_reports) ? 'manifest_collected' : 'manifest_empty',
